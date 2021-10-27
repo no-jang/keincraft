@@ -1,0 +1,6 @@
+# Java
+*.class
+
+# BlueJ
+*.ctxt
+team.defs
