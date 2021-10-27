@@ -4,3 +4,7 @@
 # BlueJ
 *.ctxt
 team.defs
+
+# Intellij
+.idea
+*.iml
