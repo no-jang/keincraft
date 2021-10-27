@@ -58,6 +58,11 @@ public class Window
         GLFW.glfwSwapBuffers(windowHandle);
     }
     
+    public void destroy() {
+        GLFW.glfwDestroyWindow(windowHandle);
+        GLFW.glfwTerminate();
+    }
+    
     public boolean shouldClose() {
         return GLFW.glfwWindowShouldClose(windowHandle);
     }

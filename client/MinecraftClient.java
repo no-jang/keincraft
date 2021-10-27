@@ -41,6 +41,6 @@ public class MinecraftClient
     }
     
     private void destroy() {
-        
+        window.destroy();
     }
 }
