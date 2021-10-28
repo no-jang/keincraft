@@ -16,8 +16,8 @@ public class Window
     
     public void init() {
         GLFWErrorCallback.createPrint(System.err).set();
-        
-        if(!GLFW.glfwInit()) {
+
+        if (!GLFW.glfwInit()) {
             throw new IllegalStateException("Unable to initialize glfw");
         }
 
@@ -25,6 +25,12 @@ public class Window
         GLFW.glfwDefaultWindowHints();
         GLFW.glfwWindowHint(GLFW.GLFW_VISIBLE, GLFW.GLFW_FALSE);
         GLFW.glfwWindowHint(GLFW.GLFW_RESIZABLE, GLFW.GLFW_TRUE);
+
+        // Set opengl core profile 3.3
+        GLFW.glfwWindowHint(GLFW.GLFW_CONTEXT_VERSION_MAJOR, 3);
+        GLFW.glfwWindowHint(GLFW.GLFW_CONTEXT_VERSION_MINOR, 3);
+        GLFW.glfwWindowHint(GLFW.GLFW_OPENGL_PROFILE, GLFW.GLFW_OPENGL_CORE_PROFILE);
+        GLFW.glfwWindowHint(GLFW.GLFW_OPENGL_DEBUG_CONTEXT, GLFW.GLFW_TRUE);
 
         // Window creation
         windowHandle = GLFW.glfwCreateWindow(300, 300, "Minecraft School", MemoryUtil.NULL, MemoryUtil.NULL);
@@ -40,9 +46,7 @@ public class Window
         });
 
         // Frambuffer callback for resizing the window
-        GLFW.glfwSetFramebufferSizeCallback(windowHandle, (window, width, height) -> {
-            GL11.glViewport(0, 0, width, height);
-        });
+        GLFW.glfwSetFramebufferSizeCallback(windowHandle, (window, width, height) -> GL11.glViewport(0, 0, width, height));
 
         // Position window in the middle of the screen
         try (MemoryStack stack = MemoryStack.stackPush()) {
