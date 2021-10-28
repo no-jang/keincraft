@@ -1,12 +1,15 @@
 import client.MinecraftClient;
 
+import java.util.Objects;
+
 public class Main {
     public static void main(String[] args) {
         boolean isServer = false;
         
         for(String arg : args) {
-            if(arg == "--server") {
+            if (Objects.equals(arg, "--server")) {
                 isServer = true;
+                break;
             }
         }
         
@@ -18,7 +21,7 @@ public class Main {
     }
     
     public static void runClient() {
-        MinecraftClient client = new MinecraftClient();
+        MinecraftClient client = new MinecraftClient();
         client.run();
     }
     
