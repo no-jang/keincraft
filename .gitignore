@@ -8,3 +8,4 @@ team.defs
 # Intellij
 .idea
 *.iml
+out
