@@ -10,10 +10,9 @@ import org.lwjgl.system.MemoryUtil;
 
 import java.nio.IntBuffer;
 
-public class Window
-{
+public class Window {
     private long windowHandle;
-    
+
     public void init() {
         GLFWErrorCallback.createPrint(System.err).set();
 
@@ -64,24 +63,24 @@ public class Window
         GLFW.glfwSwapInterval(1);
         GLFW.glfwShowWindow(windowHandle);
     }
-    
+
     public void input() {
         GLFW.glfwPollEvents();
     }
-    
+
     public void render() {
         GLFW.glfwSwapBuffers(windowHandle);
     }
-    
+
     public void destroy() {
         GLFW.glfwDestroyWindow(windowHandle);
         GLFW.glfwTerminate();
     }
-    
+
     public boolean shouldClose() {
         return GLFW.glfwWindowShouldClose(windowHandle);
     }
-    
+
     public long getWindowHandle() {
         return windowHandle;
     }
