@@ -7,22 +7,27 @@ import org.lwjgl.opengl.GL30;
 import org.lwjgl.system.MemoryUtil;
 
 import java.nio.FloatBuffer;
+import java.nio.IntBuffer;
 
 public class Mesh {
     private final int vao;
     private final int vbo;
+    private final int ebo;
     private final int vertexCount;
 
-    public Mesh(float[] vertices) {
-        vertexCount = vertices.length / 3;
+    public Mesh(float[] vertices, int[] indices) {
+        vertexCount = indices.length;
 
         FloatBuffer verticesBuffer = null;
+        IntBuffer indicesBuffer = null;
         try {
-            // Allocate memory for vertices buffer
+            // Allocate memory for vertices and indices buffer
             verticesBuffer = MemoryUtil.memAllocFloat(vertices.length);
+            indicesBuffer = MemoryUtil.memAllocInt(indices.length);
             verticesBuffer.put(vertices).flip();
+            indicesBuffer.put(indices).flip();
 
-            // Create and bind vao for storing vbo and attribs
+            // Create and bind vao for storing vbo, ebo and attribs
             vao = GL30.glGenVertexArrays();
             GL30.glBindVertexArray(vao);
 
@@ -34,24 +39,29 @@ public class Mesh {
             // Create vertex attribs for sending them to vertex shader
             GL20.glVertexAttribPointer(0, 3, GL11.GL_FLOAT, false, 0, MemoryUtil.NULL);
 
+            // Create and bind ebo for storing indices
+            ebo = GL15.glGenBuffers();
+            GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, ebo);
+            GL15.glBufferData(GL15.GL_ELEMENT_ARRAY_BUFFER, indicesBuffer, GL15.GL_STATIC_DRAW);
+
             // Unbind vao and vbo for not interfering with other opengl components
             GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
             GL30.glBindVertexArray(0);
         } finally {
-            // Free memory of vertices buffer
+            // Free memory of vbo and ebo
             MemoryUtil.memFree(verticesBuffer);
+            MemoryUtil.memFree(indicesBuffer);
         }
     }
 
     public void draw() {
-        GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
-
         // Bind vao and vertex shader attribs
         GL30.glBindVertexArray(vao);
         GL20.glEnableVertexAttribArray(0);
 
         // Draw the mesh
-        GL11.glDrawArrays(GL11.GL_TRIANGLES, 0, vertexCount);
+        // GL11.glDrawArrays(GL11.GL_TRIANGLES, 0, vertexCount);
+        GL11.glDrawElements(GL11.GL_TRIANGLES, vertexCount, GL11.GL_UNSIGNED_INT, 0);
 
         // Restore state
         GL20.glDisableVertexAttribArray(0);
@@ -65,6 +75,10 @@ public class Mesh {
         // Delete vbo
         GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
         GL15.glDeleteBuffers(vbo);
+
+        // Delete ebo
+        GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, 0);
+        GL15.glDeleteBuffers(ebo);
 
         // Delete vao
         GL30.glBindVertexArray(0);

@@ -4,6 +4,7 @@ import client.MinecraftClient;
 import client.render.gl.Mesh;
 import client.render.gl.Shader;
 import org.lwjgl.opengl.GL;
+import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GLUtil;
 
 import java.io.IOException;
@@ -34,77 +35,22 @@ public class RenderManager {
         }
 
         float[] vertices = {
-                //-0.5f, -0.5f, 0.0f,
-                //0.5f, -0.5f, 0.0f,
-                //0.0f, 0.5f, 0.0f
-
                 -0.5f, 0.5f, 0.0f,
                 -0.5f, -0.5f, 0.0f,
-                0.5f, 0.5f, 0.0f,
-                0.5f, 0.5f, 0.0f,
-                -0.5f, -0.5f, 0.0f,
                 0.5f, -0.5f, 0.0f,
-
-/*                -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
-                0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
-                0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-                0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-                -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
-                -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
-
-                -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-                0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-                0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
-                0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
-                -0.5f,  0.5f,  0.5f,  0.0f, 1.0f,
-                -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-
-                -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-                -0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-                -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-                -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-                -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-                -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-
-                0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-                0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-                0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-                0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-                0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-                0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-
-                -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-                0.5f, -0.5f, -0.5f,  1.0f, 1.0f,
-                0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-                0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-                -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-                -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-
-                -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
-                0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-                0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-                0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-                -0.5f,  0.5f,  0.5f,  0.0f, 0.0f,
-                -0.5f,  0.5f, -0.5f,  0.0f, 1.0f*/
+                0.5f, 0.5f, 0.0f,
         };
 
-/*        Vector3f[] cubePositions = {
-                new Vector3f( 0.0f,  0.0f,  0.0f),
-                new Vector3f( 2.0f,  5.0f, -15.0f),
-                new Vector3f(-1.5f, -2.2f, -2.5f),
-                new Vector3f(-3.8f, -2.0f, -12.3f),
-                new Vector3f( 2.4f, -0.4f, -3.5f),
-                new Vector3f(-1.7f,  3.0f, -7.5f),
-                new Vector3f( 1.3f, -2.0f, -2.5f),
-                new Vector3f( 1.5f,  2.0f, -2.5f),
-                new Vector3f( 1.5f,  0.2f, -1.5f),
-                new Vector3f(-1.3f,  1.0f, -1.5f)
-        };*/
+        int[] indices = {
+                0, 1, 3, 3, 1, 2,
+        };
 
-        mesh = new Mesh(vertices);
+        mesh = new Mesh(vertices, indices);
     }
 
     public void render() {
+        GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
+
         shader.bind();
         mesh.draw();
     }
