@@ -9,3 +9,7 @@ team.defs
 .idea
 *.iml
 out
+
+# Gradle
+.gradle
+build
