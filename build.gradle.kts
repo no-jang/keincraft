@@ -5,14 +5,11 @@ plugins {
 sourceSets {
     main {
         java {
-            srcDir("client")
-            srcDir("common")
-            srcDir("server")
+            srcDir("src")
         }
 
         resources {
-            srcDir("shaders")
-            srcDir("textures")
+            srcDir("res")
         }
     }
 }
@@ -48,5 +45,9 @@ tasks {
     create<Sync>("syncLibraryDirectory") {
         from(configurations.runtimeClasspath)
         into("libs")
+
+        preserve {
+            include("*_license.txt")
+        }
     }
 }
