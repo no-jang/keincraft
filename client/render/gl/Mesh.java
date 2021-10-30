@@ -18,78 +18,100 @@ public class Mesh {
     public Mesh(float[] vertices, int[] indices) {
         vertexCount = indices.length;
 
-        FloatBuffer verticesBuffer = null;
-        IntBuffer indicesBuffer = null;
-        try {
-            // Allocate memory for vertices and indices buffer
-            verticesBuffer = MemoryUtil.memAllocFloat(vertices.length);
-            indicesBuffer = MemoryUtil.memAllocInt(indices.length);
-            verticesBuffer.put(vertices).flip();
-            indicesBuffer.put(indices).flip();
+        // Create and bind vao for storing vbo, ebo and attribs
+        vao = GL30.glGenVertexArrays();
+        GL30.glBindVertexArray(vao);
 
-            // Create and bind vao for storing vbo, ebo and attribs
-            vao = GL30.glGenVertexArrays();
-            GL30.glBindVertexArray(vao);
+        // Create vbo, attribs for storing vertices positions
+        vbo = createFloatVBO(GL15.GL_ARRAY_BUFFER, vertices);
+        addVertexAttrib(0, 3, GL11.GL_FLOAT);
 
-            // Create and bind vbo for storing vertices
-            vbo = GL15.glGenBuffers();
-            GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, vbo);
-            GL15.glBufferData(GL15.GL_ARRAY_BUFFER, verticesBuffer, GL15.GL_STATIC_DRAW);
-
-            // Create vertex attribs for sending them to vertex shader
-            GL20.glVertexAttribPointer(0, 3, GL11.GL_FLOAT, false, 0, MemoryUtil.NULL);
-
-            // Create and bind ebo for storing indices
-            ebo = GL15.glGenBuffers();
-            GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, ebo);
-            GL15.glBufferData(GL15.GL_ELEMENT_ARRAY_BUFFER, indicesBuffer, GL15.GL_STATIC_DRAW);
-
-            // Unbind vao and vbo for not interfering with other opengl components
-            GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
-            GL30.glBindVertexArray(0);
-        } finally {
-            // Free memory of vbo and ebo
-            MemoryUtil.memFree(verticesBuffer);
-            MemoryUtil.memFree(indicesBuffer);
-        }
+        // Create ebo for storing indices
+        ebo = createIntVBO(GL15.GL_ELEMENT_ARRAY_BUFFER, indices);
     }
 
     public void draw() {
         // Bind vao and vertex shader attribs
         GL30.glBindVertexArray(vao);
-        GL20.glEnableVertexAttribArray(0);
 
         // Draw the mesh
-        // GL11.glDrawArrays(GL11.GL_TRIANGLES, 0, vertexCount);
         GL11.glDrawElements(GL11.GL_TRIANGLES, vertexCount, GL11.GL_UNSIGNED_INT, 0);
 
         // Restore state
-        GL20.glDisableVertexAttribArray(0);
         GL30.glBindVertexArray(0);
     }
 
+    private static int createFloatVBO(int type, float[] data) {
+        int vboId;
+        FloatBuffer buffer = null;
+        try {
+            // Store data in unsafe allocated memory
+            buffer = MemoryUtil.memAllocFloat(data.length);
+            buffer.put(data).flip();
+
+            // Generate buffer and set its data
+            vboId = GL15.glGenBuffers();
+            GL15.glBindBuffer(type, vboId);
+            GL15.glBufferData(type, buffer, GL15.GL_STATIC_DRAW);
+        } finally {
+            if (buffer != null) {
+                // Important: Free the memory afterwards
+                MemoryUtil.memFree(buffer);
+            }
+        }
+
+        return vboId;
+    }
+
+    private static int createIntVBO(int type, int[] data) {
+        int vboId;
+        IntBuffer buffer = null;
+        try {
+            // Store data in unsafe allocated memory
+            buffer = MemoryUtil.memAllocInt(data.length);
+            buffer.put(data).flip();
+
+            // Generate buffer and set its data
+            vboId = GL15.glGenBuffers();
+            GL15.glBindBuffer(type, vboId);
+            GL15.glBufferData(type, buffer, GL15.GL_STATIC_DRAW);
+        } finally {
+            if (buffer != null) {
+                // Important: Free the memory afterwards
+                MemoryUtil.memFree(buffer);
+            }
+        }
+
+        return vboId;
+    }
+
+    public int getVertexCount() {
+        return vertexCount;
+    }
+
+    private static void addVertexAttrib(int index, int size, int type) {
+        // Create vertex attribs for sending the vbo created before to the vertex shader
+        GL20.glEnableVertexAttribArray(index);
+        GL20.glVertexAttribPointer(index, size, type, false, 0, 0);
+    }
+
+    private static void destroyVBO(int id, int type) {
+        // Destroy and unbind vbo
+        GL15.glBindBuffer(type, 0);
+        GL15.glDeleteBuffers(id);
+    }
+
     public void destroy() {
-        // Delete vertex shader attribs
-        GL20.glDisableVertexAttribArray(0);
-
-        // Delete vbo
-        GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
-        GL15.glDeleteBuffers(vbo);
-
-        // Delete ebo
-        GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, 0);
-        GL15.glDeleteBuffers(ebo);
+        // Delete data
+        destroyVBO(vbo, GL15.GL_ARRAY_BUFFER); // vbo
+        destroyVBO(ebo, GL15.GL_ELEMENT_ARRAY_BUFFER); // ebo
 
         // Delete vao
         GL30.glBindVertexArray(0);
         GL30.glDeleteVertexArrays(vao);
     }
 
-    public int getVao() {
+    public int getVAO() {
         return vao;
-    }
-
-    public int getVertexCount() {
-        return vertexCount;
     }
 }
