@@ -11,34 +11,32 @@ import java.nio.IntBuffer;
 
 public class Mesh {
     private final int vao;
-    private final int vbo;
-    private final int ebo;
+    private final int verticesVBO;
+    private final int texCoordsVBO;
+    private final int indexVBO;
     private final int vertexCount;
 
-    public Mesh(float[] vertices, int[] indices) {
+    private final Texture texture;
+
+    public Mesh(float[] vertices, float[] texCoords, int[] indices, Texture texture) {
+        this.texture = texture;
+
         vertexCount = indices.length;
 
         // Create and bind vao for storing vbo, ebo and attribs
         vao = GL30.glGenVertexArrays();
         GL30.glBindVertexArray(vao);
 
-        // Create vbo, attribs for storing vertices positions
-        vbo = createFloatVBO(GL15.GL_ARRAY_BUFFER, vertices);
+        // Create vertex vbo, attribs for storing vertices positions
+        verticesVBO = createFloatVBO(GL15.GL_ARRAY_BUFFER, vertices);
         addVertexAttrib(0, 3, GL11.GL_FLOAT);
 
-        // Create ebo for storing indices
-        ebo = createIntVBO(GL15.GL_ELEMENT_ARRAY_BUFFER, indices);
-    }
+        // Create tex coord vbo for storing texture coordinates
+        texCoordsVBO = createFloatVBO(GL15.GL_ARRAY_BUFFER, texCoords);
+        addVertexAttrib(1, 2, GL11.GL_FLOAT);
 
-    public void draw() {
-        // Bind vao and vertex shader attribs
-        GL30.glBindVertexArray(vao);
-
-        // Draw the mesh
-        GL11.glDrawElements(GL11.GL_TRIANGLES, vertexCount, GL11.GL_UNSIGNED_INT, 0);
-
-        // Restore state
-        GL30.glBindVertexArray(0);
+        // Create index vbo for storing indices
+        indexVBO = createIntVBO(GL15.GL_ELEMENT_ARRAY_BUFFER, indices);
     }
 
     private static int createFloatVBO(int type, float[] data) {
@@ -85,10 +83,6 @@ public class Mesh {
         return vboId;
     }
 
-    public int getVertexCount() {
-        return vertexCount;
-    }
-
     private static void addVertexAttrib(int index, int size, int type) {
         // Create vertex attribs for sending the vbo created before to the vertex shader
         GL20.glEnableVertexAttribArray(index);
@@ -101,12 +95,34 @@ public class Mesh {
         GL15.glDeleteBuffers(id);
     }
 
-    public void destroy() {
-        // Delete data
-        destroyVBO(vbo, GL15.GL_ARRAY_BUFFER); // vbo
-        destroyVBO(ebo, GL15.GL_ELEMENT_ARRAY_BUFFER); // ebo
+    public void draw() {
+        // Bind texture
+        texture.bind();
 
-        // Delete vao
+        // Bind vao and vertex shader attribs
+        GL30.glBindVertexArray(vao);
+
+        // Draw the mesh
+        GL11.glDrawElements(GL11.GL_TRIANGLES, vertexCount, GL11.GL_UNSIGNED_INT, 0);
+
+        // Restore state
+        GL30.glBindVertexArray(0);
+    }
+
+    public int getVertexCount() {
+        return vertexCount;
+    }
+
+    public void destroy() {
+        // Destroy data
+        destroyVBO(verticesVBO, GL15.GL_ARRAY_BUFFER); // vertices
+        destroyVBO(texCoordsVBO, GL15.GL_ARRAY_BUFFER); // texCords
+        destroyVBO(indexVBO, GL15.GL_ELEMENT_ARRAY_BUFFER); // indices
+
+        // Destroy texture
+        texture.destroy();
+
+        // Destroy vao
         GL30.glBindVertexArray(0);
         GL30.glDeleteVertexArrays(vao);
     }
