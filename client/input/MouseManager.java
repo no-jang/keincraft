@@ -49,10 +49,10 @@ public class MouseManager {
             mouseLocked = true;
         }
 
-        if (previousPos.x > 0 && previousPos.y > 0 && mouseLocked) {
-            displVec.x = 0;
-            displVec.y = 0;
+        displVec.x = 0;
+        displVec.y = 0;
 
+        if (previousPos.x > 0 && previousPos.y > 0 && mouseLocked) {
             double deltaX = currentPos.x - previousPos.x;
             double deltaY = currentPos.y - previousPos.y;
 

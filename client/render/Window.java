@@ -22,7 +22,7 @@ public class Window {
         this.width = width;
         this.height = height;
 
-        this.isResized = false;
+        this.isResized = true;
     }
 
     public void init() {
@@ -53,6 +53,7 @@ public class Window {
         GLFW.glfwSetFramebufferSizeCallback(windowHandle, (window, width, height) -> {
             this.width = width;
             this.height = height;
+            this.isResized = true;
         });
 
         // Position window in the middle of the screen
@@ -70,6 +71,10 @@ public class Window {
     }
 
     public void render() {
+        if(isResized) {
+            isResized = false;
+        }
+
         GLFW.glfwSwapBuffers(windowHandle);
     }
 

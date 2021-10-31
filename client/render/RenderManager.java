@@ -5,6 +5,7 @@ import client.render.gl.Camera;
 import client.render.gl.Mesh;
 import client.render.gl.Shader;
 import client.render.gl.Texture;
+import client.render.util.Transformation;
 import common.util.math.PosRot;
 import org.joml.Matrix4f;
 import org.joml.Vector2i;
@@ -15,10 +16,6 @@ import org.lwjgl.opengl.GLUtil;
 import java.io.IOException;
 
 public class RenderManager {
-    private static final float FOV = (float) Math.toRadians(60.0f);
-    private static final float Z_NEAR = 0.01f;
-    private static final float Z_FAR = 1000.f;
-
     private final MinecraftClient client;
     private final Camera camera;
 
@@ -40,11 +37,7 @@ public class RenderManager {
         GL11.glEnable(GL11.GL_DEPTH_TEST);
 
         // Load shader
-        try {
-            shader = new Shader("shaders/base.vs", "shaders/base.fs");
-        } catch (IOException e) {
-            throw new RuntimeException("Unable to load shader", e);
-        }
+        shader = new Shader("shaders/base.vs", "shaders/base.fs");
 
         float[] vertices = {
                 // V0
@@ -145,25 +138,17 @@ public class RenderManager {
         // If screen size changed, update opengl viewport
         if(window.isResized()) {
             GL11.glViewport(0, 0, window.getWidth(), window.getHeight());
+            camera.updateView(window.getWidth(), window.getHeight());
         }
 
         shader.bind();
-
-        // Update projection matrix
-        Matrix4f projectionMatrix = camera.getProjectionMatrix(FOV, window.getWidth(), window.getHeight(), Z_NEAR, Z_FAR);
-        shader.setMat4("projectionMatrix", projectionMatrix);
-
-        // Update view matrix
-        Matrix4f viewMatrix = camera.getViewMatrix();
-
         shader.setInt("texture_sampler", 0);
 
-        // Update modelViewMatrix for block
-        PosRot posRot = new PosRot(0, 0, -2);
-        Matrix4f modelViewMatrix = camera.getModelViewMatrix(posRot, viewMatrix);
-        shader.setMat4("modelViewMatrix", modelViewMatrix);
+        camera.update();
 
-        // Draw mesh
+        PosRot posRot = new PosRot(0, 0, -2);
+        shader.setMat4("projViewModelMatrix", Transformation.makeProjViewModelMatrix(camera.getProjViewMatrix(), posRot.getPosition(), posRot.getRotation()));
+
         mesh.draw();
     }
 

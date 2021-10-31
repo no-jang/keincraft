@@ -15,7 +15,7 @@ import java.nio.file.Path;
 public class Shader {
     private final int id;
 
-    public Shader(String vertexSourcePath, String fragmentSourcePath) throws IOException {
+    public Shader(String vertexSourcePath, String fragmentSourcePath) {
         // Load and compile vertex and fragment shader
         int vertexId = createShader(vertexSourcePath, GL20.GL_VERTEX_SHADER);
         int fragmentId = createShader(fragmentSourcePath, GL20.GL_FRAGMENT_SHADER);
@@ -46,20 +46,24 @@ public class Shader {
         GL20.glDeleteShader(fragmentId);
     }
 
-    private static int createShader(String sourcePath, int shaderType) throws IOException {
-        String shaderSource = Files.readString(Path.of(sourcePath));
+    private static int createShader(String sourcePath, int shaderType) {
+        try {
+            String shaderSource = Files.readString(Path.of(sourcePath));
 
-        // Create, inject source and compile shader
-        int shaderId = GL20.glCreateShader(shaderType);
-        GL20.glShaderSource(shaderId, shaderSource);
-        GL20.glCompileShader(shaderId);
+            // Create, inject source and compile shader
+            int shaderId = GL20.glCreateShader(shaderType);
+            GL20.glShaderSource(shaderId, shaderSource);
+            GL20.glCompileShader(shaderId);
 
-        // Check for compilation errors
-        if (GL20.glGetShaderi(shaderId, GL20.GL_COMPILE_STATUS) == 0) {
-            throw new RuntimeException("Error compiling shader " + sourcePath + ": " + GL20.glGetShaderInfoLog(shaderId, 1024));
+            // Check for compilation errors
+            if (GL20.glGetShaderi(shaderId, GL20.GL_COMPILE_STATUS) == 0) {
+                throw new RuntimeException("Error compiling shader " + sourcePath + ": " + GL20.glGetShaderInfoLog(shaderId, 1024));
+            }
+
+            return shaderId;
+        }catch (IOException e) {
+            throw new RuntimeException("Failed to create shader: " + sourcePath, e);
         }
-
-        return shaderId;
     }
 
     public void bind() {
