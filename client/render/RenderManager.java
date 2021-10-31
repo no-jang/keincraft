@@ -138,15 +138,19 @@ public class RenderManager {
         mesh = new Mesh(vertices, texCoords, indices, new Texture("textures/grassblock.png"));
     }
 
-    public void render() {
+    public void render(Window window) {
         // Clear screen
         GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
+
+        // If screen size changed, update opengl viewport
+        if(window.isResized()) {
+            GL11.glViewport(0, 0, window.getWidth(), window.getHeight());
+        }
 
         shader.bind();
 
         // Update projection matrix
-        Vector2i framebufferSize = client.getWindow().getFramebufferSize();
-        Matrix4f projectionMatrix = camera.getProjectionMatrix(FOV, framebufferSize.x, framebufferSize.y, Z_NEAR, Z_FAR);
+        Matrix4f projectionMatrix = camera.getProjectionMatrix(FOV, window.getWidth(), window.getHeight(), Z_NEAR, Z_FAR);
         shader.setMat4("projectionMatrix", projectionMatrix);
 
         // Update view matrix

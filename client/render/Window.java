@@ -13,9 +13,21 @@ import java.nio.IntBuffer;
 public class Window {
     private long windowHandle;
 
-    public void init() {
-        GLFWErrorCallback.createPrint(System.err).set();
+    private int width;
+    private int height;
 
+    private boolean isResized;
+
+    public Window(int width, int height) {
+        this.width = width;
+        this.height = height;
+
+        this.isResized = false;
+    }
+
+    public void init() {
+        // Initialize glfw
+        GLFWErrorCallback.createPrint(System.err).set();
         if (!GLFW.glfwInit()) {
             throw new IllegalStateException("Unable to initialize glfw");
         }
@@ -32,31 +44,20 @@ public class Window {
         GLFW.glfwWindowHint(GLFW.GLFW_OPENGL_DEBUG_CONTEXT, GLFW.GLFW_TRUE);
 
         // Window creation
-        windowHandle = GLFW.glfwCreateWindow(300, 300, "Minecraft School", MemoryUtil.NULL, MemoryUtil.NULL);
+        windowHandle = GLFW.glfwCreateWindow(width, height, "Minecraft Clone", MemoryUtil.NULL, MemoryUtil.NULL);
         if (windowHandle == MemoryUtil.NULL) {
             throw new IllegalStateException("Unable to create window");
         }
 
-        // Key callback: pressing esc to close the game
-        GLFW.glfwSetKeyCallback(windowHandle, (window, key, scancode, action, mods) -> {
-            if (key == GLFW.GLFW_KEY_ESCAPE && action == GLFW.GLFW_RELEASE) {
-                GLFW.glfwSetWindowShouldClose(window, true);
-            }
+        // Frambuffer callback for resizing the window
+        GLFW.glfwSetFramebufferSizeCallback(windowHandle, (window, width, height) -> {
+            this.width = width;
+            this.height = height;
         });
 
-        // Frambuffer callback for resizing the window
-        GLFW.glfwSetFramebufferSizeCallback(windowHandle, (window, width, height) -> GL11.glViewport(0, 0, width, height));
-
         // Position window in the middle of the screen
-        try (MemoryStack stack = MemoryStack.stackPush()) {
-            IntBuffer width = stack.mallocInt(1);
-            IntBuffer height = stack.mallocInt(1);
-
-            GLFW.glfwGetWindowSize(windowHandle, width, height);
-            GLFWVidMode vidMode = GLFW.glfwGetVideoMode(GLFW.glfwGetPrimaryMonitor());
-
-            GLFW.glfwSetWindowPos(windowHandle, (vidMode.width() - width.get()) / 2, (vidMode.height() - height.get()) / 2);
-        }
+        GLFWVidMode vidMode = GLFW.glfwGetVideoMode(GLFW.glfwGetPrimaryMonitor());
+        GLFW.glfwSetWindowPos(windowHandle, (vidMode.width() - width) / 2, (vidMode.height() - height) / 2);
 
         // Set window context, enable vsync, show window
         GLFW.glfwMakeContextCurrent(windowHandle);
@@ -77,6 +78,10 @@ public class Window {
         GLFW.glfwTerminate();
     }
 
+    public void setShouldClose() {
+        GLFW.glfwSetWindowShouldClose(windowHandle, true);
+    }
+
     public boolean shouldClose() {
         return GLFW.glfwWindowShouldClose(windowHandle);
     }
@@ -85,13 +90,15 @@ public class Window {
         return windowHandle;
     }
 
-    public Vector2i getFramebufferSize() {
-        MemoryStack stack = MemoryStack.stackPush();
-        IntBuffer width = stack.mallocInt(1);
-        IntBuffer height = stack.mallocInt(1);
+    public int getWidth() {
+        return width;
+    }
 
-        GLFW.glfwGetFramebufferSize(windowHandle, width, height);
+    public int getHeight() {
+        return height;
+    }
 
-        return new Vector2i(width.get(), height.get());
+    public boolean isResized() {
+        return isResized;
     }
 }
