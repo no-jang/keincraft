@@ -1,5 +1,6 @@
 package client.render.gl;
 
+import client.render.texture.Texture;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL15;
 import org.lwjgl.opengl.GL20;
@@ -33,7 +34,7 @@ public class Mesh {
 
         // Create tex coord vbo for storing texture coordinates
         texCoordsVBO = createFloatVBO(GL15.GL_ARRAY_BUFFER, texCoords);
-        addVertexAttrib(1, 2, GL11.GL_FLOAT);
+        addVertexAttrib(1, 3, GL11.GL_FLOAT);
 
         // Create index vbo for storing indices
         indexVBO = createIntVBO(GL15.GL_ELEMENT_ARRAY_BUFFER, indices);

@@ -4,16 +4,14 @@ import client.MinecraftClient;
 import client.render.gl.Camera;
 import client.render.gl.Mesh;
 import client.render.gl.Shader;
-import client.render.gl.Texture;
+import client.render.texture.Image;
+import client.render.texture.Texture;
+import client.render.texture.TextureArray;
 import client.render.util.Transformation;
 import common.util.math.PosRot;
-import org.joml.Matrix4f;
-import org.joml.Vector2i;
 import org.lwjgl.opengl.GL;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GLUtil;
-
-import java.io.IOException;
 
 public class RenderManager {
     private final MinecraftClient client;
@@ -86,8 +84,15 @@ public class RenderManager {
                 0.5f, -0.5f, 0.5f
         };
 
+        //TextureAtlas texture = new TextureAtlas("textures/blocks.png");
+
         float[] texCoords = new float[]{
-                0.0f, 0.0f,
+                0.0f, 0.0f, 0,
+                0.1f, 0.0f, 1,
+                0.1f, 1.0f, 1,
+                0.0f, 1.0f, 2
+
+/*                0.0f, 0.0f,
                 0.0f, 0.5f,
                 0.5f, 0.5f,
                 0.5f, 0.0f,
@@ -110,8 +115,29 @@ public class RenderManager {
                 0.5f, 0.0f,
                 1.0f, 0.0f,
                 0.5f, 0.5f,
-                1.0f, 0.5f
+                1.0f, 0.5f*/
         };
+
+        //List<Float> texCoords = new ArrayList<>();
+        //texCoords.addAll(texture.getTexture(0, 0));
+        //texCoords.addAll(texture.getTexture(1, 0));
+        //texCoords.addAll(texture.getTexture(1, 0));
+        //texCoords.addAll(texture.getTexture(1, 0));
+        //texCoords.addAll(texture.getTexture(1, 0));
+        //texCoords.addAll(texture.getTexture(2, 0));
+
+/*        int pos = 0;
+
+        for(float f : texCoords) {
+            if(pos < 1) {
+                System.out.print(f + ", ");
+            } else {
+                System.out.println(f + ", ");
+                pos = 0;
+            }
+
+            pos++;
+        }*/
 
         int[] indices = {
                 // Front face
@@ -128,7 +154,16 @@ public class RenderManager {
                 4, 6, 7, 5, 4, 7
         };
 
-        mesh = new Mesh(vertices, texCoords, indices, new Texture("textures/grassblock.png"));
+        Image grassImage = new Image("textures/grass.png");
+        Image grassSideImage = new Image("textures/grass_side.png");
+        Image dirtImage = new Image("textures/dirt.png");
+
+        TextureArray textureArray = new TextureArray(3, 16);
+        textureArray.addTexture(grassImage);
+        textureArray.addTexture(grassSideImage);
+        textureArray.addTexture(dirtImage);
+
+        mesh = new Mesh(vertices, texCoords, indices, textureArray);
     }
 
     public void render(Window window) {
