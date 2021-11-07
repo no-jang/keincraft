@@ -29,7 +29,7 @@ public class MouseManager {
 
     public void init() {
         // Mouse position callback
-        GLFW.glfwSetCursorPosCallback(window.getWindowHandle(), (windowHandle, x, y) -> {
+        /*GLFW.glfwSetCursorPosCallback(window.getWindowHandle(), (windowHandle, x, y) -> {
             currentPos.x = x;
             currentPos.y = y;
         });
@@ -38,13 +38,13 @@ public class MouseManager {
         GLFW.glfwSetMouseButtonCallback(window.getWindowHandle(), (windowHandle, button, action, mode) -> {
             leftButtonPressed = button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS;
             rightButtonPressed = button == GLFW.GLFW_MOUSE_BUTTON_2 && action == GLFW.GLFW_PRESS;
-        });
+        });*/
     }
 
     public void input(Camera camera) {
         if(rightButtonPressed) {
-            GLFW.glfwSetCursorPos(window.getWindowHandle(), window.getWidth() / 2.0f, window.getHeight() / 2.0f);
-            GLFW.glfwSetInputMode(window.getWindowHandle(), GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_DISABLED);
+            //GLFW.glfwSetCursorPos(window.getWindowHandle(), window.getWidth() / 2.0f, window.getHeight() / 2.0f);
+            //GLFW.glfwSetInputMode(window.getWindowHandle(), GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_DISABLED);
 
             mouseLocked = true;
         }
@@ -72,7 +72,7 @@ public class MouseManager {
     }
 
     public void unlockMouse() {
-        GLFW.glfwSetInputMode(window.getWindowHandle(), GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_NORMAL);
+        //GLFW.glfwSetInputMode(window.getWindowHandle(), GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_NORMAL);
 
         mouseLocked = false;
     }

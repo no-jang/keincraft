@@ -1,21 +1,12 @@
 package client;
 
-import client.input.KeyboardManager;
-import client.input.MouseManager;
-import client.render.RenderManager;
 import client.render.Window;
 
 public class MinecraftClient {
-    private final Window window;
-    private final MouseManager mouseManager;
-    private final KeyboardManager keyboardManager;
-    private final RenderManager renderManager;
+    private Window window;
 
     public MinecraftClient() {
-        this.window = new Window(800, 800);
-        this.mouseManager = new MouseManager(window);
-        this.keyboardManager = new KeyboardManager(window, mouseManager);
-        this.renderManager = new RenderManager(this);
+
     }
 
     public void run() {
@@ -25,12 +16,7 @@ public class MinecraftClient {
     }
 
     private void init() {
-        window.init();
-
-        mouseManager.init();
-        keyboardManager.init();
-
-        renderManager.init();
+        window = new Window(900, 900);
     }
 
     private void loop() {
@@ -43,8 +29,6 @@ public class MinecraftClient {
 
     private void input() {
         window.input();
-        mouseManager.input(renderManager.getCamera());
-        keyboardManager.input(renderManager.getCamera());
     }
 
     private void update() {
@@ -52,13 +36,11 @@ public class MinecraftClient {
     }
 
     private void render() {
-        renderManager.render(window);
-        window.render();
+
     }
 
     private void destroy() {
-        renderManager.destroy();
-        window.destroy();
+
     }
 
     public Window getWindow() {

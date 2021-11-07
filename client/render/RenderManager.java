@@ -171,10 +171,10 @@ public class RenderManager {
         GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
 
         // If screen size changed, update opengl viewport
-        if(window.isResized()) {
-            GL11.glViewport(0, 0, window.getWidth(), window.getHeight());
-            camera.updateView(window.getWidth(), window.getHeight());
-        }
+        //if(window.isResized()) {
+        //    GL11.glViewport(0, 0, window.getWidth(), window.getHeight());
+        //    camera.updateView(window.getWidth(), window.getHeight());
+        //}
 
         shader.bind();
         shader.setInt("texture_sampler", 0);

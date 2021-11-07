@@ -1,98 +1,90 @@
 package client.render;
 
-import org.joml.Vector2i;
-import org.lwjgl.glfw.GLFW;
-import org.lwjgl.glfw.GLFWErrorCallback;
-import org.lwjgl.glfw.GLFWVidMode;
-import org.lwjgl.opengl.GL11;
+import org.lwjgl.bgfx.BGFXInit;
+import org.lwjgl.glfw.*;
 import org.lwjgl.system.MemoryStack;
-import org.lwjgl.system.MemoryUtil;
+import org.lwjgl.system.Platform;
 
-import java.nio.IntBuffer;
+import static org.lwjgl.glfw.GLFW.*;
+import static org.lwjgl.system.MemoryUtil.*;
+import static org.lwjgl.system.MemoryStack.*;
+import static org.lwjgl.bgfx.BGFX.*;
 
 public class Window {
-    private long windowHandle;
+    private final long handle;
 
     private int width;
     private int height;
-
-    private boolean isResized;
 
     public Window(int width, int height) {
         this.width = width;
         this.height = height;
 
-        this.isResized = true;
-    }
-
-    public void init() {
-        // Initialize glfw
-        GLFWErrorCallback.createPrint(System.err).set();
-        if (!GLFW.glfwInit()) {
-            throw new IllegalStateException("Unable to initialize glfw");
+        if(!glfwInit()) {
+            throw new RuntimeException("Unable to initialize GLFW");
         }
 
-        // Window configurations
-        GLFW.glfwDefaultWindowHints();
-        GLFW.glfwWindowHint(GLFW.GLFW_VISIBLE, GLFW.GLFW_FALSE);
-        GLFW.glfwWindowHint(GLFW.GLFW_RESIZABLE, GLFW.GLFW_TRUE);
+        glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 
-        // Set opengl core profile 3.3
-        GLFW.glfwWindowHint(GLFW.GLFW_CONTEXT_VERSION_MAJOR, 3);
-        GLFW.glfwWindowHint(GLFW.GLFW_CONTEXT_VERSION_MINOR, 3);
-        GLFW.glfwWindowHint(GLFW.GLFW_OPENGL_PROFILE, GLFW.GLFW_OPENGL_CORE_PROFILE);
-        GLFW.glfwWindowHint(GLFW.GLFW_OPENGL_DEBUG_CONTEXT, GLFW.GLFW_TRUE);
-
-        // Window creation
-        windowHandle = GLFW.glfwCreateWindow(width, height, "Minecraft Clone", MemoryUtil.NULL, MemoryUtil.NULL);
-        if (windowHandle == MemoryUtil.NULL) {
-            throw new IllegalStateException("Unable to create window");
+        if(Platform.get() == Platform.MACOSX) {
+            glfwWindowHint(GLFW_COCOA_RETINA_FRAMEBUFFER, GLFW_FALSE);
         }
 
-        // Frambuffer callback for resizing the window
-        GLFW.glfwSetFramebufferSizeCallback(windowHandle, (window, width, height) -> {
-            this.width = width;
-            this.height = height;
-            this.isResized = true;
+        handle = glfwCreateWindow(width, height, "minecraft-clone", 0, 0);
+        if(handle == NULL) {
+            throw new RuntimeException("Unable to create GLFW window");
+        }
+
+        glfwSetFramebufferSizeCallback(handle, (window, newWidth, newHeight) -> {
+            setFramebufferSize(newWidth, newHeight);
         });
 
-        // Position window in the middle of the screen
-        GLFWVidMode vidMode = GLFW.glfwGetVideoMode(GLFW.glfwGetPrimaryMonitor());
-        GLFW.glfwSetWindowPos(windowHandle, (vidMode.width() - width) / 2, (vidMode.height() - height) / 2);
+        glfwSetKeyCallback(handle, (window, key, scancode, action, mods) -> {
+            if(key == GLFW_KEY_ESCAPE && action == GLFW_RELEASE) {
+                glfwSetWindowShouldClose(handle, true);
+            }
+        });
 
-        // Set window context, enable vsync, show window
-        GLFW.glfwMakeContextCurrent(windowHandle);
-        GLFW.glfwSwapInterval(1);
-        GLFW.glfwShowWindow(windowHandle);
+        GLFWVidMode vidMode = glfwGetVideoMode(org.lwjgl.glfw.GLFW.glfwGetPrimaryMonitor());
+        glfwSetWindowPos(handle, (vidMode.width() - width) / 2, (vidMode.height() - height) / 2);
+
+        try(MemoryStack stack = stackPush()) {
+            BGFXInit init = BGFXInit.mallocStack(stack);
+            bgfx_init_ctor(init);
+            init.type(BGFX_RENDERER_TYPE_OPENGL)
+                    .resolution(it -> it
+                            .width(width)
+                            .height(height)
+                            .reset(BGFX_RESET_VSYNC));
+
+            switch (Platform.get()) {
+                case LINUX -> init.platformData()
+                        .ndt(GLFWNativeX11.glfwGetX11Display())
+                        .nwh(GLFWNativeX11.glfwGetX11Window(handle));
+                case MACOSX -> init.platformData()
+                        .nwh(GLFWNativeCocoa.glfwGetCocoaWindow(handle));
+                case WINDOWS -> init.platformData()
+                        .nwh(GLFWNativeWin32.glfwGetWin32Window(handle));
+            }
+
+            if(!bgfx_init(init)) {
+                throw new RuntimeException("Unable to initialize bgfx renderer");
+            }
+        }
     }
 
     public void input() {
-        GLFW.glfwPollEvents();
-    }
-
-    public void render() {
-        if(isResized) {
-            isResized = false;
-        }
-
-        GLFW.glfwSwapBuffers(windowHandle);
+        glfwPollEvents();
     }
 
     public void destroy() {
-        GLFW.glfwDestroyWindow(windowHandle);
-        GLFW.glfwTerminate();
-    }
-
-    public void setShouldClose() {
-        GLFW.glfwSetWindowShouldClose(windowHandle, true);
+        bgfx_shutdown();
+        glfwDestroyWindow(handle);
+        glfwTerminate();
     }
 
     public boolean shouldClose() {
-        return GLFW.glfwWindowShouldClose(windowHandle);
-    }
-
-    public long getWindowHandle() {
-        return windowHandle;
+        return glfwWindowShouldClose(handle);
     }
 
     public int getWidth() {
@@ -103,7 +95,12 @@ public class Window {
         return height;
     }
 
-    public boolean isResized() {
-        return isResized;
+    public long getHandle() {
+        return handle;
+    }
+
+    private void setFramebufferSize(int width, int height) {
+        this.width = width;
+        this.height = height;
     }
 }

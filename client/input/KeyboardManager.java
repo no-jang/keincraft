@@ -25,13 +25,13 @@ public class KeyboardManager {
 
     public void init() {
         // Key pressed callback
-        GLFW.glfwSetKeyCallback(window.getWindowHandle(), (windowHandle, key, scancode, action, mods) -> {
+/*        GLFW.glfwSetKeyCallback(window.getWindowHandle(), (windowHandle, key, scancode, action, mods) -> {
             if(action == GLFW.GLFW_PRESS) {
                 keysPressed.add(key);
             } else if(action == GLFW.GLFW_RELEASE) {
                 keysPressed.remove((Object) key);
             }
-        });
+        });*/
     }
 
     public void input(Camera camera) {

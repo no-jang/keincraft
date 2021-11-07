@@ -1,3 +1,4 @@
+import client.MinecraftClient;
 import org.lwjgl.bgfx.BGFXInit;
 import org.lwjgl.glfw.GLFWNativeCocoa;
 import org.lwjgl.glfw.GLFWNativeWin32;
@@ -31,7 +32,10 @@ public class Main {
     }
 
     public static void runClient() {
-        int width  = 1024;
+        MinecraftClient client = new MinecraftClient();
+        client.run();
+
+/*        int width  = 1024;
         int height = 480;
 
         if (!glfwInit()) {
@@ -68,8 +72,8 @@ public class Main {
                     .type(BGFX_RENDERER_TYPE_OPENGL)
                     .resolution(it -> it
                             .width(width)
-                            .height(height));
-                            //.reset(BGFX_RESET_VSYNC));
+                            .height(height)
+                            .reset(BGFX_RESET_VSYNC));
 
             switch (Platform.get()) {
                 case LINUX -> init.platformData()
@@ -120,13 +124,13 @@ public class Main {
 
             // Use debug font to print information about this example.
             bgfx_dbg_text_clear(0, false);
-/*            bgfx_dbg_text_image(Math.max(width / 2 / 8, 20) - 20,
+*//*            bgfx_dbg_text_image(Math.max(width / 2 / 8, 20) - 20,
                     Math.max(height / 2 / 16, 6) - 6,
                     40,
                     12,
                     logo,
                     160
-            );*/
+            );*//*
 
             bgfx_dbg_text_printf(0, 1, 0x1f, "bgfx/examples/25-c99");
             bgfx_dbg_text_printf(0, 2, 0x3f, "Description: Initialization and debug text with C99 API.");
@@ -144,7 +148,7 @@ public class Main {
         bgfx_shutdown();
 
         glfwDestroyWindow(window);
-        glfwTerminate();
+        glfwTerminate();*/
     }
 
     public static void runServer() {
