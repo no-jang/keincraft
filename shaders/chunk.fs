@@ -3,7 +3,7 @@
 in vec3 passTextureCoord;
 out vec4 fragColor;
 
-uniform sampler2DArray texture_sampler;
+uniform sampler2D texture_sampler;
 
 void main()
 {

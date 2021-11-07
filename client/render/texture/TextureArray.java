@@ -9,6 +9,7 @@ public class TextureArray extends Texture {
     private int textureCount;
 
     public TextureArray(int textureCount, int textureSize) {
+        super(null);
         this.textureSize = textureSize;
 
         // Create texture

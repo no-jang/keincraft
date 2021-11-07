@@ -90,9 +90,9 @@ public class RenderManager {
                 0.0f, 0.0f, 0,
                 0.1f, 0.0f, 1,
                 0.1f, 1.0f, 1,
-                0.0f, 1.0f, 2
+                0.0f, 1.0f, 2,
 
-/*                0.0f, 0.0f,
+                0.0f, 0.0f,
                 0.0f, 0.5f,
                 0.5f, 0.5f,
                 0.5f, 0.0f,
@@ -115,7 +115,7 @@ public class RenderManager {
                 0.5f, 0.0f,
                 1.0f, 0.0f,
                 0.5f, 0.5f,
-                1.0f, 0.5f*/
+                1.0f, 0.5f
         };
 
         //List<Float> texCoords = new ArrayList<>();
@@ -154,16 +154,16 @@ public class RenderManager {
                 4, 6, 7, 5, 4, 7
         };
 
-        Image grassImage = new Image("textures/grass.png");
-        Image grassSideImage = new Image("textures/grass_side.png");
-        Image dirtImage = new Image("textures/dirt.png");
+        //Image grassImage = new Image("textures/grass.png");
+        //Image grassSideImage = new Image("textures/grass_side.png");
+        //Image dirtImage = new Image("textures/dirt.png");
 
-        TextureArray textureArray = new TextureArray(3, 16);
-        textureArray.addTexture(grassImage);
-        textureArray.addTexture(grassSideImage);
-        textureArray.addTexture(dirtImage);
+        //TextureArray textureArray = new TextureArray(3, 16);
+        //textureArray.addTexture(grassImage);
+        //textureArray.addTexture(grassSideImage);
+        //textureArray.addTexture(dirtImage);
 
-        mesh = new Mesh(vertices, texCoords, indices, textureArray);
+        mesh = new Mesh(vertices, texCoords, indices, new Texture(new Image("textures/blocks.png")));
     }
 
     public void render(Window window) {
