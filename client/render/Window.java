@@ -1,15 +1,10 @@
 package client.render;
 
-import org.lwjgl.bgfx.BGFXInit;
-import org.lwjgl.glfw.*;
-import org.lwjgl.system.MemoryStack;
+import org.lwjgl.glfw.GLFWVidMode;
 import org.lwjgl.system.Platform;
 
 import static org.lwjgl.glfw.GLFW.*;
-import static org.lwjgl.system.MemoryUtil.*;
-import static org.lwjgl.system.MemoryStack.*;
-import static org.lwjgl.bgfx.BGFX.*;
-
+import static org.lwjgl.system.MemoryUtil.NULL;
 public class Window {
     private final long handle;
 
@@ -47,30 +42,6 @@ public class Window {
 
         GLFWVidMode vidMode = glfwGetVideoMode(org.lwjgl.glfw.GLFW.glfwGetPrimaryMonitor());
         glfwSetWindowPos(handle, (vidMode.width() - width) / 2, (vidMode.height() - height) / 2);
-
-        try(MemoryStack stack = stackPush()) {
-            BGFXInit init = BGFXInit.mallocStack(stack);
-            bgfx_init_ctor(init);
-            init.type(BGFX_RENDERER_TYPE_OPENGL)
-                    .resolution(it -> it
-                            .width(width)
-                            .height(height)
-                            .reset(BGFX_RESET_VSYNC));
-
-            switch (Platform.get()) {
-                case LINUX -> init.platformData()
-                        .ndt(GLFWNativeX11.glfwGetX11Display())
-                        .nwh(GLFWNativeX11.glfwGetX11Window(handle));
-                case MACOSX -> init.platformData()
-                        .nwh(GLFWNativeCocoa.glfwGetCocoaWindow(handle));
-                case WINDOWS -> init.platformData()
-                        .nwh(GLFWNativeWin32.glfwGetWin32Window(handle));
-            }
-
-            if(!bgfx_init(init)) {
-                throw new RuntimeException("Unable to initialize bgfx renderer");
-            }
-        }
     }
 
     public void input() {
@@ -78,7 +49,6 @@ public class Window {
     }
 
     public void destroy() {
-        bgfx_shutdown();
         glfwDestroyWindow(handle);
         glfwTerminate();
     }
