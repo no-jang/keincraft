@@ -19,7 +19,7 @@ public class MinecraftClient {
 
     private void init() {
         window = new Window(900, 900);
-        renderManager = new RenderManager();
+        //renderManager = new RenderManager();
     }
 
     private void loop() {
@@ -39,11 +39,11 @@ public class MinecraftClient {
     }
 
     private void render() {
-        renderManager.render(window);
+        //renderManager.render(window);
     }
 
     private void destroy() {
-        renderManager.destroy();
+        //renderManager.destroy();
         window.destroy();
     }
 }

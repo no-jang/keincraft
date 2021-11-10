@@ -2,9 +2,12 @@ package client.render.vk.instance;
 
 import client.render.vk.debug.VulkanDebug;
 import client.render.vk.debug.VulkanValidation;
+import client.util.BufferUtil;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.*;
+
+import java.nio.IntBuffer;
 
 import static client.render.vk.debug.VulkanDebug.vkCheck;
 import static org.lwjgl.system.MemoryStack.stackPush;
@@ -16,8 +19,12 @@ public class VulkanInstance {
 
     public VulkanInstance() {
         try (MemoryStack stack = stackPush()) {
-            // Check if all requested validation layers are available
+            // Check if all requested validation layers and extensions are available
             PointerBuffer pRequiredValidationLayers = VulkanValidation.checkValidationLayerSupport(stack);
+            PointerBuffer pRequiredExtensions = VulkanExtension.checkExtensionSupport(stack);
+
+            BufferUtil.printString(pRequiredValidationLayers);
+            BufferUtil.printString(pRequiredExtensions);
 
             // General application information
             VkApplicationInfo appInfo = VkApplicationInfo.mallocStack(stack)
@@ -28,30 +35,61 @@ public class VulkanInstance {
                     .engineVersion(VK_MAKE_VERSION(1, 0, 0))
                     .apiVersion(VK_API_VERSION_1_0);
 
+            pRequiredExtensions.flip();
+
             VkInstanceCreateInfo createInfo = VkInstanceCreateInfo.mallocStack(stack)
                     .sType(VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO)
-                    .pApplicationInfo(appInfo);
+                    .pApplicationInfo(appInfo)
+                    .ppEnabledExtensionNames(pRequiredExtensions)
+                    .ppEnabledLayerNames(pRequiredValidationLayers);
 
-            // Vulkan extensions that are required for glfw to work
-            PointerBuffer pRequiredExtensions = VulkanExtension.checkExtensionSupport(stack);
-            pRequiredExtensions.flip();
-            createInfo.ppEnabledExtensionNames(pRequiredExtensions);
             pRequiredExtensions.clear();
-
-            // Enable validation layers
-            if (VulkanValidation.validationLayersEnabled) {
-                createInfo.ppEnabledLayerNames(pRequiredValidationLayers);
-            } else {
-                createInfo.ppEnabledLayerNames(); // Set no validation layers enabled
-            }
 
             // Create debug message callback
             VkDebugReportCallbackCreateInfoEXT debugCreateInfo = VulkanDebug.createDebugCallback(stack, createInfo);
 
             // Creates vulkan instance
-            PointerBuffer instancePointer = stack.pointers(1);
+            PointerBuffer instancePointer = stack.mallocPointer(1);
             vkCheck(vkCreateInstance(createInfo, null, instancePointer), "Could not initialize vulkan instance");
-            instance = new VkInstance(instancePointer.get(), createInfo);
+            instance = new VkInstance(instancePointer.get(0), createInfo);
+
+            IntBuffer pGpuCount = stack.mallocInt(1);
+
+            vkCheck(vkEnumeratePhysicalDevices(instance, pGpuCount, null), "Failed to acquire gpu count");
+
+            VkPhysicalDevice gpu;
+            if (pGpuCount.get(0) > 0) {
+                PointerBuffer physical_devices = stack.mallocPointer(pGpuCount.get(0));
+                vkCheck(vkEnumeratePhysicalDevices(instance, pGpuCount, physical_devices), "Failed to acquire gpu");
+
+                /* For tri demo we just grab the first physical device */
+                gpu = new VkPhysicalDevice(physical_devices.get(0), instance);
+            } else {
+                throw new IllegalStateException("vkEnumeratePhysicalDevices reported zero accessible devices.");
+            }
+
+            IntBuffer pDeviceExtensionCount = stack.mallocInt(1);
+
+            /* Look for device extensions */
+            boolean swapchainExtFound = false;
+            vkCheck(vkEnumerateDeviceExtensionProperties(gpu, (String) null, pDeviceExtensionCount, null), "Failed to acquire device extension count");
+
+            if (pDeviceExtensionCount.get(0) > 0) {
+                VkExtensionProperties.Buffer device_extensions = VkExtensionProperties.mallocStack(pDeviceExtensionCount.get(0), stack);
+                vkCheck(vkEnumerateDeviceExtensionProperties(gpu, (String) null, pDeviceExtensionCount, device_extensions), "\"Failed to acquire device extension count\"");
+
+                for (int i = 0; i < pDeviceExtensionCount.get(0); i++) {
+                    device_extensions.position(i);
+                    if (KHRSwapchain.VK_KHR_SWAPCHAIN_EXTENSION_NAME.equals(device_extensions.extensionNameString())) {
+                        swapchainExtFound = true;
+                        //extension_names.put(KHR_swapchain);
+                    }
+                }
+            }
+
+            if (!swapchainExtFound) {
+                throw new IllegalStateException("vkEnumerateDeviceExtensionProperties failed to find the " + KHRSwapchain.VK_KHR_SWAPCHAIN_EXTENSION_NAME + " extension.");
+            }
 
             // Setup debug message callback with instance
             debugReportCallback = VulkanDebug.setupDebugCallback(stack, instance, debugCreateInfo);
