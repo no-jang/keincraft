@@ -15,7 +15,6 @@ import java.nio.IntBuffer;
 import java.nio.LongBuffer;
 import java.util.Objects;
 
-import static org.lwjgl.glfw.Callbacks.glfwFreeCallbacks;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.glfw.GLFWVulkan.*;
 import static org.lwjgl.system.MemoryStack.stackPush;
@@ -265,7 +264,6 @@ public final class RenderManager {
     private int height = 300;
     private float depthStencil = 1.0f;
     private float depthIncrement = -0.01f;
-    private long window;
     private long surface;
     private int graphics_queue_node_index;
     private VkDevice device;
@@ -286,6 +284,8 @@ public final class RenderManager {
     private long desc_pool;
     private long desc_set;
     private LongBuffer framebuffers;
+
+    private Window window;
 
     private RenderManager() {
         for (int i = 0; i < textures.length; i++) {
@@ -522,32 +522,6 @@ public final class RenderManager {
         demo_init_vk();
     }
 
-    private void demo_create_window() {
-        glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-
-        window = glfwCreateWindow(width, height, "The Vulkan Triangle Demo Program", NULL, NULL);
-        if (window == NULL) {
-            throw new IllegalStateException("Cannot create a window in which to draw!");
-        }
-
-        glfwSetWindowRefreshCallback(window, window -> demo_draw());
-
-        glfwSetFramebufferSizeCallback(window, (window, width, height) -> {
-            this.width = width;
-            this.height = height;
-
-            if (width != 0 && height != 0) {
-                demo_resize();
-            }
-        });
-
-        glfwSetKeyCallback(window, (window, key, scancode, action, mods) -> {
-            if (key == GLFW_KEY_ESCAPE && action == GLFW_RELEASE) {
-                glfwSetWindowShouldClose(window, true);
-            }
-        });
-    }
-
     private void demo_init_device() {
         try (MemoryStack stack = stackPush()) {
             VkDeviceQueueCreateInfo.Buffer queue = VkDeviceQueueCreateInfo.malloc(1, stack)
@@ -580,7 +554,7 @@ public final class RenderManager {
 
     private void demo_init_vk_swapchain() {
         // Create a WSI surface for the window:
-        glfwCreateWindowSurface(inst, window, null, lp);
+        glfwCreateWindowSurface(inst, window.getHandle(), null, lp);
         surface = lp.get(0);
 
         try (MemoryStack stack = stackPush()) {
@@ -1798,7 +1772,7 @@ public final class RenderManager {
     private void demo_run() {
         int c = 0;
         long t = System.nanoTime();
-        while (!glfwWindowShouldClose(window)) {
+        while (!window.shouldClose()) {
             glfwPollEvents();
 
             demo_draw();
@@ -1880,9 +1854,7 @@ public final class RenderManager {
         queue_props.free();
         memory_properties.free();
 
-        glfwFreeCallbacks(window);
-        glfwDestroyWindow(window);
-        glfwTerminate();
+        window.destroy();
         Objects.requireNonNull(glfwSetErrorCallback(null)).free();
 
         memFree(extension_names);
@@ -1897,7 +1869,9 @@ public final class RenderManager {
 
     private void run() {
         demo_init();
-        demo_create_window();
+
+        window = new Window(900, 900);
+
         demo_init_vk_swapchain();
 
         demo_prepare();

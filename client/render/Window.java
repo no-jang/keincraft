@@ -1,6 +1,9 @@
 package client.render;
 
+import org.lwjgl.glfw.Callbacks;
+import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.glfw.GLFWVidMode;
+import org.lwjgl.glfw.GLFWVulkan;
 import org.lwjgl.system.Platform;
 
 import static org.lwjgl.glfw.GLFW.*;
@@ -15,18 +18,24 @@ public class Window {
         this.width = width;
         this.height = height;
 
-        if(!glfwInit()) {
+        GLFWErrorCallback.createPrint(System.err);
+
+        if (!glfwInit()) {
             throw new RuntimeException("Unable to initialize GLFW");
+        }
+
+        if (!GLFWVulkan.glfwVulkanSupported()) {
+            throw new RuntimeException("Vulkan is not supported");
         }
 
         glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 
-        if(Platform.get() == Platform.MACOSX) {
+        if (Platform.get() == Platform.MACOSX) {
             glfwWindowHint(GLFW_COCOA_RETINA_FRAMEBUFFER, GLFW_FALSE);
         }
 
         handle = glfwCreateWindow(width, height, "minecraft-clone", 0, 0);
-        if(handle == NULL) {
+        if (handle == NULL) {
             throw new RuntimeException("Unable to create GLFW window");
         }
 
@@ -49,6 +58,7 @@ public class Window {
     }
 
     public void destroy() {
+        Callbacks.glfwFreeCallbacks(handle);
         glfwDestroyWindow(handle);
         glfwTerminate();
     }
