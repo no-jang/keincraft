@@ -13,8 +13,10 @@ import static org.lwjgl.vulkan.EXTDebugReport.*;
 import static org.lwjgl.vulkan.VK10.*;
 
 public final class VulkanDebug {
+    public static final boolean debugEnabled = true;
+
     public static VkDebugReportCallbackCreateInfoEXT createDebugCallback(MemoryStack stack, VkInstanceCreateInfo instanceCreateInfo) {
-        if (!VulkanValidation.validationLayersEnabled) return null;
+        if (!debugEnabled) return null;
 
         VkDebugReportCallbackEXT debugCallbackFunction = VkDebugReportCallbackEXT.create(
                 (flags, objectType, object, location, messageCode, pLayerPrefix, pMessage, pUserData) -> {
@@ -54,7 +56,7 @@ public final class VulkanDebug {
     }
 
     public static VkDebugReportCallbackEXT setupDebugCallback(MemoryStack stack, VkInstance instance, VkDebugReportCallbackCreateInfoEXT createInfo) {
-        if (!VulkanValidation.validationLayersEnabled) return null;
+        if (!debugEnabled) return null;
 
         LongBuffer debugReportCallback = stack.mallocLong(1);
         vkCheck(vkCreateDebugReportCallbackEXT(instance, createInfo, null, debugReportCallback), "Failed to create debug report callback");
@@ -63,7 +65,7 @@ public final class VulkanDebug {
     }
 
     public static void destroyDebugCallback(VkInstance instance, VkDebugReportCallbackEXT debugReportCallback) {
-        if (!VulkanValidation.validationLayersEnabled) return;
+        if (!debugEnabled) return;
 
         vkDestroyDebugReportCallbackEXT(instance, debugReportCallback.address(), null);
     }

@@ -4,8 +4,8 @@
  */
 package client.render;
 
+import client.render.vk.debug.VulkanValidation;
 import org.lwjgl.PointerBuffer;
-import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.*;
 
@@ -13,10 +13,10 @@ import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.nio.LongBuffer;
-import java.util.Objects;
 
-import static org.lwjgl.glfw.GLFW.*;
-import static org.lwjgl.glfw.GLFWVulkan.*;
+import static org.lwjgl.glfw.GLFW.glfwPollEvents;
+import static org.lwjgl.glfw.GLFWVulkan.glfwCreateWindowSurface;
+import static org.lwjgl.glfw.GLFWVulkan.glfwGetRequiredInstanceExtensions;
 import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.system.MemoryUtil.*;
 import static org.lwjgl.vulkan.EXTDebugReport.*;
@@ -299,88 +299,13 @@ public final class RenderManager {
         }
     }
 
-    private static void demo_init_connection() {
-        GLFWErrorCallback.createPrint().set();
-        if (!glfwInit()) {
-            throw new IllegalStateException("Unable to initialize GLFW");
-        }
-
-        if (!glfwVulkanSupported()) {
-            throw new IllegalStateException("Cannot find a compatible Vulkan installable client driver (ICD)");
-        }
-    }
-
-    /**
-     * Return true if all layer names specified in {@code check_names} can be found in given {@code layer} properties.
-     */
-    private static PointerBuffer demo_check_layers(MemoryStack stack, VkLayerProperties.Buffer available, String... layers) {
-        PointerBuffer required = stack.mallocPointer(layers.length);
-        for (int i = 0; i < layers.length; i++) {
-            boolean found = false;
-
-            for (int j = 0; j < available.capacity(); j++) {
-                available.position(j);
-                if (layers[i].equals(available.layerNameString())) {
-                    found = true;
-                    break;
-                }
-            }
-
-            if (!found) {
-                System.err.format("Cannot find layer: %s\n", layers[i]);
-                return null;
-            }
-
-            required.put(i, stack.ASCII(layers[i]));
-        }
-
-        return required;
-    }
-
     public static void main(String[] args) {
         new RenderManager().run();
     }
 
     private void demo_init_vk() {
         try (MemoryStack stack = stackPush()) {
-            PointerBuffer requiredLayers = null;
-            if (VALIDATE) {
-                check(vkEnumerateInstanceLayerProperties(ip, null));
-
-                if (ip.get(0) > 0) {
-                    VkLayerProperties.Buffer availableLayers = VkLayerProperties.malloc(ip.get(0), stack);
-                    check(vkEnumerateInstanceLayerProperties(ip, availableLayers));
-
-                    // VulkanSDK 1.1.106+
-                    requiredLayers = demo_check_layers(
-                            stack, availableLayers,
-                            "VK_LAYER_KHRONOS_validation"/*,
-                        "VK_LAYER_LUNARG_assistant_layer"*/
-                    );
-                    if (requiredLayers == null) { // use alternative (deprecated) set of validation layers
-                        requiredLayers = demo_check_layers(
-                                stack, availableLayers,
-                                "VK_LAYER_LUNARG_standard_validation"/*,
-                            "VK_LAYER_LUNARG_assistant_layer"*/
-                        );
-                    }
-                    if (requiredLayers == null) { // use alternative (deprecated) set of validation layers
-                        requiredLayers = demo_check_layers(
-                                stack, availableLayers,
-                                "VK_LAYER_GOOGLE_threading",
-                                "VK_LAYER_LUNARG_parameter_validation",
-                                "VK_LAYER_LUNARG_object_tracker",
-                                "VK_LAYER_LUNARG_core_validation",
-                                "VK_LAYER_GOOGLE_unique_objects"/*,
-                            "VK_LAYER_LUNARG_assistant_layer"*/
-                        );
-                    }
-                }
-
-                if (requiredLayers == null) {
-                    throw new IllegalStateException("vkEnumerateInstanceLayerProperties failed to find required validation layer.");
-                }
-            }
+            PointerBuffer requiredLayers = VulkanValidation.checkValidationLayers(stack);
 
             PointerBuffer required_extensions = glfwGetRequiredInstanceExtensions();
             if (required_extensions == null) {
@@ -518,7 +443,6 @@ public final class RenderManager {
     }
 
     private void demo_init() {
-        demo_init_connection();
         demo_init_vk();
     }
 
@@ -1855,7 +1779,6 @@ public final class RenderManager {
         memory_properties.free();
 
         window.destroy();
-        Objects.requireNonNull(glfwSetErrorCallback(null)).free();
 
         memFree(extension_names);
 
@@ -1868,9 +1791,9 @@ public final class RenderManager {
     }
 
     private void run() {
-        demo_init();
-
         window = new Window(900, 900);
+
+        demo_init();
 
         demo_init_vk_swapchain();
 

@@ -5,55 +5,53 @@ import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.VkLayerProperties;
 
 import java.nio.IntBuffer;
-import java.util.List;
 
+import static client.render.vk.debug.VulkanDebug.vkCheck;
 import static org.lwjgl.vulkan.VK10.vkEnumerateInstanceLayerProperties;
 
 public final class VulkanValidation {
     // Default vulkan has very little to no error handling.
     // Even using a wrong enumeration value could cause a crash or undefined behavior
     // Validation layers can for example validate the input of a function to ensure that the values are sane
-    public static final List<String> validationsLayers = List.of(
+    private static final String[] requiredValidationLayerNames = new String[]{
             "VK_LAYER_KHRONOS_validation"
-    );
+    };
 
-    // Enabling validation layers extends the overhead
-    public static final boolean validationLayersEnabled = true;
+    public static PointerBuffer checkValidationLayers(MemoryStack stack) {
+        if (!VulkanDebug.debugEnabled) {
+            return null;
+        }
 
-    public static PointerBuffer checkValidationLayerSupport(MemoryStack stack) {
-        if (!validationLayersEnabled) return null;
+        // Enumerate available validation layer count
+        IntBuffer pAvailableLayerCount = stack.mallocInt(1);
+        vkCheck(vkEnumerateInstanceLayerProperties(pAvailableLayerCount, null), "Failed to enumerate validation layer count");
+        int availableLayerCount = pAvailableLayerCount.get();
+        pAvailableLayerCount.position(0);
 
-        // Get supported validation layer count
-        IntBuffer pSupportedValidationLayerCount = stack.mallocInt(1);
-        vkEnumerateInstanceLayerProperties(pSupportedValidationLayerCount, null);
-        int supportedValidationLayerCount = pSupportedValidationLayerCount.get();
+        // Enumerate available validation layers
+        VkLayerProperties.Buffer pAvailableLayers = VkLayerProperties.malloc(availableLayerCount, stack);
+        vkCheck(vkEnumerateInstanceLayerProperties(pAvailableLayerCount, pAvailableLayers), "Failed to enumerate validation layers");
 
-        PointerBuffer pRequiredValidationLayers = stack.mallocPointer(validationsLayers.size());
-        pSupportedValidationLayerCount.position(0);
+        PointerBuffer requiredLayers = stack.mallocPointer(requiredValidationLayerNames.length);
 
-        // Get supported validation layer
-        VkLayerProperties.Buffer pSupportedValidationLayers = VkLayerProperties.mallocStack(supportedValidationLayerCount, stack);
-        vkEnumerateInstanceLayerProperties(pSupportedValidationLayerCount, pSupportedValidationLayers);
-
-        // Check if all required validation layers are also available
-        for (String requiredLayer : validationsLayers) {
+        // Check if all required validation layers are available
+        for (String requiredValidationLayerName : requiredValidationLayerNames) {
             boolean found = false;
-            for (int availableLayerIndex = 0; availableLayerIndex < supportedValidationLayerCount; availableLayerIndex++) {
-                VkLayerProperties availableLayer = pSupportedValidationLayers.get(availableLayerIndex);
-                if (availableLayer.layerNameString().equals(requiredLayer)) {
+
+            for (int availableLayerIndex = 0; availableLayerIndex < pAvailableLayers.capacity(); availableLayerIndex++) {
+                if (requiredValidationLayerName.equals(pAvailableLayers.get(availableLayerIndex).layerNameString())) {
                     found = true;
                     break;
                 }
             }
 
             if (!found) {
-                throw new RuntimeException("Validation layer " + requiredLayer + " requested but not available");
+                throw new RuntimeException("Failed to find required validation layer: " + requiredValidationLayerName);
             }
 
-            pRequiredValidationLayers.put(stack.ASCII(requiredLayer));
+            requiredLayers.put(stack.ASCII(requiredValidationLayerName));
         }
 
-        pRequiredValidationLayers.position(0);
-        return pRequiredValidationLayers;
+        return requiredLayers;
     }
 }

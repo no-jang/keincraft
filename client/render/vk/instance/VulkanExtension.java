@@ -1,6 +1,6 @@
 package client.render.vk.instance;
 
-import client.render.vk.debug.VulkanValidation;
+import client.render.vk.debug.VulkanDebug;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.glfw.GLFWVulkan;
 import org.lwjgl.system.MemoryStack;
@@ -17,7 +17,7 @@ public final class VulkanExtension {
     public static final List<String> extensions = new ArrayList<>();
 
     static {
-        if (VulkanValidation.validationLayersEnabled) {
+        if (VulkanDebug.debugEnabled) {
             extensions.add(EXTDebugReport.VK_EXT_DEBUG_REPORT_EXTENSION_NAME);
         }
     }
