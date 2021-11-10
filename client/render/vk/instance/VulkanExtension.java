@@ -11,55 +11,60 @@ import java.nio.IntBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
+import static client.render.vk.debug.VulkanDebug.vkCheck;
 import static org.lwjgl.vulkan.VK10.vkEnumerateInstanceExtensionProperties;
 
 public final class VulkanExtension {
-    public static final List<String> extensions = new ArrayList<>();
+    private static final List<String> requiredExtensionNames = new ArrayList<>();
 
     static {
         if (VulkanDebug.debugEnabled) {
-            extensions.add(EXTDebugReport.VK_EXT_DEBUG_REPORT_EXTENSION_NAME);
+            requiredExtensionNames.add(EXTDebugReport.VK_EXT_DEBUG_REPORT_EXTENSION_NAME);
         }
     }
 
-    public static PointerBuffer checkExtensionSupport(MemoryStack stack) {
-        // Gather required glfw extensions
-        PointerBuffer pGlfwExtensions = GLFWVulkan.glfwGetRequiredInstanceExtensions();
-
-        PointerBuffer pRequiredExtensions = stack.mallocPointer(pGlfwExtensions.capacity() + extensions.size());
-        for (int i = 0; i < pGlfwExtensions.capacity(); i++) {
-            pRequiredExtensions.put(pGlfwExtensions.get(i));
+    public static PointerBuffer checkExtensions(MemoryStack stack) {
+        PointerBuffer pRequiredGlfwExtensions = GLFWVulkan.glfwGetRequiredInstanceExtensions();
+        if (pRequiredGlfwExtensions == null) {
+            throw new RuntimeException("Failed to find platform surface extensions");
         }
 
-        IntBuffer pSupportedExtensionsCount = stack.mallocInt(1);
-        vkEnumerateInstanceExtensionProperties((String) null, pSupportedExtensionsCount, null);
-        int supportedExtensionCount = pSupportedExtensionsCount.get();
+        PointerBuffer pRequiredExtensions = stack.mallocPointer(pRequiredGlfwExtensions.capacity() + requiredExtensionNames.size());
 
-        pSupportedExtensionsCount.flip();
+        // Add required glfw extensions
+        for (int glfwExtensionIndex = 0; glfwExtensionIndex < pRequiredGlfwExtensions.capacity(); glfwExtensionIndex++) {
+            pRequiredExtensions.put(pRequiredGlfwExtensions.get(glfwExtensionIndex));
+        }
 
-        VkExtensionProperties.Buffer pSupportedExtensions = VkExtensionProperties.mallocStack(supportedExtensionCount, stack);
-        vkEnumerateInstanceExtensionProperties((String) null, pSupportedExtensionsCount, pSupportedExtensions);
+        // Enumerate available extension count
+        IntBuffer pAvailableExtensionCount = stack.mallocInt(1);
+        vkCheck(vkEnumerateInstanceExtensionProperties((String) null, pAvailableExtensionCount, null), "Failed to enumerate extension count");
+        int availableExtensionCount = pAvailableExtensionCount.get();
+        pAvailableExtensionCount.position(0);
 
-        for (String requiredExtension : extensions) {
+        // Enumerate available extensions
+        VkExtensionProperties.Buffer pAvailableExtensions = VkExtensionProperties.malloc(availableExtensionCount, stack);
+        vkCheck(vkEnumerateInstanceExtensionProperties((String) null, pAvailableExtensionCount, pAvailableExtensions), "Failed to enumerate extensions");
+
+        // Check if all required extensions are available
+        for (String requiredExtensionName : requiredExtensionNames) {
             boolean found = false;
 
-            for (int availableExtensionIndex = 0; availableExtensionIndex < pSupportedExtensions.capacity(); availableExtensionIndex++) {
-                VkExtensionProperties availableExtension = pSupportedExtensions.get(availableExtensionIndex);
-                if (availableExtension.extensionNameString().equals(requiredExtension)) {
+            for (int availableExtensionIndex = 0; availableExtensionIndex < pAvailableExtensions.capacity(); availableExtensionIndex++) {
+                if (requiredExtensionName.equals(pAvailableExtensions.get(availableExtensionIndex).extensionNameString())) {
                     found = true;
                     break;
                 }
             }
 
             if (!found) {
-                throw new RuntimeException("Extension " + requiredExtension + " requested but not available");
+                throw new RuntimeException("Failed to find required extension: " + requiredExtensionName);
             }
 
-            pRequiredExtensions.put(stack.ASCII(requiredExtension));
+            pRequiredExtensions.put(stack.ASCII(requiredExtensionName));
         }
 
-        pRequiredExtensions.position(0);
-
+        pRequiredExtensions.flip();
         return pRequiredExtensions;
     }
 }

@@ -21,7 +21,7 @@ public class VulkanInstance {
         try (MemoryStack stack = stackPush()) {
             // Check if all requested validation layers and extensions are available
             PointerBuffer pRequiredValidationLayers = VulkanValidation.checkValidationLayers(stack);
-            PointerBuffer pRequiredExtensions = VulkanExtension.checkExtensionSupport(stack);
+            PointerBuffer pRequiredExtensions = VulkanExtension.checkExtensions(stack);
 
             BufferUtil.printString(pRequiredValidationLayers);
             BufferUtil.printString(pRequiredExtensions);

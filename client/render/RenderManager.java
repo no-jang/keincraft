@@ -4,7 +4,9 @@
  */
 package client.render;
 
+import client.render.vk.debug.VulkanDebug;
 import client.render.vk.debug.VulkanValidation;
+import client.render.vk.instance.VulkanExtension;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.*;
@@ -16,7 +18,6 @@ import java.nio.LongBuffer;
 
 import static org.lwjgl.glfw.GLFW.glfwPollEvents;
 import static org.lwjgl.glfw.GLFWVulkan.glfwCreateWindowSurface;
-import static org.lwjgl.glfw.GLFWVulkan.glfwGetRequiredInstanceExtensions;
 import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.system.MemoryUtil.*;
 import static org.lwjgl.vulkan.EXTDebugReport.*;
@@ -56,7 +57,7 @@ import static org.lwjgl.vulkan.VK10.*;
  */
 public final class RenderManager {
 
-    private static final boolean VALIDATE = true;
+    private static final boolean VALIDATE = VulkanDebug.debugEnabled;
 
     private static final boolean USE_STAGING_BUFFER = false;
 
@@ -306,31 +307,7 @@ public final class RenderManager {
     private void demo_init_vk() {
         try (MemoryStack stack = stackPush()) {
             PointerBuffer requiredLayers = VulkanValidation.checkValidationLayers(stack);
-
-            PointerBuffer required_extensions = glfwGetRequiredInstanceExtensions();
-            if (required_extensions == null) {
-                throw new IllegalStateException("glfwGetRequiredInstanceExtensions failed to find the platform surface extensions.");
-            }
-
-            for (int i = 0; i < required_extensions.capacity(); i++) {
-                extension_names.put(required_extensions.get(i));
-            }
-
-            check(vkEnumerateInstanceExtensionProperties((String) null, ip, null));
-
-            if (ip.get(0) != 0) {
-                VkExtensionProperties.Buffer instance_extensions = VkExtensionProperties.malloc(ip.get(0), stack);
-                check(vkEnumerateInstanceExtensionProperties((String) null, ip, instance_extensions));
-
-                for (int i = 0; i < ip.get(0); i++) {
-                    instance_extensions.position(i);
-                    if (VK_EXT_DEBUG_REPORT_EXTENSION_NAME.equals(instance_extensions.extensionNameString())) {
-                        if (VALIDATE) {
-                            extension_names.put(EXT_debug_report);
-                        }
-                    }
-                }
-            }
+            PointerBuffer requiredExtensions = VulkanExtension.checkExtensions(stack);
 
             ByteBuffer APP_SHORT_NAME = stack.UTF8("tri");
 
@@ -343,15 +320,14 @@ public final class RenderManager {
                     .engineVersion(0)
                     .apiVersion(VK.getInstanceVersionSupported());
 
-            extension_names.flip();
             VkInstanceCreateInfo inst_info = VkInstanceCreateInfo.malloc(stack)
                     .sType$Default()
                     .pNext(NULL)
                     .flags(0)
                     .pApplicationInfo(app)
                     .ppEnabledLayerNames(requiredLayers)
-                    .ppEnabledExtensionNames(extension_names);
-            extension_names.clear();
+                    .ppEnabledExtensionNames(requiredExtensions);
+            requiredExtensions.clear();
 
             VkDebugReportCallbackCreateInfoEXT dbgCreateInfo;
             if (VALIDATE) {
