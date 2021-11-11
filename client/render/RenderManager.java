@@ -7,6 +7,7 @@ package client.render;
 import client.render.vk.debug.VulkanDebug;
 import client.render.vk.device.VulkanPhysicalDevice;
 import client.render.vk.instance.VulkanInstance;
+import client.render.vk.surface.VulkanSurface;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.*;
@@ -17,7 +18,6 @@ import java.nio.IntBuffer;
 import java.nio.LongBuffer;
 
 import static org.lwjgl.glfw.GLFW.glfwPollEvents;
-import static org.lwjgl.glfw.GLFWVulkan.glfwCreateWindowSurface;
 import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.system.MemoryUtil.*;
 import static org.lwjgl.vulkan.EXTDebugReport.VK_EXT_DEBUG_REPORT_EXTENSION_NAME;
@@ -222,13 +222,11 @@ public final class RenderManager {
     private final Vertices vertices = new Vertices();
     private VulkanInstance instance;
     private VulkanPhysicalDevice gpu;
-    private VkQueueFamilyProperties.Buffer queue_props;
+    private VulkanSurface surface;
     private int width = 300;
     private int height = 300;
     private float depthStencil = 1.0f;
     private float depthIncrement = -0.01f;
-    private long surface;
-    private int graphics_queue_node_index;
     private VkDevice device;
     private VkQueue queue;
     private int format;
@@ -269,20 +267,8 @@ public final class RenderManager {
     private void demo_init_vk() {
         try (MemoryStack stack = stackPush()) {
             instance = new VulkanInstance();
-            gpu = VulkanPhysicalDevice.pickPhysicalDevice(stack, instance);
-
-            // Query with NULL data to get count
-            vkGetPhysicalDeviceQueueFamilyProperties(gpu.getDevice(), ip, null);
-
-            queue_props = VkQueueFamilyProperties.malloc(ip.get(0));
-            vkGetPhysicalDeviceQueueFamilyProperties(gpu.getDevice(), ip, queue_props);
-            if (ip.get(0) == 0) {
-                throw new IllegalStateException();
-            }
-
-            // Graphics queue and MemMgr queue can be separate.
-            // TODO: Add support for separate queues, including synchronization,
-            //       and appropriate tracking for QueueSubmit
+            surface = new VulkanSurface(instance, window);
+            gpu = VulkanPhysicalDevice.pickPhysicalDevice(stack, instance, surface);
         }
     }
 
@@ -296,7 +282,7 @@ public final class RenderManager {
                     .sType$Default()
                     .pNext(NULL)
                     .flags(0)
-                    .queueFamilyIndex(graphics_queue_node_index)
+                    .queueFamilyIndex(gpu.getQueueFamilies().getGraphicsFamilyIndex())
                     .pQueuePriorities(stack.floats(0.0f));
 
             PointerBuffer extensionNames = gpu.getRequiredExtensions();
@@ -317,74 +303,17 @@ public final class RenderManager {
     }
 
     private void demo_init_vk_swapchain() {
-        // Create a WSI surface for the window:
-        glfwCreateWindowSurface(instance.getInstance(), window.getHandle(), null, lp);
-        surface = lp.get(0);
-
         try (MemoryStack stack = stackPush()) {
-            // Iterate over each queue to learn whether it supports presenting:
-            IntBuffer supportsPresent = stack.mallocInt(queue_props.capacity());
-            int graphicsQueueNodeIndex;
-            int presentQueueNodeIndex;
-            for (int i = 0; i < supportsPresent.capacity(); i++) {
-                supportsPresent.position(i);
-                vkGetPhysicalDeviceSurfaceSupportKHR(gpu.getDevice(), i, surface, supportsPresent);
-            }
-
-            // Search for a graphics and a present queue in the array of queue
-            // families, try to find one that supports both
-            graphicsQueueNodeIndex = Integer.MAX_VALUE;
-            presentQueueNodeIndex = Integer.MAX_VALUE;
-            for (int i = 0; i < supportsPresent.capacity(); i++) {
-                if ((queue_props.get(i).queueFlags() & VK_QUEUE_GRAPHICS_BIT) != 0) {
-                    if (graphicsQueueNodeIndex == Integer.MAX_VALUE) {
-                        graphicsQueueNodeIndex = i;
-                    }
-
-                    if (supportsPresent.get(i) == VK_TRUE) {
-                        graphicsQueueNodeIndex = i;
-                        presentQueueNodeIndex = i;
-                        break;
-                    }
-                }
-            }
-            if (presentQueueNodeIndex == Integer.MAX_VALUE) {
-                // If didn't find a queue that supports both graphics and present, then
-                // find a separate present queue.
-                for (int i = 0; i < supportsPresent.capacity(); ++i) {
-                    if (supportsPresent.get(i) == VK_TRUE) {
-                        presentQueueNodeIndex = i;
-                        break;
-                    }
-                }
-            }
-
-            // Generate error if could not find both a graphics and a present queue
-            if (graphicsQueueNodeIndex == Integer.MAX_VALUE || presentQueueNodeIndex == Integer.MAX_VALUE) {
-                throw new IllegalStateException("Could not find a graphics and a present queue");
-            }
-
-            // TODO: Add support for separate queues, including presentation,
-            //       synchronization, and appropriate tracking for QueueSubmit.
-            // NOTE: While it is possible for an application to use a separate graphics
-            //       and a present queues, this demo program assumes it is only using
-            //       one:
-            if (graphicsQueueNodeIndex != presentQueueNodeIndex) {
-                throw new IllegalStateException("Could not find a common graphics and a present queue");
-            }
-
-            graphics_queue_node_index = graphicsQueueNodeIndex;
-
             demo_init_device();
 
-            vkGetDeviceQueue(device, graphics_queue_node_index, 0, pp);
+            vkGetDeviceQueue(device, gpu.getQueueFamilies().getGraphicsFamilyIndex(), 0, pp);
             queue = new VkQueue(pp.get(0), device);
 
             // Get the list of VkFormat's that are supported:
-            check(vkGetPhysicalDeviceSurfaceFormatsKHR(gpu.getDevice(), surface, ip, null));
+            check(vkGetPhysicalDeviceSurfaceFormatsKHR(gpu.getDevice(), surface.getHandle(), ip, null));
 
             VkSurfaceFormatKHR.Buffer surfFormats = VkSurfaceFormatKHR.malloc(ip.get(0), stack);
-            check(vkGetPhysicalDeviceSurfaceFormatsKHR(gpu.getDevice(), surface, ip, surfFormats));
+            check(vkGetPhysicalDeviceSurfaceFormatsKHR(gpu.getDevice(), surface.getHandle(), ip, surfFormats));
 
             // If the format list includes just one entry of VK_FORMAT_UNDEFINED,
             // the surface has no preferred format.  Otherwise, at least one
@@ -474,12 +403,12 @@ public final class RenderManager {
         try (MemoryStack stack = stackPush()) {
             // Check the surface capabilities and formats
             VkSurfaceCapabilitiesKHR surfCapabilities = VkSurfaceCapabilitiesKHR.malloc(stack);
-            check(vkGetPhysicalDeviceSurfaceCapabilitiesKHR(gpu.getDevice(), surface, surfCapabilities));
+            check(vkGetPhysicalDeviceSurfaceCapabilitiesKHR(gpu.getDevice(), surface.getHandle(), surfCapabilities));
 
-            check(vkGetPhysicalDeviceSurfacePresentModesKHR(gpu.getDevice(), surface, ip, null));
+            check(vkGetPhysicalDeviceSurfacePresentModesKHR(gpu.getDevice(), surface.getHandle(), ip, null));
 
             IntBuffer presentModes = stack.mallocInt(ip.get(0));
-            check(vkGetPhysicalDeviceSurfacePresentModesKHR(gpu.getDevice(), surface, ip, presentModes));
+            check(vkGetPhysicalDeviceSurfacePresentModesKHR(gpu.getDevice(), surface.getHandle(), ip, presentModes));
 
             VkExtent2D swapchainExtent = VkExtent2D.malloc(stack);
             // width and height are either both 0xFFFFFFFF, or both not 0xFFFFFFFF.
@@ -531,7 +460,7 @@ public final class RenderManager {
 
             VkSwapchainCreateInfoKHR swapchain = VkSwapchainCreateInfoKHR.calloc(stack)
                     .sType$Default()
-                    .surface(surface)
+                    .surface(surface.getHandle())
                     .minImageCount(desiredNumOfSwapchainImages)
                     .imageFormat(format)
                     .imageColorSpace(color_space)
@@ -1264,7 +1193,7 @@ public final class RenderManager {
                     .sType$Default()
                     .pNext(NULL)
                     .flags(VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT)
-                    .queueFamilyIndex(graphics_queue_node_index);
+                    .queueFamilyIndex(gpu.getQueueFamilies().getGraphicsFamilyIndex());
 
             check(vkCreateCommandPool(device, cmd_pool_info, null, lp));
 
@@ -1606,10 +1535,9 @@ public final class RenderManager {
         buffers = null;
 
         vkDestroyDevice(device, null);
-        vkDestroySurfaceKHR(instance.getInstance(), surface, null);
+        surface.destroy(instance);
         instance.destroy();
 
-        queue_props.free();
         memory_properties.free();
 
         window.destroy();

@@ -39,8 +39,7 @@ public final class VulkanExtension {
         // Enumerate available extension count
         IntBuffer pAvailableExtensionCount = stack.mallocInt(1);
         vkCheck(vkEnumerateInstanceExtensionProperties((String) null, pAvailableExtensionCount, null), "Failed to enumerate extension count");
-        int availableExtensionCount = pAvailableExtensionCount.get();
-        pAvailableExtensionCount.position(0);
+        int availableExtensionCount = pAvailableExtensionCount.get(0);
 
         // Enumerate available extensions
         VkExtensionProperties.Buffer pAvailableExtensions = VkExtensionProperties.malloc(availableExtensionCount, stack);

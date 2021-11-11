@@ -25,8 +25,7 @@ public final class VulkanValidation {
         // Enumerate available validation layer count
         IntBuffer pAvailableLayerCount = stack.mallocInt(1);
         vkCheck(vkEnumerateInstanceLayerProperties(pAvailableLayerCount, null), "Failed to enumerate validation layer count");
-        int availableLayerCount = pAvailableLayerCount.get();
-        pAvailableLayerCount.position(0);
+        int availableLayerCount = pAvailableLayerCount.get(0);
 
         // Enumerate available validation layers
         VkLayerProperties.Buffer pAvailableLayers = VkLayerProperties.malloc(availableLayerCount, stack);

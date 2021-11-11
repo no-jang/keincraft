@@ -1,6 +1,8 @@
 package client.render.vk.device;
 
+import client.render.vk.device.queue.VulkanQueueFamilies;
 import client.render.vk.instance.VulkanInstance;
+import client.render.vk.surface.VulkanSurface;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.*;
@@ -22,16 +24,18 @@ public class VulkanPhysicalDevice {
     private final VkPhysicalDevice device;
     private final int score;
 
+    private VulkanQueueFamilies queueFamilies;
+
     private PointerBuffer requiredExtensions;
     private VkPhysicalDeviceFeatures requiredFeatures;
     private VkPhysicalDeviceProperties properties;
 
-    public VulkanPhysicalDevice(MemoryStack stack, VulkanInstance instance, long aPhysicalDevice) {
+    public VulkanPhysicalDevice(MemoryStack stack, VulkanInstance instance, long aPhysicalDevice, VulkanSurface surface) {
         device = new VkPhysicalDevice(aPhysicalDevice, instance.getInstance());
-        score = checkDevice(stack);
+        score = checkDevice(stack, surface);
     }
 
-    public static VulkanPhysicalDevice pickPhysicalDevice(MemoryStack stack, VulkanInstance instance) {
+    public static VulkanPhysicalDevice pickPhysicalDevice(MemoryStack stack, VulkanInstance instance, VulkanSurface surface) {
         // Enumerate physical device count which supports vulkan
         IntBuffer pPhysicalDeviceCount = stack.mallocInt(1);
         vkCheck(vkEnumeratePhysicalDevices(instance.getInstance(), pPhysicalDeviceCount, null), "Failed to enumerate physical device count");
@@ -47,7 +51,7 @@ public class VulkanPhysicalDevice {
         PointerBuffer pPhysicalDevices = stack.mallocPointer(physicalDeviceCount);
         vkCheck(vkEnumeratePhysicalDevices(instance.getInstance(), pPhysicalDeviceCount, pPhysicalDevices), "Failed to enumerate physical devices");
         for (int physicalDeviceIndex = 0; physicalDeviceIndex < pPhysicalDevices.capacity(); physicalDeviceIndex++) {
-            VulkanPhysicalDevice physicalDevice = new VulkanPhysicalDevice(stack, instance, pPhysicalDevices.get(physicalDeviceIndex));
+            VulkanPhysicalDevice physicalDevice = new VulkanPhysicalDevice(stack, instance, pPhysicalDevices.get(physicalDeviceIndex), surface);
 
             // Rate every physical device based on its features
             physicalDevices.put(physicalDevice.getScore(), physicalDevice);
@@ -61,7 +65,7 @@ public class VulkanPhysicalDevice {
         return physicalDevices.get(bestDeviceScore);
     }
 
-    private int checkDevice(MemoryStack stack) {
+    private int checkDevice(MemoryStack stack, VulkanSurface surface) {
         int score = 0;
 
         int extensionScore = checkDeviceExtensions(stack);
@@ -82,6 +86,12 @@ public class VulkanPhysicalDevice {
         }
         score += propertiesScore;
 
+        int queueFamiliesScore = checkQueueFamilies(stack, surface);
+        if (queueFamiliesScore < 0) {
+            return 0;
+        }
+        score += queueFamiliesScore;
+
         return score;
     }
 
@@ -90,7 +100,6 @@ public class VulkanPhysicalDevice {
         IntBuffer pDeviceExtensionCount = stack.mallocInt(1);
         vkCheck(vkEnumerateDeviceExtensionProperties(device, (String) null, pDeviceExtensionCount, null), "Failed to enumerate physical device extension count");
         int deviceExtensionCount = pDeviceExtensionCount.get(0);
-        pDeviceExtensionCount.position(0);
 
         // Enumerate physical device extensions
         VkExtensionProperties.Buffer pDeviceExtensions = VkExtensionProperties.malloc(deviceExtensionCount, stack);
@@ -148,6 +157,16 @@ public class VulkanPhysicalDevice {
         return score;
     }
 
+    private int checkQueueFamilies(MemoryStack stack, VulkanSurface surface) {
+        queueFamilies = new VulkanQueueFamilies(stack, this, surface);
+
+        if (!queueFamilies.isSuitable()) {
+            return -1;
+        }
+
+        return 0;
+    }
+
     public VkPhysicalDevice getDevice() {
         return device;
     }
@@ -166,5 +185,9 @@ public class VulkanPhysicalDevice {
 
     public VkPhysicalDeviceProperties getProperties() {
         return properties;
+    }
+
+    public VulkanQueueFamilies getQueueFamilies() {
+        return queueFamilies;
     }
 }
