@@ -9,6 +9,7 @@ import org.lwjgl.vulkan.VkInstanceCreateInfo;
 
 import java.nio.LongBuffer;
 
+import static org.lwjgl.system.MemoryUtil.NULL;
 import static org.lwjgl.vulkan.EXTDebugReport.*;
 import static org.lwjgl.vulkan.VK10.*;
 
@@ -43,31 +44,29 @@ public final class VulkanDebug {
                     return VK_FALSE;
                 });
 
-        VkDebugReportCallbackCreateInfoEXT createInfo = VkDebugReportCallbackCreateInfoEXT.mallocStack(stack)
-                .sType(VK_STRUCTURE_TYPE_DEBUG_REPORT_CREATE_INFO_EXT)
-                .pNext(MemoryUtil.NULL)
+        VkDebugReportCallbackCreateInfoEXT createInfo = VkDebugReportCallbackCreateInfoEXT.malloc(stack)
+                .sType$Default()
+                .pNext(NULL)
                 .flags(VK_DEBUG_REPORT_ERROR_BIT_EXT | VK_DEBUG_REPORT_WARNING_BIT_EXT)
                 .pfnCallback(debugCallbackFunction)
-                .pUserData(MemoryUtil.NULL);
+                .pUserData(NULL);
 
         instanceCreateInfo.pNext(createInfo.address());
-
         return createInfo;
     }
 
-    public static VkDebugReportCallbackEXT setupDebugCallback(MemoryStack stack, VkInstance instance, VkDebugReportCallbackCreateInfoEXT createInfo) {
-        if (!debugEnabled) return null;
+    public static long setupDebugCallback(MemoryStack stack, VkInstance instance, VkDebugReportCallbackCreateInfoEXT createInfo) {
+        if (!debugEnabled) return NULL;
 
-        LongBuffer debugReportCallback = stack.mallocLong(1);
-        vkCheck(vkCreateDebugReportCallbackEXT(instance, createInfo, null, debugReportCallback), "Failed to create debug report callback");
-
-        return VkDebugReportCallbackEXT.create(debugReportCallback.get());
+        LongBuffer pDebugReportCallback = stack.mallocLong(1);
+        vkCheck(vkCreateDebugReportCallbackEXT(instance, createInfo, null, pDebugReportCallback), "Failed to create debug report callback");
+        return pDebugReportCallback.get(0);
     }
 
-    public static void destroyDebugCallback(VkInstance instance, VkDebugReportCallbackEXT debugReportCallback) {
+    public static void destroyDebugCallback(VkInstance instance, long aDebugReportCallback) {
         if (!debugEnabled) return;
 
-        vkDestroyDebugReportCallbackEXT(instance, debugReportCallback.address(), null);
+        vkDestroyDebugReportCallbackEXT(instance, aDebugReportCallback, null);
     }
 
     public static String getErrorMessage(int result) {

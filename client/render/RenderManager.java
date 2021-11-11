@@ -5,8 +5,7 @@
 package client.render;
 
 import client.render.vk.debug.VulkanDebug;
-import client.render.vk.debug.VulkanValidation;
-import client.render.vk.instance.VulkanExtension;
+import client.render.vk.instance.VulkanInstance;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.*;
@@ -20,7 +19,7 @@ import static org.lwjgl.glfw.GLFW.glfwPollEvents;
 import static org.lwjgl.glfw.GLFWVulkan.glfwCreateWindowSurface;
 import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.system.MemoryUtil.*;
-import static org.lwjgl.vulkan.EXTDebugReport.*;
+import static org.lwjgl.vulkan.EXTDebugReport.VK_EXT_DEBUG_REPORT_EXTENSION_NAME;
 import static org.lwjgl.vulkan.KHRSurface.*;
 import static org.lwjgl.vulkan.KHRSwapchain.*;
 import static org.lwjgl.vulkan.VK10.*;
@@ -225,41 +224,8 @@ public final class RenderManager {
     private final Depth depth = new Depth();
     private final TextureObject[] textures = new TextureObject[DEMO_TEXTURE_COUNT];
     private final Vertices vertices = new Vertices();
-    private final VkDebugReportCallbackEXT dbgFunc = VkDebugReportCallbackEXT.create(
-            (flags, objectType, object, location, messageCode, pLayerPrefix, pMessage, pUserData) -> {
-                String type;
-                if ((flags & VK_DEBUG_REPORT_INFORMATION_BIT_EXT) != 0) {
-                    type = "INFORMATION";
-                } else if ((flags & VK_DEBUG_REPORT_WARNING_BIT_EXT) != 0) {
-                    type = "WARNING";
-                } else if ((flags & VK_DEBUG_REPORT_PERFORMANCE_WARNING_BIT_EXT) != 0) {
-                    type = "PERFORMANCE WARNING";
-                } else if ((flags & VK_DEBUG_REPORT_ERROR_BIT_EXT) != 0) {
-                    type = "ERROR";
-                } else if ((flags & VK_DEBUG_REPORT_DEBUG_BIT_EXT) != 0) {
-                    type = "DEBUG";
-                } else {
-                    type = "UNKNOWN";
-                }
-
-                System.err.format(
-                        "%s: [%s] Code %d : %s\n",
-                        type, memASCII(pLayerPrefix), messageCode, VkDebugReportCallbackEXT.getString(pMessage)
-                );
-
-                /*
-                 * false indicates that layer should not bail-out of an
-                 * API call that had validation failures. This may mean that the
-                 * app dies inside the driver due to invalid parameter(s).
-                 * That's what would happen without validation layers, so we'll
-                 * keep that behavior here.
-                 */
-                return VK_FALSE;
-            }
-    );
-    private VkInstance inst;
+    private VulkanInstance instance;
     private VkPhysicalDevice gpu;
-    private long msg_callback;
     private VkQueueFamilyProperties.Buffer queue_props;
     private int width = 300;
     private int height = 300;
@@ -306,61 +272,17 @@ public final class RenderManager {
 
     private void demo_init_vk() {
         try (MemoryStack stack = stackPush()) {
-            PointerBuffer requiredLayers = VulkanValidation.checkValidationLayers(stack);
-            PointerBuffer requiredExtensions = VulkanExtension.checkExtensions(stack);
-
-            ByteBuffer APP_SHORT_NAME = stack.UTF8("tri");
-
-            VkApplicationInfo app = VkApplicationInfo.malloc(stack)
-                    .sType$Default()
-                    .pNext(NULL)
-                    .pApplicationName(APP_SHORT_NAME)
-                    .applicationVersion(0)
-                    .pEngineName(APP_SHORT_NAME)
-                    .engineVersion(0)
-                    .apiVersion(VK.getInstanceVersionSupported());
-
-            VkInstanceCreateInfo inst_info = VkInstanceCreateInfo.malloc(stack)
-                    .sType$Default()
-                    .pNext(NULL)
-                    .flags(0)
-                    .pApplicationInfo(app)
-                    .ppEnabledLayerNames(requiredLayers)
-                    .ppEnabledExtensionNames(requiredExtensions);
-            requiredExtensions.clear();
-
-            VkDebugReportCallbackCreateInfoEXT dbgCreateInfo;
-            if (VALIDATE) {
-                dbgCreateInfo = VkDebugReportCallbackCreateInfoEXT.malloc(stack)
-                        .sType$Default()
-                        .pNext(NULL)
-                        .flags(VK_DEBUG_REPORT_ERROR_BIT_EXT | VK_DEBUG_REPORT_WARNING_BIT_EXT)
-                        .pfnCallback(dbgFunc)
-                        .pUserData(NULL);
-
-                inst_info.pNext(dbgCreateInfo.address());
-            }
-
-            int err = vkCreateInstance(inst_info, null, pp);
-            if (err == VK_ERROR_INCOMPATIBLE_DRIVER) {
-                throw new IllegalStateException("Cannot find a compatible Vulkan installable client driver (ICD).");
-            } else if (err == VK_ERROR_EXTENSION_NOT_PRESENT) {
-                throw new IllegalStateException("Cannot find a specified extension library. Make sure your layers path is set appropriately.");
-            } else if (err != 0) {
-                throw new IllegalStateException("vkCreateInstance failed. Do you have a compatible Vulkan installable client driver (ICD) installed?");
-            }
-
-            inst = new VkInstance(pp.get(0), inst_info);
+            instance = new VulkanInstance();
 
             /* Make initial call to query gpu_count, then second call for gpu info */
-            check(vkEnumeratePhysicalDevices(inst, ip, null));
+            check(vkEnumeratePhysicalDevices(instance.getInstance(), ip, null));
 
             if (ip.get(0) > 0) {
                 PointerBuffer physical_devices = stack.mallocPointer(ip.get(0));
-                check(vkEnumeratePhysicalDevices(inst, ip, physical_devices));
+                check(vkEnumeratePhysicalDevices(instance.getInstance(), ip, physical_devices));
 
                 /* For tri demo we just grab the first physical device */
-                gpu = new VkPhysicalDevice(physical_devices.get(0), inst);
+                gpu = new VkPhysicalDevice(physical_devices.get(0), instance.getInstance());
             } else {
                 throw new IllegalStateException("vkEnumeratePhysicalDevices reported zero accessible devices.");
             }
@@ -384,19 +306,6 @@ public final class RenderManager {
 
             if (!swapchainExtFound) {
                 throw new IllegalStateException("vkEnumerateDeviceExtensionProperties failed to find the " + VK_KHR_SWAPCHAIN_EXTENSION_NAME + " extension.");
-            }
-
-            if (VALIDATE) {
-                err = vkCreateDebugReportCallbackEXT(inst, dbgCreateInfo, null, lp);
-                switch (err) {
-                    case VK_SUCCESS:
-                        msg_callback = lp.get(0);
-                        break;
-                    case VK_ERROR_OUT_OF_HOST_MEMORY:
-                        throw new IllegalStateException("CreateDebugReportCallback: out of host memory");
-                    default:
-                        throw new IllegalStateException("CreateDebugReportCallback: unknown failure");
-                }
             }
 
             vkGetPhysicalDeviceProperties(gpu, gpu_props);
@@ -454,7 +363,7 @@ public final class RenderManager {
 
     private void demo_init_vk_swapchain() {
         // Create a WSI surface for the window:
-        glfwCreateWindowSurface(inst, window.getHandle(), null, lp);
+        glfwCreateWindowSurface(instance.getInstance(), window.getHandle(), null, lp);
         surface = lp.get(0);
 
         try (MemoryStack stack = stackPush()) {
@@ -1742,12 +1651,8 @@ public final class RenderManager {
         buffers = null;
 
         vkDestroyDevice(device, null);
-        vkDestroySurfaceKHR(inst, surface, null);
-        if (msg_callback != NULL) {
-            vkDestroyDebugReportCallbackEXT(inst, msg_callback, null);
-        }
-        vkDestroyInstance(inst, null);
-        dbgFunc.free();
+        vkDestroySurfaceKHR(instance.getInstance(), surface, null);
+        instance.destroy();
 
         gpu_features.free();
         gpu_props.free();
