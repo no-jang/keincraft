@@ -38,7 +38,7 @@ public final class VulkanValidation {
         for (String requiredValidationLayerName : requiredValidationLayerNames) {
             boolean found = false;
 
-            for (int availableLayerIndex = 0; availableLayerIndex < pAvailableLayers.capacity(); availableLayerIndex++) {
+            for (int availableLayerIndex = 0; availableLayerIndex < availableLayerCount; availableLayerIndex++) {
                 if (requiredValidationLayerName.equals(pAvailableLayers.get(availableLayerIndex).layerNameString())) {
                     found = true;
                     break;

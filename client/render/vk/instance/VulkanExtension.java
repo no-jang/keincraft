@@ -50,7 +50,7 @@ public final class VulkanExtension {
         for (String requiredExtensionName : requiredExtensionNames) {
             boolean found = false;
 
-            for (int availableExtensionIndex = 0; availableExtensionIndex < pAvailableExtensions.capacity(); availableExtensionIndex++) {
+            for (int availableExtensionIndex = 0; availableExtensionIndex < availableExtensionCount; availableExtensionIndex++) {
                 if (requiredExtensionName.equals(pAvailableExtensions.get(availableExtensionIndex).extensionNameString())) {
                     found = true;
                     break;

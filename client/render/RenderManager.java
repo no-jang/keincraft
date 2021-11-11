@@ -5,6 +5,7 @@
 package client.render;
 
 import client.render.vk.debug.VulkanDebug;
+import client.render.vk.device.VulkanPhysicalDevice;
 import client.render.vk.instance.VulkanInstance;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.system.MemoryStack;
@@ -55,9 +56,6 @@ import static org.lwjgl.vulkan.VK10.*;
  * Simple Vulkan demo. Ported from the GLFW <a href="https://github.com/glfw/glfw/blob/master/tests/vulkan.c">vulkan</a> test.
  */
 public final class RenderManager {
-
-    private static final boolean VALIDATE = VulkanDebug.debugEnabled;
-
     private static final boolean USE_STAGING_BUFFER = false;
 
     private static final int DEMO_TEXTURE_COUNT = 1;
@@ -218,14 +216,12 @@ public final class RenderManager {
     private final PointerBuffer pp = memAllocPointer(1);
 
     private final PointerBuffer extension_names = memAllocPointer(64);
-    private final VkPhysicalDeviceProperties gpu_props = VkPhysicalDeviceProperties.malloc();
-    private final VkPhysicalDeviceFeatures gpu_features = VkPhysicalDeviceFeatures.malloc();
     private final VkPhysicalDeviceMemoryProperties memory_properties = VkPhysicalDeviceMemoryProperties.malloc();
     private final Depth depth = new Depth();
     private final TextureObject[] textures = new TextureObject[DEMO_TEXTURE_COUNT];
     private final Vertices vertices = new Vertices();
     private VulkanInstance instance;
-    private VkPhysicalDevice gpu;
+    private VulkanPhysicalDevice gpu;
     private VkQueueFamilyProperties.Buffer queue_props;
     private int width = 300;
     private int height = 300;
@@ -273,53 +269,16 @@ public final class RenderManager {
     private void demo_init_vk() {
         try (MemoryStack stack = stackPush()) {
             instance = new VulkanInstance();
-
-            /* Make initial call to query gpu_count, then second call for gpu info */
-            check(vkEnumeratePhysicalDevices(instance.getInstance(), ip, null));
-
-            if (ip.get(0) > 0) {
-                PointerBuffer physical_devices = stack.mallocPointer(ip.get(0));
-                check(vkEnumeratePhysicalDevices(instance.getInstance(), ip, physical_devices));
-
-                /* For tri demo we just grab the first physical device */
-                gpu = new VkPhysicalDevice(physical_devices.get(0), instance.getInstance());
-            } else {
-                throw new IllegalStateException("vkEnumeratePhysicalDevices reported zero accessible devices.");
-            }
-
-            /* Look for device extensions */
-            boolean swapchainExtFound = false;
-            check(vkEnumerateDeviceExtensionProperties(gpu, (String) null, ip, null));
-
-            if (ip.get(0) > 0) {
-                VkExtensionProperties.Buffer device_extensions = VkExtensionProperties.malloc(ip.get(0), stack);
-                check(vkEnumerateDeviceExtensionProperties(gpu, (String) null, ip, device_extensions));
-
-                for (int i = 0; i < ip.get(0); i++) {
-                    device_extensions.position(i);
-                    if (VK_KHR_SWAPCHAIN_EXTENSION_NAME.equals(device_extensions.extensionNameString())) {
-                        swapchainExtFound = true;
-                        extension_names.put(KHR_swapchain);
-                    }
-                }
-            }
-
-            if (!swapchainExtFound) {
-                throw new IllegalStateException("vkEnumerateDeviceExtensionProperties failed to find the " + VK_KHR_SWAPCHAIN_EXTENSION_NAME + " extension.");
-            }
-
-            vkGetPhysicalDeviceProperties(gpu, gpu_props);
+            gpu = VulkanPhysicalDevice.pickPhysicalDevice(stack, instance);
 
             // Query with NULL data to get count
-            vkGetPhysicalDeviceQueueFamilyProperties(gpu, ip, null);
+            vkGetPhysicalDeviceQueueFamilyProperties(gpu.getDevice(), ip, null);
 
             queue_props = VkQueueFamilyProperties.malloc(ip.get(0));
-            vkGetPhysicalDeviceQueueFamilyProperties(gpu, ip, queue_props);
+            vkGetPhysicalDeviceQueueFamilyProperties(gpu.getDevice(), ip, queue_props);
             if (ip.get(0) == 0) {
                 throw new IllegalStateException();
             }
-
-            vkGetPhysicalDeviceFeatures(gpu, gpu_features);
 
             // Graphics queue and MemMgr queue can be separate.
             // TODO: Add support for separate queues, including synchronization,
@@ -340,24 +299,20 @@ public final class RenderManager {
                     .queueFamilyIndex(graphics_queue_node_index)
                     .pQueuePriorities(stack.floats(0.0f));
 
-            VkPhysicalDeviceFeatures features = VkPhysicalDeviceFeatures.calloc(stack);
-            if (gpu_features.shaderClipDistance()) {
-                features.shaderClipDistance(true);
-            }
-
-            extension_names.flip();
+            PointerBuffer extensionNames = gpu.getRequiredExtensions();
+            extensionNames.flip();
             VkDeviceCreateInfo device = VkDeviceCreateInfo.malloc(stack)
                     .sType$Default()
                     .pNext(NULL)
                     .flags(0)
                     .pQueueCreateInfos(queue)
                     .ppEnabledLayerNames(null)
-                    .ppEnabledExtensionNames(extension_names)
-                    .pEnabledFeatures(features);
+                    .ppEnabledExtensionNames(extensionNames)
+                    .pEnabledFeatures(gpu.getRequiredFeatures());
 
-            check(vkCreateDevice(gpu, device, null, pp));
+            VulkanDebug.vkCheck(vkCreateDevice(gpu.getDevice(), device, null, pp), "Failed to initialize device");
 
-            this.device = new VkDevice(pp.get(0), gpu, device);
+            this.device = new VkDevice(pp.get(0), gpu.getDevice(), device);
         }
     }
 
@@ -373,7 +328,7 @@ public final class RenderManager {
             int presentQueueNodeIndex;
             for (int i = 0; i < supportsPresent.capacity(); i++) {
                 supportsPresent.position(i);
-                vkGetPhysicalDeviceSurfaceSupportKHR(gpu, i, surface, supportsPresent);
+                vkGetPhysicalDeviceSurfaceSupportKHR(gpu.getDevice(), i, surface, supportsPresent);
             }
 
             // Search for a graphics and a present queue in the array of queue
@@ -426,10 +381,10 @@ public final class RenderManager {
             queue = new VkQueue(pp.get(0), device);
 
             // Get the list of VkFormat's that are supported:
-            check(vkGetPhysicalDeviceSurfaceFormatsKHR(gpu, surface, ip, null));
+            check(vkGetPhysicalDeviceSurfaceFormatsKHR(gpu.getDevice(), surface, ip, null));
 
             VkSurfaceFormatKHR.Buffer surfFormats = VkSurfaceFormatKHR.malloc(ip.get(0), stack);
-            check(vkGetPhysicalDeviceSurfaceFormatsKHR(gpu, surface, ip, surfFormats));
+            check(vkGetPhysicalDeviceSurfaceFormatsKHR(gpu.getDevice(), surface, ip, surfFormats));
 
             // If the format list includes just one entry of VK_FORMAT_UNDEFINED,
             // the surface has no preferred format.  Otherwise, at least one
@@ -443,7 +398,7 @@ public final class RenderManager {
             color_space = surfFormats.get(0).colorSpace();
 
             // Get Memory information and properties
-            vkGetPhysicalDeviceMemoryProperties(gpu, memory_properties);
+            vkGetPhysicalDeviceMemoryProperties(gpu.getDevice(), memory_properties);
         }
     }
 
@@ -519,12 +474,12 @@ public final class RenderManager {
         try (MemoryStack stack = stackPush()) {
             // Check the surface capabilities and formats
             VkSurfaceCapabilitiesKHR surfCapabilities = VkSurfaceCapabilitiesKHR.malloc(stack);
-            check(vkGetPhysicalDeviceSurfaceCapabilitiesKHR(gpu, surface, surfCapabilities));
+            check(vkGetPhysicalDeviceSurfaceCapabilitiesKHR(gpu.getDevice(), surface, surfCapabilities));
 
-            check(vkGetPhysicalDeviceSurfacePresentModesKHR(gpu, surface, ip, null));
+            check(vkGetPhysicalDeviceSurfacePresentModesKHR(gpu.getDevice(), surface, ip, null));
 
             IntBuffer presentModes = stack.mallocInt(ip.get(0));
-            check(vkGetPhysicalDeviceSurfacePresentModesKHR(gpu, surface, ip, presentModes));
+            check(vkGetPhysicalDeviceSurfacePresentModesKHR(gpu.getDevice(), surface, ip, presentModes));
 
             VkExtent2D swapchainExtent = VkExtent2D.malloc(stack);
             // width and height are either both 0xFFFFFFFF, or both not 0xFFFFFFFF.
@@ -841,7 +796,7 @@ public final class RenderManager {
 
         try (MemoryStack stack = stackPush()) {
             VkFormatProperties props = VkFormatProperties.malloc(stack);
-            vkGetPhysicalDeviceFormatProperties(gpu, tex_format, props);
+            vkGetPhysicalDeviceFormatProperties(gpu.getDevice(), tex_format, props);
 
             for (int i = 0; i < DEMO_TEXTURE_COUNT; i++) {
                 if ((props.linearTilingFeatures() & VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT) != 0 && !USE_STAGING_BUFFER) {
@@ -1654,8 +1609,6 @@ public final class RenderManager {
         vkDestroySurfaceKHR(instance.getInstance(), surface, null);
         instance.destroy();
 
-        gpu_features.free();
-        gpu_props.free();
         queue_props.free();
         memory_properties.free();
 
