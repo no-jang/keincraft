@@ -1,27 +1,27 @@
 package client.render.vk.instance;
 
-import client.render.vk.debug.VulkanDebug;
-import client.render.vk.debug.VulkanValidation;
+import client.render.vk.debug.Debug;
+import client.render.vk.debug.Validations;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.*;
 
 import java.nio.ByteBuffer;
 
-import static client.render.vk.debug.VulkanDebug.vkCheck;
+import static client.render.vk.debug.Debug.vkCheck;
 import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.system.MemoryUtil.NULL;
 import static org.lwjgl.vulkan.VK10.*;
 
-public class VulkanInstance {
+public class Instance {
     private final VkInstance instance;
     private final long aDebugCallback;
 
-    public VulkanInstance() {
+    public Instance() {
         try (MemoryStack stack = stackPush()) {
             // Check for required validation layers and extensions
-            PointerBuffer requiredLayers = VulkanValidation.checkValidationLayers(stack);
-            PointerBuffer requiredExtensions = VulkanExtension.checkExtensions(stack);
+            PointerBuffer requiredLayers = Validations.checkValidationLayers(stack);
+            PointerBuffer requiredExtensions = Extensions.checkExtensions(stack);
 
             // General application information
             ByteBuffer appName = stack.ASCII("minecraft-clone");
@@ -45,18 +45,18 @@ public class VulkanInstance {
                     .ppEnabledExtensionNames(requiredExtensions)
                     .ppEnabledLayerNames(requiredLayers);
 
-            VkDebugReportCallbackCreateInfoEXT debugCallbackCreateInfo = VulkanDebug.createDebugCallback(stack, createInfo);
+            VkDebugReportCallbackCreateInfoEXT debugCallbackCreateInfo = Debug.createDebugCallback(stack, createInfo);
 
             PointerBuffer pInstance = stack.mallocPointer(1);
             vkCheck(vkCreateInstance(createInfo, null, pInstance), "Failed to create vulkan instance");
             instance = new VkInstance(pInstance.get(0), createInfo);
 
-            aDebugCallback = VulkanDebug.setupDebugCallback(stack, instance, debugCallbackCreateInfo);
+            aDebugCallback = Debug.setupDebugCallback(stack, instance, debugCallbackCreateInfo);
         }
     }
 
     public void destroy() {
-        VulkanDebug.destroyDebugCallback(instance, aDebugCallback);
+        Debug.destroyDebugCallback(instance, aDebugCallback);
 
         vkDestroyInstance(instance, null);
     }

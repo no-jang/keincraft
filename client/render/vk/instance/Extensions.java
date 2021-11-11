@@ -1,6 +1,6 @@
 package client.render.vk.instance;
 
-import client.render.vk.debug.VulkanDebug;
+import client.render.vk.debug.Debug;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.glfw.GLFWVulkan;
 import org.lwjgl.system.MemoryStack;
@@ -11,14 +11,14 @@ import java.nio.IntBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
-import static client.render.vk.debug.VulkanDebug.vkCheck;
+import static client.render.vk.debug.Debug.vkCheck;
 import static org.lwjgl.vulkan.VK10.vkEnumerateInstanceExtensionProperties;
 
-public final class VulkanExtension {
+public final class Extensions {
     private static final List<String> requiredExtensionNames = new ArrayList<>();
 
     static {
-        if (VulkanDebug.debugEnabled) {
+        if (Debug.debugEnabled) {
             requiredExtensionNames.add(EXTDebugReport.VK_EXT_DEBUG_REPORT_EXTENSION_NAME);
         }
     }

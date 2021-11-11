@@ -1,22 +1,22 @@
 package client.render.vk.device.queue;
 
-import client.render.vk.device.VulkanPhysicalDevice;
-import client.render.vk.surface.VulkanSurface;
+import client.render.vk.device.PhysicalDevice;
+import client.render.vk.surface.Surface;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.KHRSurface;
 import org.lwjgl.vulkan.VkQueueFamilyProperties;
 
 import java.nio.IntBuffer;
 
-import static client.render.vk.debug.VulkanDebug.vkCheck;
+import static client.render.vk.debug.Debug.vkCheck;
 import static org.lwjgl.vulkan.VK10.VK_QUEUE_GRAPHICS_BIT;
 import static org.lwjgl.vulkan.VK10.vkGetPhysicalDeviceQueueFamilyProperties;
 
-public class VulkanQueueFamilies {
+public class QueueFamilies {
     private int graphicsFamilyIndex = -1;
     private int presentFamilyIndex = -1;
 
-    public VulkanQueueFamilies(MemoryStack stack, VulkanPhysicalDevice device, VulkanSurface surface) {
+    public QueueFamilies(MemoryStack stack, PhysicalDevice device, Surface surface) {
         // Get queue properties
         IntBuffer pQueueFamilyCount = stack.mallocInt(1);
         vkGetPhysicalDeviceQueueFamilyProperties(device.getDevice(), pQueueFamilyCount, null);

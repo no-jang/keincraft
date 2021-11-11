@@ -4,10 +4,10 @@
  */
 package client.render;
 
-import client.render.vk.debug.VulkanDebug;
-import client.render.vk.device.VulkanPhysicalDevice;
-import client.render.vk.instance.VulkanInstance;
-import client.render.vk.surface.VulkanSurface;
+import client.render.vk.debug.Debug;
+import client.render.vk.device.PhysicalDevice;
+import client.render.vk.instance.Instance;
+import client.render.vk.surface.Surface;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.*;
@@ -220,9 +220,9 @@ public final class RenderManager {
     private final Depth depth = new Depth();
     private final TextureObject[] textures = new TextureObject[DEMO_TEXTURE_COUNT];
     private final Vertices vertices = new Vertices();
-    private VulkanInstance instance;
-    private VulkanPhysicalDevice gpu;
-    private VulkanSurface surface;
+    private Instance instance;
+    private PhysicalDevice gpu;
+    private Surface surface;
     private int width = 300;
     private int height = 300;
     private float depthStencil = 1.0f;
@@ -266,9 +266,9 @@ public final class RenderManager {
 
     private void demo_init_vk() {
         try (MemoryStack stack = stackPush()) {
-            instance = new VulkanInstance();
-            surface = new VulkanSurface(instance, window);
-            gpu = VulkanPhysicalDevice.pickPhysicalDevice(stack, instance, surface);
+            instance = new Instance();
+            surface = new Surface(instance, window);
+            gpu = PhysicalDevice.pickPhysicalDevice(stack, instance, surface);
         }
     }
 
@@ -296,7 +296,7 @@ public final class RenderManager {
                     .ppEnabledExtensionNames(extensionNames)
                     .pEnabledFeatures(gpu.getRequiredFeatures());
 
-            VulkanDebug.vkCheck(vkCreateDevice(gpu.getDevice(), device, null, pp), "Failed to initialize device");
+            Debug.vkCheck(vkCreateDevice(gpu.getDevice(), device, null, pp), "Failed to initialize device");
 
             this.device = new VkDevice(pp.get(0), gpu.getDevice(), device);
         }

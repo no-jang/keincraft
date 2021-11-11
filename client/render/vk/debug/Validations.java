@@ -6,10 +6,10 @@ import org.lwjgl.vulkan.VkLayerProperties;
 
 import java.nio.IntBuffer;
 
-import static client.render.vk.debug.VulkanDebug.vkCheck;
+import static client.render.vk.debug.Debug.vkCheck;
 import static org.lwjgl.vulkan.VK10.vkEnumerateInstanceLayerProperties;
 
-public final class VulkanValidation {
+public final class Validations {
     // Default vulkan has very little to no error handling.
     // Even using a wrong enumeration value could cause a crash or undefined behavior
     // Validation layers can for example validate the input of a function to ensure that the values are sane
@@ -18,7 +18,7 @@ public final class VulkanValidation {
     };
 
     public static PointerBuffer checkValidationLayers(MemoryStack stack) {
-        if (!VulkanDebug.debugEnabled) {
+        if (!Debug.debugEnabled) {
             return null;
         }
 

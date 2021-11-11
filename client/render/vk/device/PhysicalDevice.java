@@ -1,8 +1,8 @@
 package client.render.vk.device;
 
-import client.render.vk.device.queue.VulkanQueueFamilies;
-import client.render.vk.instance.VulkanInstance;
-import client.render.vk.surface.VulkanSurface;
+import client.render.vk.device.queue.QueueFamilies;
+import client.render.vk.instance.Instance;
+import client.render.vk.surface.Surface;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.*;
@@ -13,10 +13,10 @@ import java.util.List;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
-import static client.render.vk.debug.VulkanDebug.vkCheck;
+import static client.render.vk.debug.Debug.vkCheck;
 import static org.lwjgl.vulkan.VK10.*;
 
-public class VulkanPhysicalDevice {
+public class PhysicalDevice {
     private static final String[] requiredDeviceExtensionNames = new String[]{
             KHRSwapchain.VK_KHR_SWAPCHAIN_EXTENSION_NAME
     };
@@ -24,18 +24,18 @@ public class VulkanPhysicalDevice {
     private final VkPhysicalDevice device;
     private final int score;
 
-    private VulkanQueueFamilies queueFamilies;
+    private QueueFamilies queueFamilies;
 
     private PointerBuffer requiredExtensions;
     private VkPhysicalDeviceFeatures requiredFeatures;
     private VkPhysicalDeviceProperties properties;
 
-    public VulkanPhysicalDevice(MemoryStack stack, VulkanInstance instance, long aPhysicalDevice, VulkanSurface surface) {
+    public PhysicalDevice(MemoryStack stack, Instance instance, long aPhysicalDevice, Surface surface) {
         device = new VkPhysicalDevice(aPhysicalDevice, instance.getInstance());
         score = checkDevice(stack, surface);
     }
 
-    public static VulkanPhysicalDevice pickPhysicalDevice(MemoryStack stack, VulkanInstance instance, VulkanSurface surface) {
+    public static PhysicalDevice pickPhysicalDevice(MemoryStack stack, Instance instance, Surface surface) {
         // Enumerate physical device count which supports vulkan
         IntBuffer pPhysicalDeviceCount = stack.mallocInt(1);
         vkCheck(vkEnumeratePhysicalDevices(instance.getInstance(), pPhysicalDeviceCount, null), "Failed to enumerate physical device count");
@@ -46,12 +46,12 @@ public class VulkanPhysicalDevice {
             throw new RuntimeException("Failed to find graphics device that supports vulkan");
         }
 
-        SortedMap<Integer, VulkanPhysicalDevice> physicalDevices = new TreeMap<>();
+        SortedMap<Integer, PhysicalDevice> physicalDevices = new TreeMap<>();
 
         PointerBuffer pPhysicalDevices = stack.mallocPointer(physicalDeviceCount);
         vkCheck(vkEnumeratePhysicalDevices(instance.getInstance(), pPhysicalDeviceCount, pPhysicalDevices), "Failed to enumerate physical devices");
         for (int physicalDeviceIndex = 0; physicalDeviceIndex < pPhysicalDevices.capacity(); physicalDeviceIndex++) {
-            VulkanPhysicalDevice physicalDevice = new VulkanPhysicalDevice(stack, instance, pPhysicalDevices.get(physicalDeviceIndex), surface);
+            PhysicalDevice physicalDevice = new PhysicalDevice(stack, instance, pPhysicalDevices.get(physicalDeviceIndex), surface);
 
             // Rate every physical device based on its features
             physicalDevices.put(physicalDevice.getScore(), physicalDevice);
@@ -65,7 +65,7 @@ public class VulkanPhysicalDevice {
         return physicalDevices.get(bestDeviceScore);
     }
 
-    private int checkDevice(MemoryStack stack, VulkanSurface surface) {
+    private int checkDevice(MemoryStack stack, Surface surface) {
         int score = 0;
 
         int extensionScore = checkDeviceExtensions(stack);
@@ -157,8 +157,8 @@ public class VulkanPhysicalDevice {
         return score;
     }
 
-    private int checkQueueFamilies(MemoryStack stack, VulkanSurface surface) {
-        queueFamilies = new VulkanQueueFamilies(stack, this, surface);
+    private int checkQueueFamilies(MemoryStack stack, Surface surface) {
+        queueFamilies = new QueueFamilies(stack, this, surface);
 
         if (!queueFamilies.isSuitable()) {
             return -1;
@@ -187,7 +187,7 @@ public class VulkanPhysicalDevice {
         return properties;
     }
 
-    public VulkanQueueFamilies getQueueFamilies() {
+    public QueueFamilies getQueueFamilies() {
         return queueFamilies;
     }
 }
