@@ -17,6 +17,7 @@ import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.nio.LongBuffer;
+import java.util.List;
 
 import static org.lwjgl.glfw.GLFW.glfwPollEvents;
 import static org.lwjgl.system.MemoryStack.stackPush;
@@ -267,8 +268,8 @@ public final class RenderManager {
 
     private void demo_init_vk_swapchain() {
         try (MemoryStack stack = stackPush()) {
-            queue = new Queue(gpu.getQueueFamilies());
-            device = new Device(gpu, queue);
+            queue = new Queue(gpu.getQueueFamilies().getGraphicsFamilyIndex());
+            device = new Device(gpu, List.of(queue));
 
             queue.setup(device);
 

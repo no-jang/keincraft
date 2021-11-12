@@ -12,11 +12,11 @@ public class Queue {
     private VkDeviceQueueCreateInfo createInfo;
     private VkQueue handle;
 
-    public Queue(QueueFamilies families) {
+    public Queue(int familyIndex) {
         try (MemoryStack stack = MemoryStack.stackPush()) {
             createInfo = VkDeviceQueueCreateInfo.malloc(stack)
                     .sType$Default()
-                    .queueFamilyIndex(families.getGraphicsFamilyIndex())
+                    .queueFamilyIndex(familyIndex)
                     .pQueuePriorities(stack.floats(1.0f));
         }
     }
