@@ -8,6 +8,7 @@ import org.lwjgl.system.Platform;
 
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.system.MemoryUtil.NULL;
+
 public class Window {
     private final long handle;
 
@@ -44,7 +45,7 @@ public class Window {
         });
 
         glfwSetKeyCallback(handle, (window, key, scancode, action, mods) -> {
-            if(key == GLFW_KEY_ESCAPE && action == GLFW_RELEASE) {
+            if (key == GLFW_KEY_ESCAPE && action == GLFW_RELEASE) {
                 glfwSetWindowShouldClose(handle, true);
             }
         });
