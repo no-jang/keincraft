@@ -1,14 +1,14 @@
 package client.render.vk.surface;
 
 import client.render.Window;
-import client.render.vk.instance.Instance;
+import client.render.vk.Instance;
 import org.lwjgl.glfw.GLFWVulkan;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.KHRSurface;
 
 import java.nio.LongBuffer;
 
-import static client.render.vk.debug.Debug.vkCheck;
+import static client.render.vk.Debug.vkCheck;
 
 public class Surface {
     private final long handle;

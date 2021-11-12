@@ -1,7 +1,7 @@
 package client.render.vk.device;
 
+import client.render.vk.Instance;
 import client.render.vk.device.queue.QueueFamilies;
-import client.render.vk.instance.Instance;
 import client.render.vk.surface.Surface;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.system.MemoryStack;
@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
-import static client.render.vk.debug.Debug.vkCheck;
+import static client.render.vk.Debug.vkCheck;
 import static org.lwjgl.vulkan.VK10.*;
 
 public class PhysicalDevice {

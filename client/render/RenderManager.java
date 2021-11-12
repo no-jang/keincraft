@@ -4,9 +4,9 @@
  */
 package client.render;
 
-import client.render.vk.debug.Debug;
+import client.render.vk.Debug;
+import client.render.vk.Instance;
 import client.render.vk.device.PhysicalDevice;
-import client.render.vk.instance.Instance;
 import client.render.vk.surface.Surface;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.system.MemoryStack;

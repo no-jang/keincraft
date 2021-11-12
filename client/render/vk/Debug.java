@@ -1,4 +1,4 @@
-package client.render.vk.debug;
+package client.render.vk;
 
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.MemoryUtil;
@@ -14,10 +14,10 @@ import static org.lwjgl.vulkan.EXTDebugReport.*;
 import static org.lwjgl.vulkan.VK10.*;
 
 public final class Debug {
-    public static final boolean debugEnabled = true;
+    public static final boolean isDebug = true;
 
     public static VkDebugReportCallbackCreateInfoEXT createDebugCallback(MemoryStack stack, VkInstanceCreateInfo instanceCreateInfo) {
-        if (!debugEnabled) return null;
+        if (!isDebug) return null;
 
         VkDebugReportCallbackEXT debugCallbackFunction = VkDebugReportCallbackEXT.create(
                 (flags, objectType, object, location, messageCode, pLayerPrefix, pMessage, pUserData) -> {
@@ -56,7 +56,7 @@ public final class Debug {
     }
 
     public static long setupDebugCallback(MemoryStack stack, VkInstance instance, VkDebugReportCallbackCreateInfoEXT createInfo) {
-        if (!debugEnabled) return NULL;
+        if (!isDebug) return NULL;
 
         LongBuffer pDebugReportCallback = stack.mallocLong(1);
         vkCheck(vkCreateDebugReportCallbackEXT(instance, createInfo, null, pDebugReportCallback), "Failed to create debug report callback");
@@ -64,7 +64,7 @@ public final class Debug {
     }
 
     public static void destroyDebugCallback(VkInstance instance, long aDebugReportCallback) {
-        if (!debugEnabled) return;
+        if (!isDebug) return;
 
         vkDestroyDebugReportCallbackEXT(instance, aDebugReportCallback, null);
     }
