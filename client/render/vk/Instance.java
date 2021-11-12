@@ -3,16 +3,19 @@ package client.render.vk;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.glfw.GLFWVulkan;
 import org.lwjgl.system.MemoryStack;
+import org.lwjgl.system.MemoryUtil;
 import org.lwjgl.vulkan.*;
 
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
+import java.nio.LongBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
-import static client.render.vk.Debug.vkCheck;
+import static client.render.vk.Global.vkCheck;
 import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.system.MemoryUtil.NULL;
+import static org.lwjgl.vulkan.EXTDebugReport.*;
 import static org.lwjgl.vulkan.VK10.*;
 
 public class Instance {
@@ -26,13 +29,14 @@ public class Instance {
     private static final List<String> requiredExtensionNames = new ArrayList<>();
 
     static {
-        if (Debug.isDebug) {
+        if (Global.isDebug) {
             requiredExtensionNames.add(EXTDebugReport.VK_EXT_DEBUG_REPORT_EXTENSION_NAME);
         }
     }
 
-    private final VkInstance instance;
-    private final long aDebugCallback;
+    private final VkInstance handle;
+
+    private long aDebugCallback;
 
     public Instance() {
         try (MemoryStack stack = stackPush()) {
@@ -62,18 +66,22 @@ public class Instance {
                     .ppEnabledExtensionNames(requiredExtensions)
                     .ppEnabledLayerNames(requiredLayers);
 
-            VkDebugReportCallbackCreateInfoEXT debugCallbackCreateInfo = Debug.createDebugCallback(stack, createInfo);
+            VkDebugReportCallbackCreateInfoEXT debugCallbackCreateInfo = createDebugCallback(stack, createInfo);
 
             PointerBuffer pInstance = stack.mallocPointer(1);
             vkCheck(vkCreateInstance(createInfo, null, pInstance), "Failed to create vulkan instance");
-            instance = new VkInstance(pInstance.get(0), createInfo);
+            handle = new VkInstance(pInstance.get(0), createInfo);
 
-            aDebugCallback = Debug.setupDebugCallback(stack, instance, debugCallbackCreateInfo);
+            if (debugCallbackCreateInfo != null) {
+                LongBuffer pDebugReportCallback = stack.mallocLong(1);
+                vkCheck(vkCreateDebugReportCallbackEXT(handle, debugCallbackCreateInfo, null, pDebugReportCallback), "Failed to create debug report callback");
+                aDebugCallback = pDebugReportCallback.get(0);
+            }
         }
     }
 
     private static PointerBuffer checkValidationLayers(MemoryStack stack) {
-        if (!Debug.isDebug) {
+        if (!Global.isDebug) {
             return null;
         }
 
@@ -108,6 +116,53 @@ public class Instance {
 
         requiredLayers.position(0);
         return requiredLayers;
+    }
+
+    private static VkDebugReportCallbackCreateInfoEXT createDebugCallback(MemoryStack stack, VkInstanceCreateInfo instanceCreateInfo) {
+        if (!Global.isDebug) return null;
+
+        VkDebugReportCallbackEXT debugCallbackFunction = VkDebugReportCallbackEXT.create(
+                (flags, objectType, object, location, messageCode, pLayerPrefix, pMessage, pUserData) -> {
+                    String type;
+                    if ((flags & VK_DEBUG_REPORT_INFORMATION_BIT_EXT) != 0) {
+                        type = "INFORMATION";
+                    } else if ((flags & VK_DEBUG_REPORT_WARNING_BIT_EXT) != 0) {
+                        type = "WARNING";
+                    } else if ((flags & VK_DEBUG_REPORT_PERFORMANCE_WARNING_BIT_EXT) != 0) {
+                        type = "PERFORMANCE WARNING";
+                    } else if ((flags & VK_DEBUG_REPORT_ERROR_BIT_EXT) != 0) {
+                        type = "ERROR";
+                    } else if ((flags & VK_DEBUG_REPORT_DEBUG_BIT_EXT) != 0) {
+                        type = "DEBUG";
+                    } else {
+                        type = "UNKNOWN";
+                    }
+
+                    String layerPrefix = MemoryUtil.memASCII(pLayerPrefix);
+                    String message = VkDebugReportCallbackEXT.getString(pMessage);
+
+                    System.err.println("validation layer " + type + " " + layerPrefix + ": " + messageCode + message);
+
+                    return VK_FALSE;
+                });
+
+        VkDebugReportCallbackCreateInfoEXT createInfo = VkDebugReportCallbackCreateInfoEXT.malloc(stack)
+                .sType$Default()
+                .pNext(NULL)
+                .flags(VK_DEBUG_REPORT_ERROR_BIT_EXT | VK_DEBUG_REPORT_WARNING_BIT_EXT)
+                .pfnCallback(debugCallbackFunction)
+                .pUserData(NULL);
+
+        instanceCreateInfo.pNext(createInfo.address());
+        return createInfo;
+    }
+
+    public void destroy() {
+        if (Global.isDebug) {
+            vkDestroyDebugReportCallbackEXT(handle, aDebugCallback, null);
+        }
+
+        vkDestroyInstance(handle, null);
     }
 
     private static PointerBuffer checkExtensions(MemoryStack stack) {
@@ -154,13 +209,7 @@ public class Instance {
         return pRequiredExtensions;
     }
 
-    public void destroy() {
-        Debug.destroyDebugCallback(instance, aDebugCallback);
-
-        vkDestroyInstance(instance, null);
-    }
-
-    public VkInstance getInstance() {
-        return instance;
+    public VkInstance getHandle() {
+        return handle;
     }
 }

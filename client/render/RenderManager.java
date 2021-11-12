@@ -229,7 +229,7 @@ public final class RenderManager {
     private float depthStencil = 1.0f;
     private float depthIncrement = -0.01f;
     private Device device;
-    private VkQueue queue;
+    private Queue queue;
     private int format;
     private int color_space;
     private long cmd_pool;
@@ -267,17 +267,16 @@ public final class RenderManager {
 
     private void demo_init_vk_swapchain() {
         try (MemoryStack stack = stackPush()) {
-            Queue testqueue = new Queue(gpu.getQueueFamilies());
-            device = new Device(gpu, testqueue);
+            queue = new Queue(gpu.getQueueFamilies());
+            device = new Device(gpu, queue);
 
-            vkGetDeviceQueue(device.getDevice(), gpu.getQueueFamilies().getGraphicsFamilyIndex(), 0, pp);
-            queue = new VkQueue(pp.get(0), device.getDevice());
+            queue.setup(device);
 
             // Get the list of VkFormat's that are supported:
-            check(vkGetPhysicalDeviceSurfaceFormatsKHR(gpu.getDevice(), surface.getHandle(), ip, null));
+            check(vkGetPhysicalDeviceSurfaceFormatsKHR(gpu.getHandle(), surface.getHandle(), ip, null));
 
             VkSurfaceFormatKHR.Buffer surfFormats = VkSurfaceFormatKHR.malloc(ip.get(0), stack);
-            check(vkGetPhysicalDeviceSurfaceFormatsKHR(gpu.getDevice(), surface.getHandle(), ip, surfFormats));
+            check(vkGetPhysicalDeviceSurfaceFormatsKHR(gpu.getHandle(), surface.getHandle(), ip, surfFormats));
 
             // If the format list includes just one entry of VK_FORMAT_UNDEFINED,
             // the surface has no preferred format.  Otherwise, at least one
@@ -291,7 +290,7 @@ public final class RenderManager {
             color_space = surfFormats.get(0).colorSpace();
 
             // Get Memory information and properties
-            vkGetPhysicalDeviceMemoryProperties(gpu.getDevice(), memory_properties);
+            vkGetPhysicalDeviceMemoryProperties(gpu.getHandle(), memory_properties);
         }
     }
 
@@ -305,8 +304,8 @@ public final class RenderManager {
                         .level(VK_COMMAND_BUFFER_LEVEL_PRIMARY)
                         .commandBufferCount(1);
 
-                check(vkAllocateCommandBuffers(device.getDevice(), cmd, pp));
-                setup_cmd = new VkCommandBuffer(pp.get(0), device.getDevice());
+                check(vkAllocateCommandBuffers(device.getHandle(), cmd, pp));
+                setup_cmd = new VkCommandBuffer(pp.get(0), device.getHandle());
 
                 VkCommandBufferBeginInfo cmd_buf_info = VkCommandBufferBeginInfo.malloc(stack)
                         .sType$Default()
@@ -367,12 +366,12 @@ public final class RenderManager {
         try (MemoryStack stack = stackPush()) {
             // Check the surface capabilities and formats
             VkSurfaceCapabilitiesKHR surfCapabilities = VkSurfaceCapabilitiesKHR.malloc(stack);
-            check(vkGetPhysicalDeviceSurfaceCapabilitiesKHR(gpu.getDevice(), surface.getHandle(), surfCapabilities));
+            check(vkGetPhysicalDeviceSurfaceCapabilitiesKHR(gpu.getHandle(), surface.getHandle(), surfCapabilities));
 
-            check(vkGetPhysicalDeviceSurfacePresentModesKHR(gpu.getDevice(), surface.getHandle(), ip, null));
+            check(vkGetPhysicalDeviceSurfacePresentModesKHR(gpu.getHandle(), surface.getHandle(), ip, null));
 
             IntBuffer presentModes = stack.mallocInt(ip.get(0));
-            check(vkGetPhysicalDeviceSurfacePresentModesKHR(gpu.getDevice(), surface.getHandle(), ip, presentModes));
+            check(vkGetPhysicalDeviceSurfacePresentModesKHR(gpu.getHandle(), surface.getHandle(), ip, presentModes));
 
             VkExtent2D swapchainExtent = VkExtent2D.malloc(stack);
             // width and height are either both 0xFFFFFFFF, or both not 0xFFFFFFFF.
@@ -438,7 +437,7 @@ public final class RenderManager {
                     .clipped(true)
                     .oldSwapchain(oldSwapchain);
 
-            check(vkCreateSwapchainKHR(device.getDevice(), swapchain, null, lp));
+            check(vkCreateSwapchainKHR(device.getHandle(), swapchain, null, lp));
             this.swapchain = lp.get(0);
 
             // If we just re-created an existing swapchain, we should destroy the old
@@ -446,14 +445,14 @@ public final class RenderManager {
             // Note: destroying the swapchain also cleans up all its associated
             // presentable images once the platform is done with them.
             if (oldSwapchain != VK_NULL_HANDLE) {
-                vkDestroySwapchainKHR(device.getDevice(), oldSwapchain, null);
+                vkDestroySwapchainKHR(device.getHandle(), oldSwapchain, null);
             }
 
-            check(vkGetSwapchainImagesKHR(device.getDevice(), this.swapchain, ip, null));
+            check(vkGetSwapchainImagesKHR(device.getHandle(), this.swapchain, ip, null));
             swapchainImageCount = ip.get(0);
 
             LongBuffer swapchainImages = stack.mallocLong(swapchainImageCount);
-            check(vkGetSwapchainImagesKHR(device.getDevice(), this.swapchain, ip, swapchainImages));
+            check(vkGetSwapchainImagesKHR(device.getHandle(), this.swapchain, ip, swapchainImages));
 
             buffers = new SwapchainBuffers[swapchainImageCount];
 
@@ -480,7 +479,7 @@ public final class RenderManager {
                                 .baseArrayLayer(0)
                                 .layerCount(1));
 
-                check(vkCreateImageView(device.getDevice(), color_attachment_view, null, lp));
+                check(vkCreateImageView(device.getHandle(), color_attachment_view, null, lp));
                 buffers[i].view = lp.get(0);
             }
 
@@ -524,12 +523,12 @@ public final class RenderManager {
                     .usage(VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT);
 
             /* create image */
-            check(vkCreateImage(device.getDevice(), image, null, lp));
+            check(vkCreateImage(device.getHandle(), image, null, lp));
             depth.image = lp.get(0);
 
             /* get memory requirements for this object */
             VkMemoryRequirements mem_reqs = VkMemoryRequirements.malloc(stack);
-            vkGetImageMemoryRequirements(device.getDevice(), depth.image, mem_reqs);
+            vkGetImageMemoryRequirements(device.getHandle(), depth.image, mem_reqs);
 
             /* select memory size and type */
             VkMemoryAllocateInfo mem_alloc = VkMemoryAllocateInfo.malloc(stack)
@@ -543,11 +542,11 @@ public final class RenderManager {
             assert (pass);
 
             /* allocate memory */
-            check(vkAllocateMemory(device.getDevice(), mem_alloc, null, lp));
+            check(vkAllocateMemory(device.getHandle(), mem_alloc, null, lp));
             depth.mem = lp.get(0);
 
             /* bind memory */
-            check(vkBindImageMemory(device.getDevice(), depth.image, depth.mem, 0));
+            check(vkBindImageMemory(device.getHandle(), depth.image, depth.mem, 0));
 
             demo_set_image_layout(depth.image, VK_IMAGE_ASPECT_DEPTH_BIT,
                     VK_IMAGE_LAYOUT_UNDEFINED,
@@ -569,7 +568,7 @@ public final class RenderManager {
                             .baseArrayLayer(0)
                             .layerCount(1));
 
-            check(vkCreateImageView(device.getDevice(), view, null, lp));
+            check(vkCreateImageView(device.getHandle(), view, null, lp));
             depth.view = lp.get(0);
         }
     }
@@ -607,11 +606,11 @@ public final class RenderManager {
                     .flags(0)
                     .initialLayout(VK_IMAGE_LAYOUT_PREINITIALIZED);
 
-            check(vkCreateImage(device.getDevice(), image_create_info, null, lp));
+            check(vkCreateImage(device.getHandle(), image_create_info, null, lp));
             tex_obj.image = lp.get(0);
 
             VkMemoryRequirements mem_reqs = VkMemoryRequirements.malloc(stack);
-            vkGetImageMemoryRequirements(device.getDevice(), tex_obj.image, mem_reqs);
+            vkGetImageMemoryRequirements(device.getHandle(), tex_obj.image, mem_reqs);
             VkMemoryAllocateInfo mem_alloc = VkMemoryAllocateInfo.malloc(stack)
                     .sType$Default()
                     .pNext(NULL)
@@ -621,11 +620,11 @@ public final class RenderManager {
             assert (pass);
 
             /* allocate memory */
-            check(vkAllocateMemory(device.getDevice(), mem_alloc, null, lp));
+            check(vkAllocateMemory(device.getHandle(), mem_alloc, null, lp));
             tex_obj.mem = lp.get(0);
 
             /* bind memory */
-            check(vkBindImageMemory(device.getDevice(), tex_obj.image, tex_obj.mem, 0));
+            check(vkBindImageMemory(device.getHandle(), tex_obj.image, tex_obj.mem, 0));
 
             if ((required_props & VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT) != 0) {
                 VkImageSubresource subres = VkImageSubresource.malloc(stack)
@@ -634,9 +633,9 @@ public final class RenderManager {
                         .arrayLayer(0);
 
                 VkSubresourceLayout layout = VkSubresourceLayout.malloc(stack);
-                vkGetImageSubresourceLayout(device.getDevice(), tex_obj.image, subres, layout);
+                vkGetImageSubresourceLayout(device.getHandle(), tex_obj.image, subres, layout);
 
-                check(vkMapMemory(device.getDevice(), tex_obj.mem, 0, mem_alloc.allocationSize(), 0, pp));
+                check(vkMapMemory(device.getHandle(), tex_obj.mem, 0, mem_alloc.allocationSize(), 0, pp));
 
                 for (int y = 0; y < tex_height; y++) {
                     IntBuffer row = memIntBuffer(pp.get(0) + layout.rowPitch() * y, tex_width);
@@ -645,7 +644,7 @@ public final class RenderManager {
                     }
                 }
 
-                vkUnmapMemory(device.getDevice(), tex_obj.mem);
+                vkUnmapMemory(device.getHandle(), tex_obj.mem);
             }
 
             tex_obj.imageLayout = VK_IMAGE_LAYOUT_GENERAL;
@@ -657,8 +656,8 @@ public final class RenderManager {
 
     private void demo_destroy_texture_image(TextureObject tex_obj) {
         /* clean up staging resources */
-        vkDestroyImage(device.getDevice(), tex_obj.image, null);
-        vkFreeMemory(device.getDevice(), tex_obj.mem, null);
+        vkDestroyImage(device.getHandle(), tex_obj.image, null);
+        vkFreeMemory(device.getHandle(), tex_obj.mem, null);
     }
 
     private void demo_flush_init_cmd() {
@@ -673,12 +672,12 @@ public final class RenderManager {
                     .sType$Default()
                     .pCommandBuffers(pp.put(0, setup_cmd));
 
-            check(vkQueueSubmit(queue, submit_info, VK_NULL_HANDLE));
+            check(vkQueueSubmit(queue.getHandle(), submit_info, VK_NULL_HANDLE));
         }
 
-        check(vkQueueWaitIdle(queue));
+        check(vkQueueWaitIdle(queue.getHandle()));
 
-        vkFreeCommandBuffers(device.getDevice(), cmd_pool, pp);
+        vkFreeCommandBuffers(device.getHandle(), cmd_pool, pp);
         setup_cmd = null;
     }
 
@@ -689,7 +688,7 @@ public final class RenderManager {
 
         try (MemoryStack stack = stackPush()) {
             VkFormatProperties props = VkFormatProperties.malloc(stack);
-            vkGetPhysicalDeviceFormatProperties(gpu.getDevice(), tex_format, props);
+            vkGetPhysicalDeviceFormatProperties(gpu.getHandle(), tex_format, props);
 
             for (int i = 0; i < DEMO_TEXTURE_COUNT; i++) {
                 if ((props.linearTilingFeatures() & VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT) != 0 && !USE_STAGING_BUFFER) {
@@ -788,7 +787,7 @@ public final class RenderManager {
                         .unnormalizedCoordinates(false);
 
                 /* create sampler */
-                check(vkCreateSampler(device.getDevice(), sampler, null, lp));
+                check(vkCreateSampler(device.getHandle(), sampler, null, lp));
                 textures[i].sampler = lp.get(0);
 
                 VkImageViewCreateInfo view = VkImageViewCreateInfo.malloc(stack)
@@ -812,7 +811,7 @@ public final class RenderManager {
 
                 /* create image view */
                 view.image(textures[i].image);
-                check(vkCreateImageView(device.getDevice(), view, null, lp));
+                check(vkCreateImageView(device.getHandle(), view, null, lp));
                 textures[i].view = lp.get(0);
             }
         }
@@ -833,11 +832,11 @@ public final class RenderManager {
                     .usage(VK_BUFFER_USAGE_VERTEX_BUFFER_BIT)
                     .sharingMode(VK_SHARING_MODE_EXCLUSIVE);
 
-            check(vkCreateBuffer(device.getDevice(), buf_info, null, lp));
+            check(vkCreateBuffer(device.getHandle(), buf_info, null, lp));
             vertices.buf = lp.get(0);
 
             VkMemoryRequirements mem_reqs = VkMemoryRequirements.malloc(stack);
-            vkGetBufferMemoryRequirements(device.getDevice(), vertices.buf, mem_reqs);
+            vkGetBufferMemoryRequirements(device.getHandle(), vertices.buf, mem_reqs);
 
             VkMemoryAllocateInfo mem_alloc = VkMemoryAllocateInfo.calloc(stack)
                     .sType$Default()
@@ -845,10 +844,10 @@ public final class RenderManager {
             boolean pass = memory_type_from_properties(mem_reqs.memoryTypeBits(), VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, mem_alloc);
             assert (pass);
 
-            check(vkAllocateMemory(device.getDevice(), mem_alloc, null, lp));
+            check(vkAllocateMemory(device.getHandle(), mem_alloc, null, lp));
             vertices.mem = lp.get(0);
 
-            check(vkMapMemory(device.getDevice(), vertices.mem, 0, mem_alloc.allocationSize(), 0, pp));
+            check(vkMapMemory(device.getHandle(), vertices.mem, 0, mem_alloc.allocationSize(), 0, pp));
             FloatBuffer data = pp.getFloatBuffer(0, ((int) mem_alloc.allocationSize()) >> 2);
             data
                     .put(vb[0])
@@ -857,9 +856,9 @@ public final class RenderManager {
                     .flip();
         }
 
-        vkUnmapMemory(device.getDevice(), vertices.mem);
+        vkUnmapMemory(device.getHandle(), vertices.mem);
 
-        check(vkBindBufferMemory(device.getDevice(), vertices.buf, vertices.mem, 0));
+        check(vkBindBufferMemory(device.getHandle(), vertices.buf, vertices.mem, 0));
 
         vertices.vi
                 .sType$Default()
@@ -900,7 +899,7 @@ public final class RenderManager {
                     );
 
             LongBuffer layouts = stack.mallocLong(1);
-            check(vkCreateDescriptorSetLayout(device.getDevice(), descriptor_layout, null, layouts));
+            check(vkCreateDescriptorSetLayout(device.getHandle(), descriptor_layout, null, layouts));
             desc_layout = layouts.get(0);
 
             VkPipelineLayoutCreateInfo pPipelineLayoutCreateInfo = VkPipelineLayoutCreateInfo.calloc(stack)
@@ -908,7 +907,7 @@ public final class RenderManager {
                     .pNext(NULL)
                     .pSetLayouts(layouts);
 
-            check(vkCreatePipelineLayout(device.getDevice(), pPipelineLayoutCreateInfo, null, lp));
+            check(vkCreatePipelineLayout(device.getHandle(), pPipelineLayoutCreateInfo, null, lp));
             pipeline_layout = lp.get(0);
         }
     }
@@ -956,7 +955,7 @@ public final class RenderManager {
                     .pAttachments(attachments)
                     .pSubpasses(subpass);
 
-            check(vkCreateRenderPass(device.getDevice(), rp_info, null, lp));
+            check(vkCreateRenderPass(device.getHandle(), rp_info, null, lp));
             render_pass = lp.get(0);
         }
     }
@@ -972,7 +971,7 @@ public final class RenderManager {
                     .flags(0)
                     .pCode(pCode);
 
-            check(vkCreateShaderModule(device.getDevice(), moduleCreateInfo, null, lp));
+            check(vkCreateShaderModule(device.getHandle(), moduleCreateInfo, null, lp));
 
             memFree(pCode);
 
@@ -1066,16 +1065,16 @@ public final class RenderManager {
             VkPipelineCacheCreateInfo pipelineCacheCI = VkPipelineCacheCreateInfo.calloc(stack)
                     .sType$Default();
 
-            check(vkCreatePipelineCache(device.getDevice(), pipelineCacheCI, null, lp));
+            check(vkCreatePipelineCache(device.getHandle(), pipelineCacheCI, null, lp));
             pipelineCache = lp.get(0);
 
-            check(vkCreateGraphicsPipelines(device.getDevice(), pipelineCache, pipeline, null, lp));
+            check(vkCreateGraphicsPipelines(device.getHandle(), pipelineCache, pipeline, null, lp));
             this.pipeline = lp.get(0);
 
-            vkDestroyPipelineCache(device.getDevice(), pipelineCache, null);
+            vkDestroyPipelineCache(device.getHandle(), pipelineCache, null);
 
-            vkDestroyShaderModule(device.getDevice(), frag_shader_module, null);
-            vkDestroyShaderModule(device.getDevice(), vert_shader_module, null);
+            vkDestroyShaderModule(device.getHandle(), frag_shader_module, null);
+            vkDestroyShaderModule(device.getHandle(), vert_shader_module, null);
         }
     }
 
@@ -1091,7 +1090,7 @@ public final class RenderManager {
                                     .descriptorCount(DEMO_TEXTURE_COUNT)
                     );
 
-            check(vkCreateDescriptorPool(device.getDevice(), descriptor_pool, null, lp));
+            check(vkCreateDescriptorPool(device.getHandle(), descriptor_pool, null, lp));
             desc_pool = lp.get(0);
         }
     }
@@ -1105,7 +1104,7 @@ public final class RenderManager {
                     .descriptorPool(desc_pool)
                     .pSetLayouts(layouts);
 
-            check(vkAllocateDescriptorSets(device.getDevice(), alloc_info, lp));
+            check(vkAllocateDescriptorSets(device.getHandle(), alloc_info, lp));
             desc_set = lp.get(0);
 
             VkDescriptorImageInfo.Buffer tex_descs = VkDescriptorImageInfo.calloc(DEMO_TEXTURE_COUNT, stack);
@@ -1123,7 +1122,7 @@ public final class RenderManager {
                     .descriptorCount(tex_descs.remaining())
                     .pImageInfo(tex_descs);
 
-            vkUpdateDescriptorSets(device.getDevice(), write, null);
+            vkUpdateDescriptorSets(device.getHandle(), write, null);
         }
     }
 
@@ -1145,7 +1144,7 @@ public final class RenderManager {
 
             for (int i = 0; i < swapchainImageCount; i++) {
                 attachments.put(0, buffers[i].view);
-                check(vkCreateFramebuffer(device.getDevice(), fb_info, null, lp));
+                check(vkCreateFramebuffer(device.getHandle(), fb_info, null, lp));
                 framebuffers.put(i, lp.get(0));
             }
         }
@@ -1159,7 +1158,7 @@ public final class RenderManager {
                     .flags(VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT)
                     .queueFamilyIndex(gpu.getQueueFamilies().getGraphicsFamilyIndex());
 
-            check(vkCreateCommandPool(device.getDevice(), cmd_pool_info, null, lp));
+            check(vkCreateCommandPool(device.getHandle(), cmd_pool_info, null, lp));
 
             cmd_pool = lp.get(0);
 
@@ -1170,10 +1169,10 @@ public final class RenderManager {
                     .level(VK_COMMAND_BUFFER_LEVEL_PRIMARY)
                     .commandBufferCount(1);
 
-            check(vkAllocateCommandBuffers(device.getDevice(), cmd, pp));
+            check(vkAllocateCommandBuffers(device.getHandle(), cmd, pp));
         }
 
-        draw_cmd = new VkCommandBuffer(pp.get(0), device.getDevice());
+        draw_cmd = new VkCommandBuffer(pp.get(0), device.getHandle());
 
         demo_prepare_buffers();
         demo_prepare_depth();
@@ -1303,14 +1302,14 @@ public final class RenderManager {
                     .pNext(NULL)
                     .flags(0);
 
-            check(vkCreateSemaphore(device.getDevice(), semaphoreCreateInfo, null, lp));
+            check(vkCreateSemaphore(device.getHandle(), semaphoreCreateInfo, null, lp));
             long imageAcquiredSemaphore = lp.get(0);
 
-            check(vkCreateSemaphore(device.getDevice(), semaphoreCreateInfo, null, lp));
+            check(vkCreateSemaphore(device.getHandle(), semaphoreCreateInfo, null, lp));
             long drawCompleteSemaphore = lp.get(0);
 
             // Get the index of the next available swapchain image:
-            int err = vkAcquireNextImageKHR(device.getDevice(), swapchain, ~0L,
+            int err = vkAcquireNextImageKHR(device.getHandle(), swapchain, ~0L,
                     imageAcquiredSemaphore,
                     NULL, // TODO: Show use of fence
                     ip);
@@ -1319,8 +1318,8 @@ public final class RenderManager {
                 // must be recreated:
                 demo_resize();
                 demo_draw();
-                vkDestroySemaphore(device.getDevice(), drawCompleteSemaphore, null);
-                vkDestroySemaphore(device.getDevice(), imageAcquiredSemaphore, null);
+                vkDestroySemaphore(device.getHandle(), drawCompleteSemaphore, null);
+                vkDestroySemaphore(device.getHandle(), imageAcquiredSemaphore, null);
                 return;
             } else if (err == VK_SUBOPTIMAL_KHR) {
                 // demo->swapchain is not as optimal as it could be, but the platform's
@@ -1348,7 +1347,7 @@ public final class RenderManager {
                     .pCommandBuffers(pp.put(0, draw_cmd))
                     .pSignalSemaphores(lp2.put(0, drawCompleteSemaphore));
 
-            check(vkQueueSubmit(queue, submit_info, VK_NULL_HANDLE));
+            check(vkQueueSubmit(queue.getHandle(), submit_info, VK_NULL_HANDLE));
 
             VkPresentInfoKHR present = VkPresentInfoKHR.calloc(stack)
                     .sType$Default()
@@ -1358,7 +1357,7 @@ public final class RenderManager {
                     .pSwapchains(lp.put(0, swapchain))
                     .pImageIndices(ip.put(0, current_buffer));
 
-            err = vkQueuePresentKHR(queue, present);
+            err = vkQueuePresentKHR(queue.getHandle(), present);
             if (err == VK_ERROR_OUT_OF_DATE_KHR) {
                 // demo->swapchain is out of date (e.g. the window was resized) and
                 // must be recreated:
@@ -1370,10 +1369,10 @@ public final class RenderManager {
                 check(err);
             }
 
-            check(vkQueueWaitIdle(queue));
+            check(vkQueueWaitIdle(queue.getHandle()));
 
-            vkDestroySemaphore(device.getDevice(), drawCompleteSemaphore, null);
-            vkDestroySemaphore(device.getDevice(), imageAcquiredSemaphore, null);
+            vkDestroySemaphore(device.getHandle(), drawCompleteSemaphore, null);
+            vkDestroySemaphore(device.getHandle(), imageAcquiredSemaphore, null);
         }
     }
 
@@ -1384,40 +1383,40 @@ public final class RenderManager {
         // First, perform part of the demo_cleanup() function:
 
         for (int i = 0; i < swapchainImageCount; i++) {
-            vkDestroyFramebuffer(device.getDevice(), framebuffers.get(i), null);
+            vkDestroyFramebuffer(device.getHandle(), framebuffers.get(i), null);
         }
         memFree(framebuffers);
-        vkDestroyDescriptorPool(device.getDevice(), desc_pool, null);
+        vkDestroyDescriptorPool(device.getHandle(), desc_pool, null);
 
         if (setup_cmd != null) {
-            vkFreeCommandBuffers(device.getDevice(), cmd_pool, setup_cmd);
+            vkFreeCommandBuffers(device.getHandle(), cmd_pool, setup_cmd);
             setup_cmd = null;
         }
-        vkFreeCommandBuffers(device.getDevice(), cmd_pool, draw_cmd);
-        vkDestroyCommandPool(device.getDevice(), cmd_pool, null);
+        vkFreeCommandBuffers(device.getHandle(), cmd_pool, draw_cmd);
+        vkDestroyCommandPool(device.getHandle(), cmd_pool, null);
 
-        vkDestroyPipeline(device.getDevice(), pipeline, null);
-        vkDestroyRenderPass(device.getDevice(), render_pass, null);
-        vkDestroyPipelineLayout(device.getDevice(), pipeline_layout, null);
-        vkDestroyDescriptorSetLayout(device.getDevice(), desc_layout, null);
+        vkDestroyPipeline(device.getHandle(), pipeline, null);
+        vkDestroyRenderPass(device.getHandle(), render_pass, null);
+        vkDestroyPipelineLayout(device.getHandle(), pipeline_layout, null);
+        vkDestroyDescriptorSetLayout(device.getHandle(), desc_layout, null);
 
-        vkDestroyBuffer(device.getDevice(), vertices.buf, null);
-        vkFreeMemory(device.getDevice(), vertices.mem, null);
+        vkDestroyBuffer(device.getHandle(), vertices.buf, null);
+        vkFreeMemory(device.getHandle(), vertices.mem, null);
 
         for (int i = 0; i < DEMO_TEXTURE_COUNT; i++) {
-            vkDestroyImageView(device.getDevice(), textures[i].view, null);
-            vkDestroyImage(device.getDevice(), textures[i].image, null);
-            vkFreeMemory(device.getDevice(), textures[i].mem, null);
-            vkDestroySampler(device.getDevice(), textures[i].sampler, null);
+            vkDestroyImageView(device.getHandle(), textures[i].view, null);
+            vkDestroyImage(device.getHandle(), textures[i].image, null);
+            vkFreeMemory(device.getHandle(), textures[i].mem, null);
+            vkDestroySampler(device.getHandle(), textures[i].sampler, null);
         }
 
         for (int i = 0; i < swapchainImageCount; i++) {
-            vkDestroyImageView(device.getDevice(), buffers[i].view, null);
+            vkDestroyImageView(device.getHandle(), buffers[i].view, null);
         }
 
-        vkDestroyImageView(device.getDevice(), depth.view, null);
-        vkDestroyImage(device.getDevice(), depth.image, null);
-        vkFreeMemory(device.getDevice(), depth.mem, null);
+        vkDestroyImageView(device.getHandle(), depth.view, null);
+        vkDestroyImage(device.getHandle(), depth.image, null);
+        vkFreeMemory(device.getHandle(), depth.mem, null);
 
         buffers = null;
 
@@ -1451,51 +1450,51 @@ public final class RenderManager {
             }
 
             // Wait for work to finish before updating MVP.
-            vkDeviceWaitIdle(device.getDevice());
+            vkDeviceWaitIdle(device.getHandle());
         }
     }
 
     private void demo_cleanup() {
         for (int i = 0; i < swapchainImageCount; i++) {
-            vkDestroyFramebuffer(device.getDevice(), framebuffers.get(i), null);
+            vkDestroyFramebuffer(device.getHandle(), framebuffers.get(i), null);
         }
         memFree(framebuffers);
-        vkDestroyDescriptorPool(device.getDevice(), desc_pool, null);
+        vkDestroyDescriptorPool(device.getHandle(), desc_pool, null);
 
         if (setup_cmd != null) {
-            vkFreeCommandBuffers(device.getDevice(), cmd_pool, setup_cmd);
+            vkFreeCommandBuffers(device.getHandle(), cmd_pool, setup_cmd);
             setup_cmd = null;
         }
-        vkFreeCommandBuffers(device.getDevice(), cmd_pool, draw_cmd);
-        vkDestroyCommandPool(device.getDevice(), cmd_pool, null);
+        vkFreeCommandBuffers(device.getHandle(), cmd_pool, draw_cmd);
+        vkDestroyCommandPool(device.getHandle(), cmd_pool, null);
 
-        vkDestroyPipeline(device.getDevice(), pipeline, null);
-        vkDestroyRenderPass(device.getDevice(), render_pass, null);
-        vkDestroyPipelineLayout(device.getDevice(), pipeline_layout, null);
-        vkDestroyDescriptorSetLayout(device.getDevice(), desc_layout, null);
+        vkDestroyPipeline(device.getHandle(), pipeline, null);
+        vkDestroyRenderPass(device.getHandle(), render_pass, null);
+        vkDestroyPipelineLayout(device.getHandle(), pipeline_layout, null);
+        vkDestroyDescriptorSetLayout(device.getHandle(), desc_layout, null);
 
-        vkDestroyBuffer(device.getDevice(), vertices.buf, null);
-        vkFreeMemory(device.getDevice(), vertices.mem, null);
+        vkDestroyBuffer(device.getHandle(), vertices.buf, null);
+        vkFreeMemory(device.getHandle(), vertices.mem, null);
         vertices.vi.free();
         vertices.vi_bindings.free();
         vertices.vi_attrs.free();
 
         for (int i = 0; i < DEMO_TEXTURE_COUNT; i++) {
-            vkDestroyImageView(device.getDevice(), textures[i].view, null);
-            vkDestroyImage(device.getDevice(), textures[i].image, null);
-            vkFreeMemory(device.getDevice(), textures[i].mem, null);
-            vkDestroySampler(device.getDevice(), textures[i].sampler, null);
+            vkDestroyImageView(device.getHandle(), textures[i].view, null);
+            vkDestroyImage(device.getHandle(), textures[i].image, null);
+            vkFreeMemory(device.getHandle(), textures[i].mem, null);
+            vkDestroySampler(device.getHandle(), textures[i].sampler, null);
         }
 
         for (int i = 0; i < swapchainImageCount; i++) {
-            vkDestroyImageView(device.getDevice(), buffers[i].view, null);
+            vkDestroyImageView(device.getHandle(), buffers[i].view, null);
         }
 
-        vkDestroyImageView(device.getDevice(), depth.view, null);
-        vkDestroyImage(device.getDevice(), depth.image, null);
-        vkFreeMemory(device.getDevice(), depth.mem, null);
+        vkDestroyImageView(device.getHandle(), depth.view, null);
+        vkDestroyImage(device.getHandle(), depth.image, null);
+        vkFreeMemory(device.getHandle(), depth.mem, null);
 
-        vkDestroySwapchainKHR(device.getDevice(), swapchain, null);
+        vkDestroySwapchainKHR(device.getHandle(), swapchain, null);
         buffers = null;
 
         device.destroy();

@@ -8,7 +8,7 @@ import org.lwjgl.vulkan.KHRSurface;
 
 import java.nio.LongBuffer;
 
-import static client.render.vk.Debug.vkCheck;
+import static client.render.vk.Global.vkCheck;
 
 public class Surface {
     private final long handle;
@@ -16,13 +16,13 @@ public class Surface {
     public Surface(Instance instance, Window window) {
         try (MemoryStack stack = MemoryStack.stackPush()) {
             LongBuffer pSurface = stack.mallocLong(1);
-            vkCheck(GLFWVulkan.glfwCreateWindowSurface(instance.getInstance(), window.getHandle(), null, pSurface), "Failed to create window surface");
+            vkCheck(GLFWVulkan.glfwCreateWindowSurface(instance.getHandle(), window.getHandle(), null, pSurface), "Failed to create window surface");
             handle = pSurface.get(0);
         }
     }
 
     public void destroy(Instance instance) {
-        KHRSurface.vkDestroySurfaceKHR(instance.getInstance(), handle, null);
+        KHRSurface.vkDestroySurfaceKHR(instance.getHandle(), handle, null);
     }
 
     public long getHandle() {

@@ -7,12 +7,12 @@ import org.lwjgl.vulkan.VkDevice;
 import org.lwjgl.vulkan.VkDeviceCreateInfo;
 import org.lwjgl.vulkan.VkDeviceQueueCreateInfo;
 
-import static client.render.vk.Debug.vkCheck;
+import static client.render.vk.Global.vkCheck;
 import static org.lwjgl.vulkan.VK10.vkCreateDevice;
 import static org.lwjgl.vulkan.VK10.vkDestroyDevice;
 
 public class Device {
-    private final VkDevice device;
+    private final VkDevice handle;
 
     public Device(PhysicalDevice physicalDevice, Queue queue) {
         try (MemoryStack stack = MemoryStack.stackPush()) {
@@ -29,16 +29,16 @@ public class Device {
             pQueueCreateInfos.put(queue.getCreateInfo());
 
             PointerBuffer pDevice = stack.mallocPointer(1);
-            vkCheck(vkCreateDevice(physicalDevice.getDevice(), createInfo, null, pDevice), "Failed to create logical device");
-            device = new VkDevice(pDevice.get(0), physicalDevice.getDevice(), createInfo);
+            vkCheck(vkCreateDevice(physicalDevice.getHandle(), createInfo, null, pDevice), "Failed to create logical device");
+            handle = new VkDevice(pDevice.get(0), physicalDevice.getHandle(), createInfo);
         }
     }
 
     public void destroy() {
-        vkDestroyDevice(device, null);
+        vkDestroyDevice(handle, null);
     }
 
-    public VkDevice getDevice() {
-        return device;
+    public VkDevice getHandle() {
+        return handle;
     }
 }

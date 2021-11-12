@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
-import static client.render.vk.Debug.vkCheck;
+import static client.render.vk.Global.vkCheck;
 import static org.lwjgl.vulkan.VK10.*;
 
 public class PhysicalDevice {
@@ -21,7 +21,7 @@ public class PhysicalDevice {
             KHRSwapchain.VK_KHR_SWAPCHAIN_EXTENSION_NAME
     };
 
-    private final VkPhysicalDevice device;
+    private final VkPhysicalDevice handle;
     private final int score;
 
     private QueueFamilies queueFamilies;
@@ -31,7 +31,7 @@ public class PhysicalDevice {
     private VkPhysicalDeviceProperties properties;
 
     public PhysicalDevice(MemoryStack stack, Instance instance, long aPhysicalDevice, Surface surface) {
-        device = new VkPhysicalDevice(aPhysicalDevice, instance.getInstance());
+        handle = new VkPhysicalDevice(aPhysicalDevice, instance.getHandle());
         score = checkDevice(stack, surface);
     }
 
@@ -39,7 +39,7 @@ public class PhysicalDevice {
         try (MemoryStack stack = MemoryStack.stackPush()) {
             // Enumerate physical device count which supports vulkan
             IntBuffer pPhysicalDeviceCount = stack.mallocInt(1);
-            vkCheck(vkEnumeratePhysicalDevices(instance.getInstance(), pPhysicalDeviceCount, null), "Failed to enumerate physical device count");
+            vkCheck(vkEnumeratePhysicalDevices(instance.getHandle(), pPhysicalDeviceCount, null), "Failed to enumerate physical device count");
             int physicalDeviceCount = pPhysicalDeviceCount.get(0);
             pPhysicalDeviceCount.position(0);
 
@@ -50,7 +50,7 @@ public class PhysicalDevice {
             SortedMap<Integer, PhysicalDevice> physicalDevices = new TreeMap<>();
 
             PointerBuffer pPhysicalDevices = stack.mallocPointer(physicalDeviceCount);
-            vkCheck(vkEnumeratePhysicalDevices(instance.getInstance(), pPhysicalDeviceCount, pPhysicalDevices), "Failed to enumerate physical devices");
+            vkCheck(vkEnumeratePhysicalDevices(instance.getHandle(), pPhysicalDeviceCount, pPhysicalDevices), "Failed to enumerate physical devices");
             for (int physicalDeviceIndex = 0; physicalDeviceIndex < pPhysicalDevices.capacity(); physicalDeviceIndex++) {
                 PhysicalDevice physicalDevice = new PhysicalDevice(stack, instance, pPhysicalDevices.get(physicalDeviceIndex), surface);
 
@@ -100,12 +100,12 @@ public class PhysicalDevice {
     private int checkDeviceExtensions(MemoryStack stack) {
         // Enumerate physical device extension count
         IntBuffer pDeviceExtensionCount = stack.mallocInt(1);
-        vkCheck(vkEnumerateDeviceExtensionProperties(device, (String) null, pDeviceExtensionCount, null), "Failed to enumerate physical device extension count");
+        vkCheck(vkEnumerateDeviceExtensionProperties(handle, (String) null, pDeviceExtensionCount, null), "Failed to enumerate physical device extension count");
         int deviceExtensionCount = pDeviceExtensionCount.get(0);
 
         // Enumerate physical device extensions
         VkExtensionProperties.Buffer pDeviceExtensions = VkExtensionProperties.malloc(deviceExtensionCount, stack);
-        vkCheck(vkEnumerateDeviceExtensionProperties(device, (String) null, pDeviceExtensionCount, pDeviceExtensions), "Failed to enumerate physical device extensions");
+        vkCheck(vkEnumerateDeviceExtensionProperties(handle, (String) null, pDeviceExtensionCount, pDeviceExtensions), "Failed to enumerate physical device extensions");
 
         List<String> deviceExtensions = new ArrayList<>(deviceExtensionCount);
 
@@ -133,7 +133,7 @@ public class PhysicalDevice {
     private int checkDeviceFeatures(MemoryStack stack) {
         //Get physical device features
         VkPhysicalDeviceFeatures physicalDeviceFeatures = VkPhysicalDeviceFeatures.malloc(stack);
-        vkGetPhysicalDeviceFeatures(device, physicalDeviceFeatures);
+        vkGetPhysicalDeviceFeatures(handle, physicalDeviceFeatures);
 
         requiredFeatures = VkPhysicalDeviceFeatures.calloc(stack);
 
@@ -150,7 +150,7 @@ public class PhysicalDevice {
 
     private int checkDeviceProperties(MemoryStack stack) {
         VkPhysicalDeviceProperties physicalDeviceProperties = VkPhysicalDeviceProperties.malloc(stack);
-        vkGetPhysicalDeviceProperties(device, physicalDeviceProperties);
+        vkGetPhysicalDeviceProperties(handle, physicalDeviceProperties);
 
         int score = 0;
         if (physicalDeviceProperties.deviceType() == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU) {
@@ -171,8 +171,8 @@ public class PhysicalDevice {
         return 0;
     }
 
-    public VkPhysicalDevice getDevice() {
-        return device;
+    public VkPhysicalDevice getHandle() {
+        return handle;
     }
 
     public int getScore() {
