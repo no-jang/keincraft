@@ -41,7 +41,7 @@ public class Instance {
             PointerBuffer requiredExtensions = checkExtensions(stack);
 
             // General application information
-            ByteBuffer appName = stack.ASCII("minecraft-clone");
+            ByteBuffer appName = stack.ASCII("keincraft");
             int appVersion = VK_MAKE_VERSION(1, 0, 0);
 
             VkApplicationInfo appInfo = VkApplicationInfo.malloc(stack)

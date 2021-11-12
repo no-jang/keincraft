@@ -34,7 +34,7 @@ public class Window {
             glfwWindowHint(GLFW_COCOA_RETINA_FRAMEBUFFER, GLFW_FALSE);
         }
 
-        handle = glfwCreateWindow(width, height, "minecraft-clone", 0, 0);
+        handle = glfwCreateWindow(width, height, "keincraft", 0, 0);
         if (handle == NULL) {
             throw new RuntimeException("Unable to create GLFW window");
         }
