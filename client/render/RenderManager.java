@@ -231,6 +231,7 @@ public final class RenderManager {
     private float depthIncrement = -0.01f;
     private Device device;
     private Queue queue;
+    private Queue presentationQueue;
     private int format;
     private int color_space;
     private long cmd_pool;
@@ -269,9 +270,11 @@ public final class RenderManager {
     private void demo_init_vk_swapchain() {
         try (MemoryStack stack = stackPush()) {
             queue = new Queue(gpu.getQueueFamilies().getGraphicsFamilyIndex());
+            presentationQueue = new Queue(gpu.getQueueFamilies().getPresentFamilyIndex());
             device = new Device(gpu, List.of(queue));
 
             queue.setup(device);
+            presentationQueue.setup(device);
 
             // Get the list of VkFormat's that are supported:
             check(vkGetPhysicalDeviceSurfaceFormatsKHR(gpu.getHandle(), surface.getHandle(), ip, null));
