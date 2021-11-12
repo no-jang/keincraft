@@ -8,7 +8,7 @@ import client.render.vk.Instance;
 import client.render.vk.device.Device;
 import client.render.vk.device.PhysicalDevice;
 import client.render.vk.device.queue.Queue;
-import client.render.vk.surface.Surface;
+import client.render.vk.present.Surface;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.*;

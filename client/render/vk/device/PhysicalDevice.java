@@ -2,7 +2,8 @@ package client.render.vk.device;
 
 import client.render.vk.Instance;
 import client.render.vk.device.queue.QueueFamilies;
-import client.render.vk.surface.Surface;
+import client.render.vk.present.PresentMode;
+import client.render.vk.present.Surface;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.*;
@@ -14,6 +15,7 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 
 import static client.render.vk.Global.vkCheck;
+import static org.lwjgl.vulkan.KHRSurface.*;
 import static org.lwjgl.vulkan.VK10.*;
 
 public class PhysicalDevice {
@@ -29,6 +31,9 @@ public class PhysicalDevice {
     private PointerBuffer requiredExtensions;
     private VkPhysicalDeviceFeatures requiredFeatures;
     private VkPhysicalDeviceProperties properties;
+    private VkSurfaceCapabilitiesKHR surfaceCapabilities;
+    private List<VkSurfaceFormatKHR> surfaceFormats;
+    private List<PresentMode> surfacePresentModes;
 
     public PhysicalDevice(MemoryStack stack, Instance instance, long aPhysicalDevice, Surface surface) {
         handle = new VkPhysicalDevice(aPhysicalDevice, instance.getHandle());
@@ -59,7 +64,7 @@ public class PhysicalDevice {
             }
 
             int bestDeviceScore = physicalDevices.firstKey();
-            if (bestDeviceScore == 0) {
+            if (bestDeviceScore < 0) {
                 throw new RuntimeException("No suitable graphics device found");
             }
 
@@ -72,27 +77,33 @@ public class PhysicalDevice {
 
         int extensionScore = checkDeviceExtensions(stack);
         if (extensionScore < 0) {
-            return 0;
+            return -1;
         }
         score += extensionScore;
 
         int featureScore = checkDeviceFeatures(stack);
         if (featureScore < 0) {
-            return 0;
+            return -1;
         }
         score += featureScore;
 
         int propertiesScore = checkDeviceProperties(stack);
         if (propertiesScore < 0) {
-            return 0;
+            return -1;
         }
         score += propertiesScore;
 
         int queueFamiliesScore = checkQueueFamilies(stack, surface);
         if (queueFamiliesScore < 0) {
-            return 0;
+            return -1;
         }
         score += queueFamiliesScore;
+
+        int swapChainScore = checkSwapChain(stack, surface);
+        if (swapChainScore < 0) {
+            return -1;
+        }
+        score += swapChainScore;
 
         return score;
     }
@@ -171,6 +182,43 @@ public class PhysicalDevice {
         return 0;
     }
 
+    private int checkSwapChain(MemoryStack stack, Surface surface) {
+        surfaceCapabilities = VkSurfaceCapabilitiesKHR.malloc(stack);
+        vkCheck(vkGetPhysicalDeviceSurfaceCapabilitiesKHR(handle, surface.getHandle(), surfaceCapabilities),
+                "Failed to get physical device surface capabilities");
+
+        IntBuffer pFormatsCount = stack.mallocInt(1);
+        vkCheck(vkGetPhysicalDeviceSurfaceFormatsKHR(handle, surface.getHandle(), pFormatsCount, null),
+                "Failed to get physical device surface format count");
+        int formatCounts = pFormatsCount.get(0);
+
+        VkSurfaceFormatKHR.Buffer pFormats = VkSurfaceFormatKHR.malloc(formatCounts, stack);
+        vkCheck(vkGetPhysicalDeviceSurfaceFormatsKHR(handle, surface.getHandle(), pFormatsCount, pFormats),
+                "Failed to get physical device surface formats");
+
+        surfaceFormats = new ArrayList<>(formatCounts);
+        for (int formatIndex = 0; formatIndex < formatCounts; formatIndex++) {
+            surfaceFormats.add(pFormats.get(formatIndex));
+        }
+
+        IntBuffer pPresentModesCount = stack.mallocInt(1);
+        vkCheck(vkGetPhysicalDeviceSurfacePresentModesKHR(handle, surface.getHandle(), pPresentModesCount, null),
+                "Failed to get physical device surface present modes");
+        int presentModesCount = pPresentModesCount.get(0);
+
+        IntBuffer pPresentModes = stack.mallocInt(presentModesCount);
+        vkCheck(vkGetPhysicalDeviceSurfacePresentModesKHR(handle, surface.getHandle(), pPresentModesCount, pPresentModes),
+                "Failed to get physical device surface present modes");
+
+        surfacePresentModes = PresentMode.fromBuffer(pPresentModes);
+
+        if (surfaceFormats.isEmpty() || surfacePresentModes.isEmpty()) {
+            return -1;
+        }
+
+        return 0;
+    }
+
     public VkPhysicalDevice getHandle() {
         return handle;
     }
@@ -193,5 +241,17 @@ public class PhysicalDevice {
 
     public QueueFamilies getQueueFamilies() {
         return queueFamilies;
+    }
+
+    public VkSurfaceCapabilitiesKHR getSurfaceCapabilities() {
+        return surfaceCapabilities;
+    }
+
+    public List<VkSurfaceFormatKHR> getSurfaceFormats() {
+        return surfaceFormats;
+    }
+
+    public List<PresentMode> getSurfacePresentModes() {
+        return surfacePresentModes;
     }
 }
