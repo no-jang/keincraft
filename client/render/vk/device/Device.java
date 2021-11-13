@@ -7,8 +7,6 @@ import org.lwjgl.vulkan.VkDevice;
 import org.lwjgl.vulkan.VkDeviceCreateInfo;
 import org.lwjgl.vulkan.VkDeviceQueueCreateInfo;
 
-import java.util.List;
-
 import static client.render.vk.Global.vkCheck;
 import static org.lwjgl.vulkan.VK10.vkCreateDevice;
 import static org.lwjgl.vulkan.VK10.vkDestroyDevice;
@@ -16,9 +14,9 @@ import static org.lwjgl.vulkan.VK10.vkDestroyDevice;
 public class Device {
     private final VkDevice handle;
 
-    public Device(PhysicalDevice physicalDevice, List<Queue> queues) {
+    public Device(PhysicalDevice physicalDevice, Queue queue) {
         try (MemoryStack stack = MemoryStack.stackPush()) {
-            VkDeviceQueueCreateInfo.Buffer pQueueCreateInfos = VkDeviceQueueCreateInfo.malloc(queues.size(), stack)
+            VkDeviceQueueCreateInfo.Buffer pQueueCreateInfos = VkDeviceQueueCreateInfo.malloc(1, stack)
                     .flags(0);
 
             VkDeviceCreateInfo createInfo = VkDeviceCreateInfo.malloc(stack)
@@ -28,9 +26,7 @@ public class Device {
                     .ppEnabledExtensionNames(physicalDevice.getRequiredExtensions())
                     .ppEnabledLayerNames(null);
 
-            for (Queue queue : queues) {
-                pQueueCreateInfos.put(queue.getCreateInfo());
-            }
+            pQueueCreateInfos.put(queue.getCreateInfo());
 
             PointerBuffer pDevice = stack.mallocPointer(1);
             vkCheck(vkCreateDevice(physicalDevice.getHandle(), createInfo, null, pDevice), "Failed to create logical device");

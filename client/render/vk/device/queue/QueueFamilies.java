@@ -13,8 +13,7 @@ import static org.lwjgl.vulkan.VK10.VK_QUEUE_GRAPHICS_BIT;
 import static org.lwjgl.vulkan.VK10.vkGetPhysicalDeviceQueueFamilyProperties;
 
 public class QueueFamilies {
-    private int graphicsFamilyIndex = -1;
-    private int presentFamilyIndex = -1;
+    private int familyIndex = -1;
 
     public QueueFamilies(MemoryStack stack, PhysicalDevice device, Surface surface) {
         // Get queue properties
@@ -30,28 +29,26 @@ public class QueueFamilies {
             VkQueueFamilyProperties queueFamily = pQueueFamilies.get(familyIndex);
 
             // Check if queue supports graphics
-            if ((queueFamily.queueFlags() & VK_QUEUE_GRAPHICS_BIT) != 0) {
-                graphicsFamilyIndex = familyIndex;
+            if ((queueFamily.queueFlags() & VK_QUEUE_GRAPHICS_BIT) == 0) {
+                break;
             }
 
             // Check if queue supports presentation
             IntBuffer pPresentSupported = stack.mallocInt(1);
             vkCheck(KHRSurface.vkGetPhysicalDeviceSurfaceSupportKHR(device.getHandle(), familyIndex, surface.getHandle(), pPresentSupported), "Failed to get device present surface queue support");
-            if (pPresentSupported.get(0) == 1) {
-                presentFamilyIndex = familyIndex;
+            if (pPresentSupported.get(0) != 1) {
+                break;
             }
+
+            this.familyIndex = familyIndex;
         }
     }
 
     public boolean isSuitable() {
-        return graphicsFamilyIndex != -1 && presentFamilyIndex != -1;
+        return familyIndex != -1;
     }
 
-    public int getGraphicsFamilyIndex() {
-        return graphicsFamilyIndex;
-    }
-
-    public int getPresentFamilyIndex() {
-        return presentFamilyIndex;
+    public int getFamilyIndex() {
+        return familyIndex;
     }
 }

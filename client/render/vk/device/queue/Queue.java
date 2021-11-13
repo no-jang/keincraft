@@ -16,6 +16,7 @@ public class Queue {
         try (MemoryStack stack = MemoryStack.stackPush()) {
             createInfo = VkDeviceQueueCreateInfo.malloc(stack)
                     .sType$Default()
+                    .flags(0)
                     .queueFamilyIndex(familyIndex)
                     .pQueuePriorities(stack.floats(1.0f));
         }

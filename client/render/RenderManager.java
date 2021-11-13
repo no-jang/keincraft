@@ -9,6 +9,7 @@ import client.render.vk.device.Device;
 import client.render.vk.device.PhysicalDevice;
 import client.render.vk.device.queue.Queue;
 import client.render.vk.present.Surface;
+import client.render.vk.present.Swapchain;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.*;
@@ -17,7 +18,6 @@ import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.nio.LongBuffer;
-import java.util.List;
 
 import static org.lwjgl.glfw.GLFW.glfwPollEvents;
 import static org.lwjgl.system.MemoryStack.stackPush;
@@ -225,13 +225,12 @@ public final class RenderManager {
     private Instance instance;
     private PhysicalDevice gpu;
     private Surface surface;
-    private int width = 300;
-    private int height = 300;
+    private final int width = 300;
+    private final int height = 300;
     private float depthStencil = 1.0f;
     private float depthIncrement = -0.01f;
     private Device device;
     private Queue queue;
-    private Queue presentationQueue;
     private int format;
     private int color_space;
     private long cmd_pool;
@@ -269,29 +268,14 @@ public final class RenderManager {
 
     private void demo_init_vk_swapchain() {
         try (MemoryStack stack = stackPush()) {
-            queue = new Queue(gpu.getQueueFamilies().getGraphicsFamilyIndex());
-            presentationQueue = new Queue(gpu.getQueueFamilies().getPresentFamilyIndex());
-            device = new Device(gpu, List.of(queue));
+            queue = new Queue(gpu.getQueueFamilies().getFamilyIndex());
+            device = new Device(gpu, queue);
 
             queue.setup(device);
-            presentationQueue.setup(device);
 
-            // Get the list of VkFormat's that are supported:
-            check(vkGetPhysicalDeviceSurfaceFormatsKHR(gpu.getHandle(), surface.getHandle(), ip, null));
-
-            VkSurfaceFormatKHR.Buffer surfFormats = VkSurfaceFormatKHR.malloc(ip.get(0), stack);
-            check(vkGetPhysicalDeviceSurfaceFormatsKHR(gpu.getHandle(), surface.getHandle(), ip, surfFormats));
-
-            // If the format list includes just one entry of VK_FORMAT_UNDEFINED,
-            // the surface has no preferred format.  Otherwise, at least one
-            // supported format will be returned.
-            if (ip.get(0) == 1 && surfFormats.get(0).format() == VK_FORMAT_UNDEFINED) {
-                format = VK_FORMAT_B8G8R8A8_UNORM;
-            } else {
-                assert ip.get(0) >= 1;
-                format = surfFormats.get(0).format();
-            }
-            color_space = surfFormats.get(0).colorSpace();
+            VkSurfaceFormatKHR format = Swapchain.chooseSurfaceFormat(gpu.getSurfaceFormats());
+            this.format = format.format();
+            this.color_space = format.colorSpace();
 
             // Get Memory information and properties
             vkGetPhysicalDeviceMemoryProperties(gpu.getHandle(), memory_properties);
@@ -377,32 +361,7 @@ public final class RenderManager {
             IntBuffer presentModes = stack.mallocInt(ip.get(0));
             check(vkGetPhysicalDeviceSurfacePresentModesKHR(gpu.getHandle(), surface.getHandle(), ip, presentModes));
 
-            VkExtent2D swapchainExtent = VkExtent2D.malloc(stack);
-            // width and height are either both 0xFFFFFFFF, or both not 0xFFFFFFFF.
-            if (surfCapabilities.currentExtent().width() == 0xFFFFFFFF) {
-                // If the surface size is undefined, the size is set to the size
-                // of the images requested, which must fit within the minimum and
-                // maximum values.
-                swapchainExtent.width(width);
-                swapchainExtent.height(height);
-
-                if (swapchainExtent.width() < surfCapabilities.minImageExtent().width()) {
-                    swapchainExtent.width(surfCapabilities.minImageExtent().width());
-                } else if (swapchainExtent.width() > surfCapabilities.maxImageExtent().width()) {
-                    swapchainExtent.width(surfCapabilities.maxImageExtent().width());
-                }
-
-                if (swapchainExtent.height() < surfCapabilities.minImageExtent().height()) {
-                    swapchainExtent.height(surfCapabilities.minImageExtent().height());
-                } else if (swapchainExtent.height() > surfCapabilities.maxImageExtent().height()) {
-                    swapchainExtent.height(surfCapabilities.maxImageExtent().height());
-                }
-            } else {
-                // If the surface size is defined, the swap chain size must match
-                swapchainExtent.set(surfCapabilities.currentExtent());
-                width = surfCapabilities.currentExtent().width();
-                height = surfCapabilities.currentExtent().height();
-            }
+            VkExtent2D swapchainExtent = Swapchain.chooseExtent(stack, window, gpu.getSurfaceCapabilities());
 
             int swapchainPresentMode = VK_PRESENT_MODE_FIFO_KHR;
 
@@ -1160,7 +1119,7 @@ public final class RenderManager {
                     .sType$Default()
                     .pNext(NULL)
                     .flags(VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT)
-                    .queueFamilyIndex(gpu.getQueueFamilies().getGraphicsFamilyIndex());
+                    .queueFamilyIndex(gpu.getQueueFamilies().getFamilyIndex());
 
             check(vkCreateCommandPool(device.getHandle(), cmd_pool_info, null, lp));
 

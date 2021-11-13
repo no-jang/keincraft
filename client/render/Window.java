@@ -80,7 +80,7 @@ public class Window {
         return handle;
     }
 
-    private void setFramebufferSize(int width, int height) {
+    public void setFramebufferSize(int width, int height) {
         this.width = width;
         this.height = height;
     }
