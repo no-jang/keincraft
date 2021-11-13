@@ -21,12 +21,12 @@ public class PosRot {
 
     public void movePosition(float offsetX, float offsetY, float offsetZ) {
         if (offsetZ != 0) {
-            position.x += (float) Math.sin(Math.toRadians(rotation.y)) * -1.0f * offsetZ;
+            position.x += Math.sin(Math.toRadians(rotation.y)) * -1.0f * offsetZ;
             position.z += (float) Math.cos(Math.toRadians(rotation.y)) * offsetZ;
         }
 
         if (offsetX != 0) {
-            position.x += (float) Math.sin(Math.toRadians(rotation.y - 90)) * -1.0f * offsetX;
+            position.x += Math.sin(Math.toRadians(rotation.y - 90)) * -1.0f * offsetX;
             position.z += (float) Math.cos(Math.toRadians(rotation.y - 90)) * offsetZ;
         }
 
