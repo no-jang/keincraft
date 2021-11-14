@@ -12,49 +12,55 @@ import client.render.vk.setup.Device;
 import client.render.vk.setup.Instance;
 import client.render.vk.setup.PhysicalDevice;
 import client.render.vk.setup.queue.Queue;
+import org.lwjgl.system.MemoryStack;
 
 import java.util.List;
 
 public class RenderTriangle {
     public static void main(String[] args) {
-        Window window = new Window(900, 900);
-        Instance instance = new Instance();
-        Surface surface = new Surface(instance, window);
+        try (MemoryStack stack = MemoryStack.stackPush()) {
+            Window window = new Window(900, 900);
+            Instance instance = new Instance();
+            Surface surface = new Surface(instance, window);
 
-        PhysicalDevice physicalDevice = PhysicalDevice.pickPhysicalDevice(instance, surface);
-        Queue queue = new Queue(physicalDevice.getQueueFamilies().getFamilyIndex());
-        Device device = new Device(physicalDevice, queue);
+            PhysicalDevice physicalDevice = PhysicalDevice.pickPhysicalDevice(instance, surface);
+            Queue queue = new Queue(physicalDevice.getQueueFamilies().getFamilyIndex());
+            Device device = new Device(physicalDevice, queue);
 
-        queue.setup(device);
+            queue.setup(device);
 
-        Swapchain swapchain = new Swapchain(physicalDevice, device, surface, window);
-        List<Image> images = Image.createImages(device, swapchain);
-        List<ImageView> imageViews = ImageView.createImageViews(device, swapchain, images);
+            Swapchain swapchain = new Swapchain(physicalDevice, device, surface, window);
+            List<Image> images = Image.createImages(device, swapchain);
+            List<ImageView> imageViews = ImageView.createImageViews(device, swapchain, images);
 
-        Shader vertexShader = Shader.readFromFile(device, ShaderType.VERTEX_SHADER, "base", "shaders/base.vert.spv");
-        Shader fragmentShader = Shader.readFromFile(device, ShaderType.FRAGMENT_SHADER, "base", "shaders/base.frag.spv");
+            List<Shader> shaders = List.of(
+                    Shader.readFromFile(stack, device, ShaderType.VERTEX_SHADER, "shaders/base.vert.spv"),
+                    Shader.readFromFile(stack, device, ShaderType.FRAGMENT_SHADER, "shaders/base.frag.spv")
+            );
 
-        Pipeline pipeline = new Pipeline(device, swapchain);
-        Renderpass renderpass = new Renderpass(device, swapchain);
+            Renderpass renderpass = new Renderpass(device, swapchain);
+            Pipeline pipeline = new Pipeline(device, swapchain, renderpass, shaders);
 
-        vertexShader.destroy(device);
-        fragmentShader.destroy(device);
+            for (Shader shader : shaders) {
+                shader.destroy(device);
+            }
 
-        while (!window.shouldClose()) {
-            window.input();
+            while (!window.shouldClose()) {
+                window.input();
+            }
+
+            pipeline.destroy(device);
+            renderpass.destroy(device);
+
+            for (ImageView view : imageViews) {
+                view.destroy(device);
+            }
+
+            swapchain.destroy(device);
+            device.destroy();
+            surface.destroy(instance);
+            instance.destroy();
+            window.destroy();
         }
-
-        renderpass.destroy(device);
-        pipeline.destroy(device);
-
-        for (ImageView view : imageViews) {
-            view.destroy(device);
-        }
-
-        swapchain.destroy(device);
-        device.destroy();
-        surface.destroy(instance);
-        instance.destroy();
-        window.destroy();
     }
 }

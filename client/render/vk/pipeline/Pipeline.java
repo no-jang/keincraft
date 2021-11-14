@@ -6,23 +6,42 @@ import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.*;
 
 import java.nio.LongBuffer;
+import java.util.List;
 
 import static client.render.vk.Global.vkCheck;
 import static org.lwjgl.vulkan.VK10.*;
 
 public class Pipeline {
     private final long layoutHandle;
+    private final long handle;
 
-    public Pipeline(Device device, Swapchain swapchain) {
+    public Pipeline(Device device, Swapchain swapchain, Renderpass renderpass, List<Shader> shaders) {
         try (MemoryStack stack = MemoryStack.stackPush()) {
-            VkPipelineVertexInputStateCreateInfo vertexInput = VkPipelineVertexInputStateCreateInfo.malloc(stack)
+            VkPipelineLayoutCreateInfo layoutCreateInfo = VkPipelineLayoutCreateInfo.malloc(stack)
+                    .sType$Default()
+                    .flags(0)
+                    .pNext(0)
+                    .pSetLayouts(null)
+                    .pPushConstantRanges(null);
+
+            LongBuffer pPipelineLayout = stack.mallocLong(1);
+            vkCheck(vkCreatePipelineLayout(device.getHandle(), layoutCreateInfo, null, pPipelineLayout), "Failed to create pipeline layout");
+            layoutHandle = pPipelineLayout.get(0);
+
+            VkPipelineShaderStageCreateInfo.Buffer pShaders = VkPipelineShaderStageCreateInfo.calloc(shaders.size(), stack);
+
+            for (int i = 0; i < shaders.size(); i++) {
+                pShaders.put(i, shaders.get(i).getShaderStageCreateInfo());
+            }
+
+            VkPipelineVertexInputStateCreateInfo vertexInput = VkPipelineVertexInputStateCreateInfo.calloc(stack)
                     .sType$Default()
                     .flags(0)
                     .pNext(0)
                     .pVertexBindingDescriptions(null)
                     .pVertexAttributeDescriptions(null);
 
-            VkPipelineInputAssemblyStateCreateInfo inputAssembly = VkPipelineInputAssemblyStateCreateInfo.malloc(stack)
+            VkPipelineInputAssemblyStateCreateInfo inputAssembly = VkPipelineInputAssemblyStateCreateInfo.calloc(stack)
                     .sType$Default()
                     .flags(0)
                     .pNext(0)
@@ -42,7 +61,7 @@ public class Pipeline {
                     .offset(VkOffset2D.malloc(stack)
                             .set(0, 0));
 
-            VkPipelineViewportStateCreateInfo viewportState = VkPipelineViewportStateCreateInfo.malloc(stack)
+            VkPipelineViewportStateCreateInfo viewportState = VkPipelineViewportStateCreateInfo.calloc(stack)
                     .sType$Default()
                     .flags(0)
                     .pNext(0)
@@ -53,7 +72,7 @@ public class Pipeline {
                     .pScissors(VkRect2D.malloc(1, stack)
                             .put(0, scissors));
 
-            VkPipelineRasterizationStateCreateInfo rasterizer = VkPipelineRasterizationStateCreateInfo.malloc(stack)
+            VkPipelineRasterizationStateCreateInfo rasterizer = VkPipelineRasterizationStateCreateInfo.calloc(stack)
                     .sType$Default()
                     .flags(0)
                     .pNext(0)
@@ -68,7 +87,7 @@ public class Pipeline {
                     .depthBiasClamp(0.0f)
                     .depthBiasSlopeFactor(0.0f);
 
-            VkPipelineMultisampleStateCreateInfo multisampling = VkPipelineMultisampleStateCreateInfo.malloc(stack)
+            VkPipelineMultisampleStateCreateInfo multisampling = VkPipelineMultisampleStateCreateInfo.calloc(stack)
                     .sType$Default()
                     .flags(0)
                     .pNext(0)
@@ -99,20 +118,38 @@ public class Pipeline {
                             .put(0, colorBlendAttachment))
                     .blendConstants(stack.floats(0.0f, 0.0f, 0.0f, 0.0f));
 
-            VkPipelineLayoutCreateInfo createInfo = VkPipelineLayoutCreateInfo.malloc(stack)
+            VkGraphicsPipelineCreateInfo createInfo = VkGraphicsPipelineCreateInfo.calloc(stack)
                     .sType$Default()
                     .flags(0)
                     .pNext(0)
-                    .pSetLayouts(null)
-                    .pPushConstantRanges(null);
+                    .pStages(pShaders)
+                    .pVertexInputState(vertexInput)
+                    .pInputAssemblyState(inputAssembly)
+                    .pViewportState(viewportState)
+                    .pRasterizationState(rasterizer)
+                    .pMultisampleState(multisampling)
+                    .pDepthStencilState(null)
+                    .pColorBlendState(colorBlend)
+                    .pDynamicState(null)
+                    .layout(layoutHandle)
+                    .renderPass(renderpass.getHandle())
+                    .subpass(0)
+                    .basePipelineHandle(VK_NULL_HANDLE)
+                    .basePipelineIndex(-1);
 
-            LongBuffer pPipelineLayout = stack.mallocLong(1);
-            vkCheck(vkCreatePipelineLayout(device.getHandle(), createInfo, null, pPipelineLayout), "Failed to create pipeline layout");
-            layoutHandle = pPipelineLayout.get(0);
+            LongBuffer pPipeline = stack.mallocLong(1);
+            vkCheck(vkCreateGraphicsPipelines(device.getHandle(), VK_NULL_HANDLE, VkGraphicsPipelineCreateInfo.malloc(1, stack).put(0, createInfo),
+                    null, pPipeline), "Failed to create graphics pipeline");
+            handle = pPipeline.get(0);
         }
     }
 
     public void destroy(Device device) {
+        vkDestroyPipeline(device.getHandle(), handle, null);
         vkDestroyPipelineLayout(device.getHandle(), layoutHandle, null);
+    }
+
+    public long getHandle() {
+        return handle;
     }
 }

@@ -18,31 +18,30 @@ public class Shader {
     private final long handle;
     private final VkPipelineShaderStageCreateInfo shaderStageCreateInfo;
 
-    public Shader(Device device, ShaderType type, String name, byte[] code) {
-        try (MemoryStack stack = MemoryStack.stackPush()) {
-            VkShaderModuleCreateInfo createInfo = VkShaderModuleCreateInfo.malloc(stack)
-                    .sType$Default()
-                    .flags(0)
-                    .pNext(0)
-                    .pCode(stack.bytes(code));
+    public Shader(MemoryStack stack, Device device, ShaderType type, byte[] code) {
+        VkShaderModuleCreateInfo createInfo = VkShaderModuleCreateInfo.malloc(stack)
+                .sType$Default()
+                .flags(0)
+                .pNext(0)
+                .pCode(stack.bytes(code));
 
-            LongBuffer pShaderModule = stack.mallocLong(1);
-            vkCheck(vkCreateShaderModule(device.getHandle(), createInfo, null, pShaderModule), "Failed to create shader module");
-            handle = pShaderModule.get(0);
+        LongBuffer pShaderModule = stack.mallocLong(1);
+        vkCheck(vkCreateShaderModule(device.getHandle(), createInfo, null, pShaderModule), "Failed to create shader module");
+        handle = pShaderModule.get(0);
 
-            shaderStageCreateInfo = VkPipelineShaderStageCreateInfo.malloc(stack)
-                    .sType$Default()
-                    .flags(0)
-                    .pNext(0)
-                    .module(handle)
-                    .pName(stack.ASCII(name));
-        }
+        shaderStageCreateInfo = VkPipelineShaderStageCreateInfo.calloc(stack)
+                .sType$Default()
+                .flags(0)
+                .pNext(0)
+                .module(handle)
+                .stage(type.getIndex())
+                .pName(stack.UTF8("main"));
     }
 
-    public static Shader readFromFile(Device device, ShaderType type, String name, String path) {
+    public static Shader readFromFile(MemoryStack stack, Device device, ShaderType type, String path) {
         try {
             byte[] code = Files.readAllBytes(Path.of(path));
-            return new Shader(device, type, name, code);
+            return new Shader(stack, device, type, code);
         } catch (IOException e) {
             throw new RuntimeException("Failed to load shader from file: " + path, e);
         }
