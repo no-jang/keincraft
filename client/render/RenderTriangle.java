@@ -3,6 +3,7 @@ package client.render;
 import client.render.vk.draw.CommandBuffers;
 import client.render.vk.draw.CommandPool;
 import client.render.vk.draw.Framebuffer;
+import client.render.vk.draw.Semaphore;
 import client.render.vk.pipeline.Pipeline;
 import client.render.vk.pipeline.Renderpass;
 import client.render.vk.pipeline.Shader;
@@ -45,18 +46,24 @@ public class RenderTriangle {
             Renderpass renderpass = new Renderpass(device, swapchain);
             Pipeline pipeline = new Pipeline(device, swapchain, renderpass, shaders);
 
+            for (Shader shader : shaders) {
+                shader.destroy(device);
+            }
+
             List<Framebuffer> framebuffers = Framebuffer.createFramebuffers(device, renderpass, swapchain, imageViews);
 
             CommandPool commandPool = new CommandPool(physicalDevice, device);
             CommandBuffers commandBuffers = new CommandBuffers(device, commandPool, renderpass, swapchain, pipeline, framebuffers);
 
-            for (Shader shader : shaders) {
-                shader.destroy(device);
-            }
+            Semaphore imageAvailableSemaphore = new Semaphore(device);
+            Semaphore renderFinishedSemaphore = new Semaphore(device);
 
             while (!window.shouldClose()) {
                 window.input();
             }
+
+            imageAvailableSemaphore.destroy(device);
+            renderFinishedSemaphore.destroy(device);
 
             commandPool.destroy(device);
 
