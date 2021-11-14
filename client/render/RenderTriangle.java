@@ -1,5 +1,6 @@
 package client.render;
 
+import client.render.vk.draw.Framebuffer;
 import client.render.vk.pipeline.Pipeline;
 import client.render.vk.pipeline.Renderpass;
 import client.render.vk.pipeline.Shader;
@@ -18,6 +19,7 @@ import java.util.List;
 
 public class RenderTriangle {
     public static void main(String[] args) {
+        //TODO Find solutions to remove this
         try (MemoryStack stack = MemoryStack.stackPush()) {
             Window window = new Window(900, 900);
             Instance instance = new Instance();
@@ -41,12 +43,18 @@ public class RenderTriangle {
             Renderpass renderpass = new Renderpass(device, swapchain);
             Pipeline pipeline = new Pipeline(device, swapchain, renderpass, shaders);
 
+            List<Framebuffer> framebuffers = Framebuffer.createFramebuffers(device, renderpass, swapchain, imageViews);
+
             for (Shader shader : shaders) {
                 shader.destroy(device);
             }
 
             while (!window.shouldClose()) {
                 window.input();
+            }
+
+            for (Framebuffer framebuffer : framebuffers) {
+                framebuffer.destroy(device);
             }
 
             pipeline.destroy(device);
