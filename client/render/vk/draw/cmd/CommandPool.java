@@ -1,4 +1,4 @@
-package client.render.vk.draw;
+package client.render.vk.draw.cmd;
 
 import client.render.vk.Global;
 import client.render.vk.device.Device;
