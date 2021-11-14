@@ -35,11 +35,19 @@ public class Renderpass {
                     .pColorAttachments(VkAttachmentReference.malloc(1, stack)
                             .put(0, colorAttachmentReference));
 
+            VkSubpassDependency dependency = VkSubpassDependency.malloc(stack)
+                    .srcSubpass(VK10.VK_SUBPASS_EXTERNAL)
+                    .dstSubpass(0)
+                    .srcStageMask(VK10.VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT)
+                    .srcAccessMask(0)
+                    .dstStageMask(VK10.VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT)
+                    .dstAccessMask(VK10.VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT);
+
             VkRenderPassCreateInfo createInfo = VkRenderPassCreateInfo.malloc(stack)
                     .sType$Default()
                     .flags(0)
                     .pNext(0)
-                    .pDependencies(null)
+                    .pDependencies(VkSubpassDependency.malloc(1, stack).put(0, dependency))
                     .pAttachments(VkAttachmentDescription.malloc(1, stack)
                             .put(0, colorAttachment))
                     .pSubpasses(VkSubpassDescription.malloc(1, stack)
