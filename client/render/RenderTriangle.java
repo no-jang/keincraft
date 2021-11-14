@@ -1,6 +1,7 @@
 package client.render;
 
 import client.render.vk.pipeline.Pipeline;
+import client.render.vk.pipeline.Renderpass;
 import client.render.vk.pipeline.Shader;
 import client.render.vk.pipeline.ShaderType;
 import client.render.vk.present.Image;
@@ -34,6 +35,7 @@ public class RenderTriangle {
         Shader fragmentShader = Shader.readFromFile(device, ShaderType.FRAGMENT_SHADER, "base", "shaders/base.frag.spv");
 
         Pipeline pipeline = new Pipeline(device, swapchain);
+        Renderpass renderpass = new Renderpass(device, swapchain);
 
         vertexShader.destroy(device);
         fragmentShader.destroy(device);
@@ -42,6 +44,7 @@ public class RenderTriangle {
             window.input();
         }
 
+        renderpass.destroy(device);
         pipeline.destroy(device);
 
         for (ImageView view : imageViews) {
