@@ -1,5 +1,7 @@
 package client.render.vk;
 
+import org.lwjgl.vulkan.KHRSwapchain;
+
 import static org.lwjgl.vulkan.VK10.*;
 
 public final class Global {
@@ -31,8 +33,10 @@ public final class Global {
                 return "out of host memory";
             case VK_ERROR_TOO_MANY_OBJECTS:
                 return "too many objects";
+            case KHRSwapchain.VK_ERROR_OUT_OF_DATE_KHR:
+                return "swapchain is out of date";
             default:
-                return "unknown error";
+                return "unknown error: " + result;
         }
     }
 
