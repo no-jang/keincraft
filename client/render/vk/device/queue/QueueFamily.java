@@ -1,4 +1,4 @@
-package client.render.vk.setup.queue;
+package client.render.vk.device.queue;
 
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.VkDeviceQueueCreateInfo;

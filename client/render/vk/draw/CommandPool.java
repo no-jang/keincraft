@@ -1,8 +1,8 @@
 package client.render.vk.draw;
 
 import client.render.vk.Global;
-import client.render.vk.setup.Device;
-import client.render.vk.setup.PhysicalDevice;
+import client.render.vk.device.Device;
+import client.render.vk.device.PhysicalDevice;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.VK10;
 import org.lwjgl.vulkan.VkCommandPoolCreateInfo;

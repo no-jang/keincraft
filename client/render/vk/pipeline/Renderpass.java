@@ -1,8 +1,8 @@
 package client.render.vk.pipeline;
 
 import client.render.vk.Global;
+import client.render.vk.device.Device;
 import client.render.vk.present.Swapchain;
-import client.render.vk.setup.Device;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.*;
 

@@ -1,10 +1,10 @@
-package client.render.vk.draw;
+package client.render.vk.draw.sync;
 
 import client.render.vk.Global;
+import client.render.vk.device.Device;
 import client.render.vk.pipeline.Renderpass;
-import client.render.vk.present.ImageView;
 import client.render.vk.present.Swapchain;
-import client.render.vk.setup.Device;
+import client.render.vk.present.image.ImageView;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.VK10;
 import org.lwjgl.vulkan.VkFramebufferCreateInfo;

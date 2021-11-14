@@ -1,4 +1,4 @@
-package client.render.vk.pipeline;
+package client.render.vk.pipeline.shader;
 
 import org.lwjgl.vulkan.VK10;
 

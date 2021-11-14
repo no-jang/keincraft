@@ -1,7 +1,7 @@
-package client.render.vk.setup.queue;
+package client.render.vk.device.queue;
 
+import client.render.vk.device.PhysicalDevice;
 import client.render.vk.present.Surface;
-import client.render.vk.setup.PhysicalDevice;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.KHRSurface;
 import org.lwjgl.vulkan.VkQueueFamilyProperties;

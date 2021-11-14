@@ -1,10 +1,11 @@
 package client.render.vk.draw;
 
 import client.render.vk.Global;
+import client.render.vk.device.Device;
+import client.render.vk.draw.sync.Framebuffer;
 import client.render.vk.pipeline.Pipeline;
 import client.render.vk.pipeline.Renderpass;
 import client.render.vk.present.Swapchain;
-import client.render.vk.setup.Device;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.*;

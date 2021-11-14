@@ -1,6 +1,6 @@
-package client.render.vk.pipeline;
+package client.render.vk.pipeline.shader;
 
-import client.render.vk.setup.Device;
+import client.render.vk.device.Device;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.VkPipelineShaderStageCreateInfo;
 import org.lwjgl.vulkan.VkShaderModuleCreateInfo;

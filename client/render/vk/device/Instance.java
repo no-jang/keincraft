@@ -1,4 +1,4 @@
-package client.render.vk.setup;
+package client.render.vk.device;
 
 import client.render.vk.Global;
 import org.lwjgl.PointerBuffer;

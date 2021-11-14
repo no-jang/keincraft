@@ -1,8 +1,8 @@
 package client.render.vk.present;
 
 import client.render.Window;
-import client.render.vk.setup.Device;
-import client.render.vk.setup.PhysicalDevice;
+import client.render.vk.device.Device;
+import client.render.vk.device.PhysicalDevice;
 import common.util.math.Math;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.*;
