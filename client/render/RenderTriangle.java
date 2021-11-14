@@ -26,11 +26,23 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+// TODO Add vertex buffers
+// TODO Add uniform buffers
+// TODO Add projection, model, view matrix
+// TODO Add movement
+// TODO Add textures
+// TODO Add depth buffers
+// TODO Load models
+// TODO Generate texture mipmaps
+// TODO Add multisampling (antialiasing)
+// TODO Generate chunk mesh
+// TODO Render chunk
 public class RenderTriangle {
     private static final int MAX_FRAMES_IN_FLIGHT = 2;
 
     public static void main(String[] args) {
-        //TODO Find solutions to remove this
+        // TODO Find solutions to remove this
+        // TODO Add initialization (init everything) stack and framestack (stack per frame)
         try (MemoryStack stack = MemoryStack.stackPush()) {
             Window window = new Window(900, 900);
             Instance instance = new Instance();
@@ -42,6 +54,7 @@ public class RenderTriangle {
 
             queue.setup(device);
 
+            // Recreate swapchain on window resize
             Swapchain swapchain = new Swapchain(physicalDevice, device, surface, window);
             List<Image> images = Image.createImages(device, swapchain);
             List<ImageView> imageViews = ImageView.createImageViews(device, swapchain, images);
@@ -61,6 +74,8 @@ public class RenderTriangle {
             List<Framebuffer> framebuffers = Framebuffer.createFramebuffers(device, renderpass, swapchain, imageViews);
 
             CommandPool commandPool = new CommandPool(physicalDevice, device);
+
+            // TODO Add builder for building command buffers easy
             CommandBuffers commandBuffers = new CommandBuffers(device, commandPool, renderpass, swapchain, pipeline, framebuffers);
 
             List<Semaphore> imageAvailableSemaphores = new ArrayList<>(MAX_FRAMES_IN_FLIGHT);
@@ -76,6 +91,7 @@ public class RenderTriangle {
 
             int currentFrame = 0;
 
+            // TODO Make smaller
             while (!window.shouldClose()) {
                 window.input();
 
