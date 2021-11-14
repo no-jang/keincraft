@@ -10,8 +10,7 @@ import java.nio.IntBuffer;
 import java.util.stream.IntStream;
 
 import static client.render.vk.Global.vkCheck;
-import static org.lwjgl.vulkan.VK10.VK_QUEUE_GRAPHICS_BIT;
-import static org.lwjgl.vulkan.VK10.vkGetPhysicalDeviceQueueFamilyProperties;
+import static org.lwjgl.vulkan.VK10.*;
 
 public class QueueFamilies {
     private int graphicsFamilyIndex = -1;
@@ -31,14 +30,14 @@ public class QueueFamilies {
             VkQueueFamilyProperties queueFamily = pQueueFamilies.get(familyIndex);
 
             // Check if queue supports graphics
-            if ((queueFamily.queueFlags() & VK_QUEUE_GRAPHICS_BIT) == 0) {
+            if ((queueFamily.queueFlags() & VK_QUEUE_GRAPHICS_BIT) != 0) {
                 this.graphicsFamilyIndex = familyIndex;
             }
 
             // Check if queue supports presentation
             IntBuffer pPresentSupported = stack.mallocInt(1);
             vkCheck(KHRSurface.vkGetPhysicalDeviceSurfaceSupportKHR(device.getHandle(), familyIndex, surface.getHandle(), pPresentSupported), "Failed to get device present surface queue support");
-            if (pPresentSupported.get(0) != 1) {
+            if (pPresentSupported.get(0) == VK_TRUE) {
                 this.presentFamilyIndex = familyIndex;
             }
         }

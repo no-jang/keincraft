@@ -3,35 +3,30 @@ package client.render.vk.setup.queue;
 import client.render.vk.setup.Device;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.system.MemoryStack;
-import org.lwjgl.vulkan.VkDeviceQueueCreateInfo;
 import org.lwjgl.vulkan.VkQueue;
+
+import java.util.List;
 
 import static org.lwjgl.vulkan.VK10.vkGetDeviceQueue;
 
 public class Queue {
-    private VkDeviceQueueCreateInfo createInfo;
-    private VkQueue handle;
+    private final VkQueue handle;
 
-    public Queue(MemoryStack stack, int familyIndex) {
-        createInfo = VkDeviceQueueCreateInfo.malloc(stack)
-                .sType$Default()
-                .flags(0)
-                .queueFamilyIndex(familyIndex)
-                .pQueuePriorities(stack.floats(1.0f));
-    }
-
-    public void setup(MemoryStack stack, Device device) {
+    public Queue(MemoryStack stack, Device device, QueueFamily family) {
         PointerBuffer pHandle = stack.mallocPointer(1);
-        vkGetDeviceQueue(device.getHandle(), createInfo.queueFamilyIndex(), 0, pHandle);
+        vkGetDeviceQueue(device.getHandle(), family.getCreateInfo().queueFamilyIndex(), 0, pHandle);
         handle = new VkQueue(pHandle.get(0), device.getHandle());
-        createInfo = null;
-    }
-
-    public VkDeviceQueueCreateInfo getCreateInfo() {
-        return createInfo;
     }
 
     public VkQueue getHandle() {
         return handle;
+    }
+
+    public static Queue createQueue(MemoryStack stack, Device device, List<QueueFamily> queueFamilies, int familyIndex) {
+        QueueFamily family = queueFamilies.stream()
+                .filter(f -> f.getCreateInfo().queueFamilyIndex() == familyIndex)
+                .findFirst()
+                .orElseThrow(() -> new RuntimeException("Failed to find requested queue family in device queue families"));
+        return new Queue(stack, device, family);
     }
 }

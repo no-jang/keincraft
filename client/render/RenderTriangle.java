@@ -14,6 +14,7 @@ import client.render.vk.setup.Device;
 import client.render.vk.setup.Instance;
 import client.render.vk.setup.PhysicalDevice;
 import client.render.vk.setup.queue.Queue;
+import client.render.vk.setup.queue.QueueFamily;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.KHRSwapchain;
 import org.lwjgl.vulkan.VK10;
@@ -41,8 +42,6 @@ public class RenderTriangle {
     private static final int MAX_FRAMES_IN_FLIGHT = 2;
 
     public static void main(String[] args) {
-        // TODO Find solutions to remove this
-        // TODO Add initialization (init everything) stack and framestack (stack per frame)
         Window window;
         Surface surface;
         Instance instance;
@@ -68,13 +67,13 @@ public class RenderTriangle {
             surface = new Surface(stack, instance, window);
 
             PhysicalDevice physicalDevice = PhysicalDevice.pickPhysicalDevice(stack, instance, surface);
-            graphicsQueue = new Queue(stack, physicalDevice.getQueueFamilies().getGraphicsFamilyIndex());
-            presentQueue = new Queue(stack, physicalDevice.getQueueFamilies().getPresentFamilyIndex());
-            device = new Device(stack, physicalDevice, queue);
+            List<QueueFamily> queueFamilies = QueueFamily.createQueueFamilies(stack, physicalDevice.getQueueFamilies());
+            device = new Device(stack, physicalDevice, queueFamilies);
 
-            queue.setup(stack, device);
+            graphicsQueue = Queue.createQueue(stack, device, queueFamilies, physicalDevice.getQueueFamilies().getGraphicsFamilyIndex());
+            presentQueue = Queue.createQueue(stack, device, queueFamilies, physicalDevice.getQueueFamilies().getPresentFamilyIndex());
 
-            // Recreate swapchain on window resize
+            // TODO Recreate swapchain on window resize
             swapchain = new Swapchain(stack, physicalDevice, device, surface, window);
             List<Image> images = Image.createImages(stack, device, swapchain);
             imageViews = ImageView.createImageViews(stack, device, swapchain, images);
@@ -138,7 +137,7 @@ public class RenderTriangle {
 
                 VK10.vkResetFences(device.getHandle(), inFlightFences.get(currentFrame).getHandle());
 
-                Global.vkCheck(VK10.vkQueueSubmit(queue.getHandle(), submitInfo, inFlightFences.get(currentFrame).getHandle()), "Failed to submit to graphics queue");
+                Global.vkCheck(VK10.vkQueueSubmit(graphicsQueue.getHandle(), submitInfo, inFlightFences.get(currentFrame).getHandle()), "Failed to submit to graphics queue");
 
                 VkPresentInfoKHR presentInfo = VkPresentInfoKHR.calloc(stack)
                         .sType$Default()
@@ -149,8 +148,8 @@ public class RenderTriangle {
                         .pImageIndices(stack.ints(imageIndex))
                         .pResults(null);
 
-                Global.vkCheck(KHRSwapchain.vkQueuePresentKHR(queue.getHandle(), presentInfo), "Failed to submit to present queue");
-                VK10.vkQueueWaitIdle(queue.getHandle());
+                Global.vkCheck(KHRSwapchain.vkQueuePresentKHR(presentQueue.getHandle(), presentInfo), "Failed to submit to present queue");
+                VK10.vkQueueWaitIdle(presentQueue.getHandle());
 
                 currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
             }

@@ -1,11 +1,9 @@
 package client;
 
-import client.render.RenderManager;
 import client.render.Window;
 
 public class MinecraftClient {
     private Window window;
-    private RenderManager renderManager;
 
     public MinecraftClient() {
 

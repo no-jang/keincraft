@@ -1,6 +1,6 @@
 package client.render.vk.setup;
 
-import client.render.vk.setup.queue.Queue;
+import client.render.vk.setup.queue.QueueFamily;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.VkDevice;
@@ -16,8 +16,8 @@ import static org.lwjgl.vulkan.VK10.vkDestroyDevice;
 public class Device {
     private final VkDevice handle;
 
-    public Device(MemoryStack stack, PhysicalDevice physicalDevice, List<Queue> queues) {
-        VkDeviceQueueCreateInfo.Buffer pQueueCreateInfos = VkDeviceQueueCreateInfo.malloc(queues.size(), stack)
+    public Device(MemoryStack stack, PhysicalDevice physicalDevice, List<QueueFamily> queues) {
+        VkDeviceQueueCreateInfo.Buffer pQueueCreateInfos = VkDeviceQueueCreateInfo.calloc(queues.size(), stack)
                 .flags(0);
 
         VkDeviceCreateInfo createInfo = VkDeviceCreateInfo.malloc(stack)
@@ -27,7 +27,7 @@ public class Device {
                 .ppEnabledExtensionNames(physicalDevice.getRequiredExtensions())
                 .ppEnabledLayerNames(null);
 
-        for (Queue queue : queues) {
+        for (QueueFamily queue : queues) {
             pQueueCreateInfos.put(queue.getCreateInfo());
         }
 
