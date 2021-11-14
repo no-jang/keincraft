@@ -16,6 +16,7 @@ import static org.lwjgl.vulkan.VK10.*;
 public class Swapchain {
     private final long handle;
     private final VkSurfaceFormatKHR format;
+    private final VkExtent2D extent;
 
     private int imageCount;
 
@@ -25,7 +26,7 @@ public class Swapchain {
 
             format = chooseSurfaceFormat(physicalDevice.getSurfaceFormats());
             PresentMode presentMode = choosePresentMode(physicalDevice.getSurfacePresentModes());
-            VkExtent2D extent = chooseExtent(stack, window, capabilities);
+            extent = chooseExtent(stack, window, capabilities);
 
             // Swap chain image count, +1 because we don't want to wait for the driver before starting next frame
             imageCount = capabilities.minImageCount() + 1;
@@ -68,6 +69,10 @@ public class Swapchain {
 
     public VkSurfaceFormatKHR getFormat() {
         return format;
+    }
+
+    public VkExtent2D getExtent() {
+        return extent;
     }
 
     public static VkSurfaceFormatKHR chooseSurfaceFormat(List<VkSurfaceFormatKHR> availableFormats) {
