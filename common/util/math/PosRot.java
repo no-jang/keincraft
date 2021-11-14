@@ -2,6 +2,8 @@ package common.util.math;
 
 import org.joml.Vector3f;
 
+import java.lang.Math;
+
 public class PosRot {
     protected final Vector3f position;
     protected final Vector3f rotation;

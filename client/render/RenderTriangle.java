@@ -4,8 +4,12 @@ import client.render.vk.Instance;
 import client.render.vk.device.Device;
 import client.render.vk.device.PhysicalDevice;
 import client.render.vk.device.queue.Queue;
+import client.render.vk.present.Image;
+import client.render.vk.present.ImageView;
 import client.render.vk.present.Surface;
 import client.render.vk.present.Swapchain;
+
+import java.util.List;
 
 public class RenderTriangle {
     public static void main(String[] args) {
@@ -20,9 +24,21 @@ public class RenderTriangle {
         queue.setup(device);
 
         Swapchain swapchain = new Swapchain(physicalDevice, device, surface, window);
+        List<Image> images = Image.createImages(device, swapchain);
+        List<ImageView> imageViews = ImageView.createImageViews(device, swapchain, images);
 
         while (!window.shouldClose()) {
             window.input();
         }
+
+        for (ImageView view : imageViews) {
+            view.destroy(device);
+        }
+
+        swapchain.destroy(device);
+        device.destroy();
+        surface.destroy(instance);
+        instance.destroy();
+        window.destroy();
     }
 }

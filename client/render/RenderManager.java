@@ -8,6 +8,8 @@ import client.render.vk.Instance;
 import client.render.vk.device.Device;
 import client.render.vk.device.PhysicalDevice;
 import client.render.vk.device.queue.Queue;
+import client.render.vk.present.Image;
+import client.render.vk.present.ImageView;
 import client.render.vk.present.Surface;
 import client.render.vk.present.Swapchain;
 import org.lwjgl.PointerBuffer;
@@ -18,12 +20,12 @@ import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.nio.LongBuffer;
+import java.util.List;
 
 import static org.lwjgl.glfw.GLFW.glfwPollEvents;
 import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.system.MemoryUtil.*;
 import static org.lwjgl.vulkan.EXTDebugReport.VK_EXT_DEBUG_REPORT_EXTENSION_NAME;
-import static org.lwjgl.vulkan.KHRSurface.*;
 import static org.lwjgl.vulkan.KHRSwapchain.*;
 import static org.lwjgl.vulkan.VK10.*;
 
@@ -231,12 +233,9 @@ public final class RenderManager {
     private float depthIncrement = -0.01f;
     private Device device;
     private Queue queue;
-    private int format;
-    private int color_space;
     private long cmd_pool;
     private VkCommandBuffer draw_cmd;
-    private long swapchain;
-    private int swapchainImageCount;
+    private Swapchain swapchain;
     private SwapchainBuffers[] buffers;
     private int current_buffer;
     private VkCommandBuffer setup_cmd;
@@ -272,10 +271,6 @@ public final class RenderManager {
             device = new Device(gpu, queue);
 
             queue.setup(device);
-
-            VkSurfaceFormatKHR format = Swapchain.chooseSurfaceFormat(gpu.getSurfaceFormats());
-            this.format = format.format();
-            this.color_space = format.colorSpace();
 
             // Get Memory information and properties
             vkGetPhysicalDeviceMemoryProperties(gpu.getHandle(), memory_properties);
@@ -349,102 +344,10 @@ public final class RenderManager {
     }
 
     private void demo_prepare_buffers() {
-        long oldSwapchain = swapchain;
-
         try (MemoryStack stack = stackPush()) {
-            // Check the surface capabilities and formats
-            VkSurfaceCapabilitiesKHR surfCapabilities = VkSurfaceCapabilitiesKHR.malloc(stack);
-            check(vkGetPhysicalDeviceSurfaceCapabilitiesKHR(gpu.getHandle(), surface.getHandle(), surfCapabilities));
-
-            check(vkGetPhysicalDeviceSurfacePresentModesKHR(gpu.getHandle(), surface.getHandle(), ip, null));
-
-            IntBuffer presentModes = stack.mallocInt(ip.get(0));
-            check(vkGetPhysicalDeviceSurfacePresentModesKHR(gpu.getHandle(), surface.getHandle(), ip, presentModes));
-
-            VkExtent2D swapchainExtent = Swapchain.chooseExtent(stack, window, gpu.getSurfaceCapabilities());
-
-            int swapchainPresentMode = VK_PRESENT_MODE_FIFO_KHR;
-
-            // Determine the number of VkImage's to use in the swap chain.
-            // Application desires to only acquire 1 image at a time (which is
-            // "surfCapabilities.minImageCount").
-            int desiredNumOfSwapchainImages = surfCapabilities.minImageCount();
-            // If maxImageCount is 0, we can ask for as many images as we want;
-            // otherwise we're limited to maxImageCount
-            if ((surfCapabilities.maxImageCount() > 0) &&
-                    (desiredNumOfSwapchainImages > surfCapabilities.maxImageCount())) {
-                // Application must settle for fewer images than desired:
-                desiredNumOfSwapchainImages = surfCapabilities.maxImageCount();
-            }
-
-            int preTransform;
-            if ((surfCapabilities.supportedTransforms() & VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR) != 0) {
-                preTransform = VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR;
-            } else {
-                preTransform = surfCapabilities.currentTransform();
-            }
-
-            VkSwapchainCreateInfoKHR swapchain = VkSwapchainCreateInfoKHR.calloc(stack)
-                    .sType$Default()
-                    .surface(surface.getHandle())
-                    .minImageCount(desiredNumOfSwapchainImages)
-                    .imageFormat(format)
-                    .imageColorSpace(color_space)
-                    .imageExtent(swapchainExtent)
-                    .imageArrayLayers(1)
-                    .imageUsage(VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT)
-                    .imageSharingMode(VK_SHARING_MODE_EXCLUSIVE)
-                    .preTransform(preTransform)
-                    .compositeAlpha(VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR)
-                    .presentMode(swapchainPresentMode)
-                    .clipped(true)
-                    .oldSwapchain(oldSwapchain);
-
-            check(vkCreateSwapchainKHR(device.getHandle(), swapchain, null, lp));
-            this.swapchain = lp.get(0);
-
-            // If we just re-created an existing swapchain, we should destroy the old
-            // swapchain at this point.
-            // Note: destroying the swapchain also cleans up all its associated
-            // presentable images once the platform is done with them.
-            if (oldSwapchain != VK_NULL_HANDLE) {
-                vkDestroySwapchainKHR(device.getHandle(), oldSwapchain, null);
-            }
-
-            check(vkGetSwapchainImagesKHR(device.getHandle(), this.swapchain, ip, null));
-            swapchainImageCount = ip.get(0);
-
-            LongBuffer swapchainImages = stack.mallocLong(swapchainImageCount);
-            check(vkGetSwapchainImagesKHR(device.getHandle(), this.swapchain, ip, swapchainImages));
-
-            buffers = new SwapchainBuffers[swapchainImageCount];
-
-            for (int i = 0; i < swapchainImageCount; i++) {
-                buffers[i] = new SwapchainBuffers();
-                buffers[i].image = swapchainImages.get(i);
-
-                VkImageViewCreateInfo color_attachment_view = VkImageViewCreateInfo.malloc(stack)
-                        .sType$Default()
-                        .pNext(NULL)
-                        .flags(0)
-                        .image(buffers[i].image)
-                        .viewType(VK_IMAGE_VIEW_TYPE_2D)
-                        .format(format)
-                        .components(it -> it
-                                .r(VK_COMPONENT_SWIZZLE_R)
-                                .g(VK_COMPONENT_SWIZZLE_G)
-                                .b(VK_COMPONENT_SWIZZLE_B)
-                                .a(VK_COMPONENT_SWIZZLE_A))
-                        .subresourceRange(it -> it
-                                .aspectMask(VK_IMAGE_ASPECT_COLOR_BIT)
-                                .baseMipLevel(0)
-                                .levelCount(1)
-                                .baseArrayLayer(0)
-                                .layerCount(1));
-
-                check(vkCreateImageView(device.getHandle(), color_attachment_view, null, lp));
-                buffers[i].view = lp.get(0);
-            }
+            swapchain = new Swapchain(gpu, device, surface, window);
+            List<Image> images = Image.createImages(device, swapchain);
+            List<ImageView> imageViews = ImageView.createImageViews(device, swapchain, images);
 
             current_buffer = 0;
         }
@@ -880,7 +783,7 @@ public final class RenderManager {
             VkAttachmentDescription.Buffer attachments = VkAttachmentDescription.malloc(2, stack);
             attachments.get(0)
                     .flags(0)
-                    .format(format)
+                    .format(swapchain.getFormat().format())
                     .samples(VK_SAMPLE_COUNT_1_BIT)
                     .loadOp(VK_ATTACHMENT_LOAD_OP_CLEAR)
                     .storeOp(VK_ATTACHMENT_STORE_OP_STORE)
@@ -1103,9 +1006,9 @@ public final class RenderManager {
                     .height(height)
                     .layers(1);
 
-            framebuffers = memAllocLong(swapchainImageCount);
+            framebuffers = memAllocLong(swapchain.getImageCount());
 
-            for (int i = 0; i < swapchainImageCount; i++) {
+            for (int i = 0; i < swapchain.getImageCount(); i++) {
                 attachments.put(0, buffers[i].view);
                 check(vkCreateFramebuffer(device.getHandle(), fb_info, null, lp));
                 framebuffers.put(i, lp.get(0));
@@ -1272,7 +1175,7 @@ public final class RenderManager {
             long drawCompleteSemaphore = lp.get(0);
 
             // Get the index of the next available swapchain image:
-            int err = vkAcquireNextImageKHR(device.getHandle(), swapchain, ~0L,
+            int err = vkAcquireNextImageKHR(device.getHandle(), swapchain.getHandle(), ~0L,
                     imageAcquiredSemaphore,
                     NULL, // TODO: Show use of fence
                     ip);
@@ -1317,7 +1220,7 @@ public final class RenderManager {
                     .pNext(NULL)
                     .pWaitSemaphores(lp2)
                     .swapchainCount(1)
-                    .pSwapchains(lp.put(0, swapchain))
+                    .pSwapchains(lp.put(0, swapchain.getHandle()))
                     .pImageIndices(ip.put(0, current_buffer));
 
             err = vkQueuePresentKHR(queue.getHandle(), present);
@@ -1345,7 +1248,7 @@ public final class RenderManager {
         //
         // First, perform part of the demo_cleanup() function:
 
-        for (int i = 0; i < swapchainImageCount; i++) {
+        for (int i = 0; i < swapchain.getImageCount(); i++) {
             vkDestroyFramebuffer(device.getHandle(), framebuffers.get(i), null);
         }
         memFree(framebuffers);
@@ -1373,7 +1276,7 @@ public final class RenderManager {
             vkDestroySampler(device.getHandle(), textures[i].sampler, null);
         }
 
-        for (int i = 0; i < swapchainImageCount; i++) {
+        for (int i = 0; i < swapchain.getImageCount(); i++) {
             vkDestroyImageView(device.getHandle(), buffers[i].view, null);
         }
 
@@ -1418,7 +1321,7 @@ public final class RenderManager {
     }
 
     private void demo_cleanup() {
-        for (int i = 0; i < swapchainImageCount; i++) {
+        for (int i = 0; i < swapchain.getImageCount(); i++) {
             vkDestroyFramebuffer(device.getHandle(), framebuffers.get(i), null);
         }
         memFree(framebuffers);
@@ -1449,7 +1352,7 @@ public final class RenderManager {
             vkDestroySampler(device.getHandle(), textures[i].sampler, null);
         }
 
-        for (int i = 0; i < swapchainImageCount; i++) {
+        for (int i = 0; i < swapchain.getImageCount(); i++) {
             vkDestroyImageView(device.getHandle(), buffers[i].view, null);
         }
 
@@ -1457,7 +1360,7 @@ public final class RenderManager {
         vkDestroyImage(device.getHandle(), depth.image, null);
         vkFreeMemory(device.getHandle(), depth.mem, null);
 
-        vkDestroySwapchainKHR(device.getHandle(), swapchain, null);
+        swapchain.destroy(device);
         buffers = null;
 
         device.destroy();

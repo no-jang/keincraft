@@ -14,18 +14,21 @@ import static client.render.vk.Global.vkCheck;
 import static org.lwjgl.vulkan.VK10.*;
 
 public class Swapchain {
-    private final long aHandle;
+    private final long handle;
+    private final VkSurfaceFormatKHR format;
+
+    private int imageCount;
 
     public Swapchain(PhysicalDevice physicalDevice, Device device, Surface surface, Window window) {
         try (MemoryStack stack = MemoryStack.stackPush()) {
             VkSurfaceCapabilitiesKHR capabilities = physicalDevice.getSurfaceCapabilities();
 
-            VkSurfaceFormatKHR surfaceFormat = chooseSurfaceFormat(physicalDevice.getSurfaceFormats());
+            format = chooseSurfaceFormat(physicalDevice.getSurfaceFormats());
             PresentMode presentMode = choosePresentMode(physicalDevice.getSurfacePresentModes());
             VkExtent2D extent = chooseExtent(stack, window, capabilities);
 
             // Swap chain image count, +1 because we don't want to wait for the driver before starting next frame
-            int imageCount = capabilities.minImageCount() + 1;
+            imageCount = capabilities.minImageCount() + 1;
 
             if (capabilities.maxImageCount() > 0 && imageCount > capabilities.maxImageCount()) {
                 imageCount = capabilities.maxImageCount();
@@ -35,8 +38,8 @@ public class Swapchain {
                     .sType$Default()
                     .surface(surface.getHandle())
                     .minImageCount(imageCount)
-                    .imageFormat(surfaceFormat.format())
-                    .imageColorSpace(surfaceFormat.colorSpace())
+                    .imageFormat(format.format())
+                    .imageColorSpace(format.colorSpace())
                     .imageExtent(extent)
                     .imageArrayLayers(1)
                     .imageUsage(VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT);
@@ -55,8 +58,16 @@ public class Swapchain {
 
             LongBuffer pSwapChain = stack.mallocLong(1);
             vkCheck(KHRSwapchain.vkCreateSwapchainKHR(device.getHandle(), createInfo, null, pSwapChain), "Failed to create swapChain");
-            aHandle = pSwapChain.get(0);
+            handle = pSwapChain.get(0);
         }
+    }
+
+    public int getImageCount() {
+        return imageCount;
+    }
+
+    public VkSurfaceFormatKHR getFormat() {
+        return format;
     }
 
     public static VkSurfaceFormatKHR chooseSurfaceFormat(List<VkSurfaceFormatKHR> availableFormats) {
@@ -95,10 +106,10 @@ public class Swapchain {
     }
 
     public void destroy(Device device) {
-        KHRSwapchain.vkDestroySwapchainKHR(device.getHandle(), aHandle, null);
+        KHRSwapchain.vkDestroySwapchainKHR(device.getHandle(), handle, null);
     }
 
     public long getHandle() {
-        return aHandle;
+        return handle;
     }
 }
