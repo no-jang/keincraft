@@ -1,14 +1,16 @@
 package client.render.vk.present;
 
+import org.lwjgl.vulkan.KHRSurface;
+
 import java.nio.IntBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
 public enum PresentMode {
-    IMMEDIATE(0),
-    MAILBOX(1),
-    FIFO(2),
-    FIFO_RELAXED(3);
+    IMMEDIATE(KHRSurface.VK_PRESENT_MODE_IMMEDIATE_KHR),
+    MAILBOX(KHRSurface.VK_PRESENT_MODE_MAILBOX_KHR),
+    FIFO(KHRSurface.VK_PRESENT_MODE_FIFO_KHR),
+    FIFO_RELAXED(KHRSurface.VK_PRESENT_MODE_FIFO_RELAXED_KHR);
 
     private final int index;
 

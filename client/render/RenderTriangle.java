@@ -1,5 +1,7 @@
 package client.render;
 
+import client.render.vk.pipeline.Shader;
+import client.render.vk.pipeline.ShaderType;
 import client.render.vk.present.Image;
 import client.render.vk.present.ImageView;
 import client.render.vk.present.Surface;
@@ -26,6 +28,12 @@ public class RenderTriangle {
         Swapchain swapchain = new Swapchain(physicalDevice, device, surface, window);
         List<Image> images = Image.createImages(device, swapchain);
         List<ImageView> imageViews = ImageView.createImageViews(device, swapchain, images);
+
+        Shader vertexShader = Shader.readFromFile(device, ShaderType.VERTEX_SHADER, "base", "shaders/base.vert.spv");
+        Shader fragmentShader = Shader.readFromFile(device, ShaderType.FRAGMENT_SHADER, "base", "shaders/base.frag.spv");
+
+        vertexShader.destroy(device);
+        fragmentShader.destroy(device);
 
         while (!window.shouldClose()) {
             window.input();
