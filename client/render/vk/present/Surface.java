@@ -13,12 +13,10 @@ import static client.render.vk.Global.vkCheck;
 public class Surface {
     private final long handle;
 
-    public Surface(Instance instance, Window window) {
-        try (MemoryStack stack = MemoryStack.stackPush()) {
-            LongBuffer pSurface = stack.mallocLong(1);
-            vkCheck(GLFWVulkan.glfwCreateWindowSurface(instance.getHandle(), window.getHandle(), null, pSurface), "Failed to create window surface");
-            handle = pSurface.get(0);
-        }
+    public Surface(MemoryStack stack, Instance instance, Window window) {
+        LongBuffer pSurface = stack.mallocLong(1);
+        vkCheck(GLFWVulkan.glfwCreateWindowSurface(instance.getHandle(), window.getHandle(), null, pSurface), "Failed to create window surface");
+        handle = pSurface.get(0);
     }
 
     public void destroy(Instance instance) {

@@ -14,18 +14,17 @@ import static org.lwjgl.vulkan.VK10.*;
 public class ImageView {
     private final long handle;
 
-    public ImageView(Device device, Swapchain swapchain, Image image) {
-        try (MemoryStack stack = MemoryStack.stackPush()) {
-            VkImageViewCreateInfo createInfo = VkImageViewCreateInfo.malloc(stack)
-                    .sType$Default()
-                    .image(image.getHandle())
-                    .viewType(VK_IMAGE_VIEW_TYPE_2D)
-                    .format(swapchain.getFormat().format())
-                    .flags(0)
-                    .pNext(VK_NULL_HANDLE);
+    public ImageView(MemoryStack stack, Device device, Swapchain swapchain, Image image) {
+        VkImageViewCreateInfo createInfo = VkImageViewCreateInfo.malloc(stack)
+                .sType$Default()
+                .image(image.getHandle())
+                .viewType(VK_IMAGE_VIEW_TYPE_2D)
+                .format(swapchain.getFormat().format())
+                .flags(0)
+                .pNext(VK_NULL_HANDLE);
 
-            createInfo.components().r(VK_COMPONENT_SWIZZLE_IDENTITY);
-            createInfo.components().g(VK_COMPONENT_SWIZZLE_IDENTITY);
+        createInfo.components().r(VK_COMPONENT_SWIZZLE_IDENTITY);
+        createInfo.components().g(VK_COMPONENT_SWIZZLE_IDENTITY);
             createInfo.components().b(VK_COMPONENT_SWIZZLE_IDENTITY);
             createInfo.components().a(VK_COMPONENT_SWIZZLE_IDENTITY);
 
@@ -40,12 +39,11 @@ public class ImageView {
                     "Failed to create image view");
             handle = pHandle.get(0);
         }
-    }
 
-    public static List<ImageView> createImageViews(Device device, Swapchain swapchain, List<Image> images) {
+    public static List<ImageView> createImageViews(MemoryStack stack, Device device, Swapchain swapchain, List<Image> images) {
         List<ImageView> views = new ArrayList<>(images.size());
         for (Image image : images) {
-            ImageView view = new ImageView(device, swapchain, image);
+            ImageView view = new ImageView(stack, device, swapchain, image);
             views.add(view);
         }
         return views;

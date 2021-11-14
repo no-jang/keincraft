@@ -20,19 +20,18 @@ public class Swapchain {
 
     private int imageCount;
 
-    public Swapchain(PhysicalDevice physicalDevice, Device device, Surface surface, Window window) {
-        try (MemoryStack stack = MemoryStack.stackPush()) {
-            VkSurfaceCapabilitiesKHR capabilities = physicalDevice.getSurfaceCapabilities();
+    public Swapchain(MemoryStack stack, PhysicalDevice physicalDevice, Device device, Surface surface, Window window) {
+        VkSurfaceCapabilitiesKHR capabilities = physicalDevice.getSurfaceCapabilities();
 
-            format = chooseSurfaceFormat(physicalDevice.getSurfaceFormats());
-            PresentMode presentMode = choosePresentMode(physicalDevice.getSurfacePresentModes());
-            extent = chooseExtent(stack, window, capabilities);
+        format = chooseSurfaceFormat(physicalDevice.getSurfaceFormats());
+        PresentMode presentMode = choosePresentMode(physicalDevice.getSurfacePresentModes());
+        extent = chooseExtent(stack, window, capabilities);
 
-            // Swap chain image count, +1 because we don't want to wait for the driver before starting next frame
-            imageCount = capabilities.minImageCount() + 1;
+        // Swap chain image count, +1 because we don't want to wait for the driver before starting next frame
+        imageCount = capabilities.minImageCount() + 1;
 
-            if (capabilities.maxImageCount() > 0 && imageCount > capabilities.maxImageCount()) {
-                imageCount = capabilities.maxImageCount();
+        if (capabilities.maxImageCount() > 0 && imageCount > capabilities.maxImageCount()) {
+            imageCount = capabilities.maxImageCount();
             }
 
             VkSwapchainCreateInfoKHR createInfo = VkSwapchainCreateInfoKHR.malloc(stack)
@@ -60,7 +59,6 @@ public class Swapchain {
             LongBuffer pSwapChain = stack.mallocLong(1);
             vkCheck(KHRSwapchain.vkCreateSwapchainKHR(device.getHandle(), createInfo, null, pSwapChain), "Failed to create swapChain");
             handle = pSwapChain.get(0);
-        }
     }
 
     public int getImageCount() {

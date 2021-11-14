@@ -12,23 +12,19 @@ public class Queue {
     private VkDeviceQueueCreateInfo createInfo;
     private VkQueue handle;
 
-    public Queue(int familyIndex) {
-        try (MemoryStack stack = MemoryStack.stackPush()) {
-            createInfo = VkDeviceQueueCreateInfo.malloc(stack)
-                    .sType$Default()
-                    .flags(0)
-                    .queueFamilyIndex(familyIndex)
-                    .pQueuePriorities(stack.floats(1.0f));
-        }
+    public Queue(MemoryStack stack, int familyIndex) {
+        createInfo = VkDeviceQueueCreateInfo.malloc(stack)
+                .sType$Default()
+                .flags(0)
+                .queueFamilyIndex(familyIndex)
+                .pQueuePriorities(stack.floats(1.0f));
     }
 
-    public void setup(Device device) {
-        try (MemoryStack stack = MemoryStack.stackPush()) {
-            PointerBuffer pHandle = stack.mallocPointer(1);
-            vkGetDeviceQueue(device.getHandle(), createInfo.queueFamilyIndex(), 0, pHandle);
-            handle = new VkQueue(pHandle.get(0), device.getHandle());
-            createInfo = null;
-        }
+    public void setup(MemoryStack stack, Device device) {
+        PointerBuffer pHandle = stack.mallocPointer(1);
+        vkGetDeviceQueue(device.getHandle(), createInfo.queueFamilyIndex(), 0, pHandle);
+        handle = new VkQueue(pHandle.get(0), device.getHandle());
+        createInfo = null;
     }
 
     public VkDeviceQueueCreateInfo getCreateInfo() {

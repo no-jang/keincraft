@@ -15,18 +15,17 @@ import java.util.List;
 public class CommandBuffers {
     private final List<VkCommandBuffer> handles;
 
-    public CommandBuffers(Device device, CommandPool commandPool, Renderpass renderpass, Swapchain swapchain, Pipeline pipeline, List<Framebuffer> framebuffers) {
-        try (MemoryStack stack = MemoryStack.stackPush()) {
-            handles = new ArrayList<>(framebuffers.size());
+    public CommandBuffers(MemoryStack stack, Device device, CommandPool commandPool, Renderpass renderpass, Swapchain swapchain, Pipeline pipeline, List<Framebuffer> framebuffers) {
+        handles = new ArrayList<>(framebuffers.size());
 
-            VkCommandBufferAllocateInfo allocateInfo = VkCommandBufferAllocateInfo.malloc(stack)
-                    .sType$Default()
-                    .pNext(0)
-                    .commandPool(commandPool.getHandle())
-                    .level(VK10.VK_COMMAND_BUFFER_LEVEL_PRIMARY)
-                    .commandBufferCount(framebuffers.size());
+        VkCommandBufferAllocateInfo allocateInfo = VkCommandBufferAllocateInfo.malloc(stack)
+                .sType$Default()
+                .pNext(0)
+                .commandPool(commandPool.getHandle())
+                .level(VK10.VK_COMMAND_BUFFER_LEVEL_PRIMARY)
+                .commandBufferCount(framebuffers.size());
 
-            PointerBuffer pCommandBuffers = stack.mallocPointer(framebuffers.size());
+        PointerBuffer pCommandBuffers = stack.mallocPointer(framebuffers.size());
             Global.vkCheck(VK10.vkAllocateCommandBuffers(device.getHandle(), allocateInfo, pCommandBuffers), "Failed to allocate command buffers");
 
             for (int i = 0; i < framebuffers.size(); i++) {
@@ -64,7 +63,6 @@ public class CommandBuffers {
                 Global.vkCheck(VK10.vkEndCommandBuffer(commandBuffer), "Failed to end command buffer");
             }
         }
-    }
 
     public List<VkCommandBuffer> getHandles() {
         return handles;

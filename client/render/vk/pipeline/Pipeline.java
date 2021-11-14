@@ -15,18 +15,17 @@ public class Pipeline {
     private final long layoutHandle;
     private final long handle;
 
-    public Pipeline(Device device, Swapchain swapchain, Renderpass renderpass, List<Shader> shaders) {
-        try (MemoryStack stack = MemoryStack.stackPush()) {
-            VkPipelineLayoutCreateInfo layoutCreateInfo = VkPipelineLayoutCreateInfo.malloc(stack)
-                    .sType$Default()
-                    .flags(0)
-                    .pNext(0)
-                    .pSetLayouts(null)
-                    .pPushConstantRanges(null);
+    public Pipeline(MemoryStack stack, Device device, Swapchain swapchain, Renderpass renderpass, List<Shader> shaders) {
+        VkPipelineLayoutCreateInfo layoutCreateInfo = VkPipelineLayoutCreateInfo.malloc(stack)
+                .sType$Default()
+                .flags(0)
+                .pNext(0)
+                .pSetLayouts(null)
+                .pPushConstantRanges(null);
 
-            LongBuffer pPipelineLayout = stack.mallocLong(1);
-            vkCheck(vkCreatePipelineLayout(device.getHandle(), layoutCreateInfo, null, pPipelineLayout), "Failed to create pipeline layout");
-            layoutHandle = pPipelineLayout.get(0);
+        LongBuffer pPipelineLayout = stack.mallocLong(1);
+        vkCheck(vkCreatePipelineLayout(device.getHandle(), layoutCreateInfo, null, pPipelineLayout), "Failed to create pipeline layout");
+        layoutHandle = pPipelineLayout.get(0);
 
             VkPipelineShaderStageCreateInfo.Buffer pShaders = VkPipelineShaderStageCreateInfo.calloc(shaders.size(), stack);
 
@@ -141,7 +140,6 @@ public class Pipeline {
             vkCheck(vkCreateGraphicsPipelines(device.getHandle(), VK_NULL_HANDLE, VkGraphicsPipelineCreateInfo.malloc(1, stack).put(0, createInfo),
                     null, pPipeline), "Failed to create graphics pipeline");
             handle = pPipeline.get(0);
-        }
     }
 
     public void destroy(Device device) {

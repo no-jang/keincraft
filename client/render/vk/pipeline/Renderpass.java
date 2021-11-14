@@ -11,18 +11,17 @@ import java.nio.LongBuffer;
 public class Renderpass {
     private final long handle;
 
-    public Renderpass(Device device, Swapchain swapchain) {
-        try (MemoryStack stack = MemoryStack.stackPush()) {
-            VkAttachmentDescription colorAttachment = VkAttachmentDescription.malloc(stack)
-                    .flags(0)
-                    .format(swapchain.getFormat().format())
-                    .samples(VK10.VK_SAMPLE_COUNT_1_BIT)
-                    .loadOp(VK10.VK_ATTACHMENT_LOAD_OP_CLEAR)
-                    .storeOp(VK10.VK_ATTACHMENT_STORE_OP_STORE)
-                    .stencilLoadOp(VK10.VK_ATTACHMENT_LOAD_OP_DONT_CARE)
-                    .stencilStoreOp(VK10.VK_ATTACHMENT_STORE_OP_DONT_CARE)
-                    .initialLayout(VK10.VK_IMAGE_LAYOUT_UNDEFINED)
-                    .finalLayout(KHRSwapchain.VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
+    public Renderpass(MemoryStack stack, Device device, Swapchain swapchain) {
+        VkAttachmentDescription colorAttachment = VkAttachmentDescription.malloc(stack)
+                .flags(0)
+                .format(swapchain.getFormat().format())
+                .samples(VK10.VK_SAMPLE_COUNT_1_BIT)
+                .loadOp(VK10.VK_ATTACHMENT_LOAD_OP_CLEAR)
+                .storeOp(VK10.VK_ATTACHMENT_STORE_OP_STORE)
+                .stencilLoadOp(VK10.VK_ATTACHMENT_LOAD_OP_DONT_CARE)
+                .stencilStoreOp(VK10.VK_ATTACHMENT_STORE_OP_DONT_CARE)
+                .initialLayout(VK10.VK_IMAGE_LAYOUT_UNDEFINED)
+                .finalLayout(KHRSwapchain.VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
 
             VkAttachmentReference colorAttachmentReference = VkAttachmentReference.malloc(stack)
                     .attachment(0)
@@ -56,7 +55,6 @@ public class Renderpass {
             LongBuffer pRenderPass = stack.mallocLong(1);
             Global.vkCheck(VK10.vkCreateRenderPass(device.getHandle(), createInfo, null, pRenderPass), "Failed to create render pass");
             handle = pRenderPass.get(0);
-        }
     }
 
     public void destroy(Device device) {

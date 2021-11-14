@@ -12,18 +12,16 @@ import java.nio.LongBuffer;
 public class CommandPool {
     private final long handle;
 
-    public CommandPool(PhysicalDevice physicalDevice, Device device) {
-        try (MemoryStack stack = MemoryStack.stackPush()) {
-            VkCommandPoolCreateInfo createInfo = VkCommandPoolCreateInfo.malloc(stack)
-                    .sType$Default()
-                    .flags(0)
-                    .pNext(0)
-                    .queueFamilyIndex(physicalDevice.getQueueFamilies().getFamilyIndex());
+    public CommandPool(MemoryStack stack, PhysicalDevice physicalDevice, Device device) {
+        VkCommandPoolCreateInfo createInfo = VkCommandPoolCreateInfo.malloc(stack)
+                .sType$Default()
+                .flags(0)
+                .pNext(0)
+                .queueFamilyIndex(physicalDevice.getQueueFamilies().getGraphicsFamilyIndex());
 
-            LongBuffer pCommandPool = stack.mallocLong(1);
-            Global.vkCheck(VK10.vkCreateCommandPool(device.getHandle(), createInfo, null, pCommandPool), "Failed to create command pool");
-            handle = pCommandPool.get(0);
-        }
+        LongBuffer pCommandPool = stack.mallocLong(1);
+        Global.vkCheck(VK10.vkCreateCommandPool(device.getHandle(), createInfo, null, pCommandPool), "Failed to create command pool");
+        handle = pCommandPool.get(0);
     }
 
     public void destroy(Device device) {

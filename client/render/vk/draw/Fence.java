@@ -11,17 +11,15 @@ import java.nio.LongBuffer;
 public class Fence {
     private final long handle;
 
-    public Fence(Device device) {
-        try (MemoryStack stack = MemoryStack.stackPush()) {
-            VkFenceCreateInfo createInfo = VkFenceCreateInfo.malloc(stack)
-                    .sType$Default()
-                    .flags(VK10.VK_FENCE_CREATE_SIGNALED_BIT)
-                    .pNext(0);
+    public Fence(MemoryStack stack, Device device) {
+        VkFenceCreateInfo createInfo = VkFenceCreateInfo.malloc(stack)
+                .sType$Default()
+                .flags(VK10.VK_FENCE_CREATE_SIGNALED_BIT)
+                .pNext(0);
 
-            LongBuffer pFence = stack.mallocLong(1);
-            Global.vkCheck(VK10.vkCreateFence(device.getHandle(), createInfo, null, pFence), "Failed to create fence");
-            handle = pFence.get(0);
-        }
+        LongBuffer pFence = stack.mallocLong(1);
+        Global.vkCheck(VK10.vkCreateFence(device.getHandle(), createInfo, null, pFence), "Failed to create fence");
+        handle = pFence.get(0);
     }
 
     public void destroy(Device device) {

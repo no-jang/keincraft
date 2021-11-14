@@ -14,7 +14,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static client.render.vk.Global.vkCheck;
-import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.system.MemoryUtil.NULL;
 import static org.lwjgl.vulkan.EXTDebugReport.*;
 import static org.lwjgl.vulkan.VK10.*;
@@ -39,18 +38,17 @@ public class Instance {
 
     private long aDebugCallback;
 
-    public Instance() {
-        try (MemoryStack stack = stackPush()) {
-            // Check for required validation layers and extensions
-            PointerBuffer requiredLayers = checkValidationLayers(stack);
-            PointerBuffer requiredExtensions = checkExtensions(stack);
+    public Instance(MemoryStack stack) {
+        // Check for required validation layers and extensions
+        PointerBuffer requiredLayers = checkValidationLayers(stack);
+        PointerBuffer requiredExtensions = checkExtensions(stack);
 
-            // General application information
-            ByteBuffer appName = stack.ASCII("keincraft");
-            int appVersion = VK_MAKE_VERSION(1, 0, 0);
+        // General application information
+        ByteBuffer appName = stack.ASCII("keincraft");
+        int appVersion = VK_MAKE_VERSION(1, 0, 0);
 
-            VkApplicationInfo appInfo = VkApplicationInfo.malloc(stack)
-                    .sType$Default()
+        VkApplicationInfo appInfo = VkApplicationInfo.malloc(stack)
+                .sType$Default()
                     .pNext(NULL)
                     .pApplicationName(appName)
                     .applicationVersion(appVersion)
@@ -77,7 +75,6 @@ public class Instance {
                 LongBuffer pDebugReportCallback = stack.mallocLong(1);
                 vkCheck(vkCreateDebugReportCallbackEXT(handle, debugCallbackCreateInfo, null, pDebugReportCallback), "Failed to create debug report callback");
                 aDebugCallback = pDebugReportCallback.get(0);
-            }
         }
     }
 

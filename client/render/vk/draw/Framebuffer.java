@@ -16,29 +16,27 @@ import java.util.List;
 public class Framebuffer {
     private final long handle;
 
-    public Framebuffer(Device device, Renderpass renderpass, Swapchain swapchain, ImageView imageView) {
-        try (MemoryStack stack = MemoryStack.stackPush()) {
-            VkFramebufferCreateInfo createInfo = VkFramebufferCreateInfo.malloc(stack)
-                    .sType$Default()
-                    .flags(0)
-                    .pNext(0)
-                    .renderPass(renderpass.getHandle())
-                    .attachmentCount(1)
-                    .pAttachments(stack.longs(imageView.getHandle()))
-                    .width(swapchain.getExtent().width())
-                    .height(swapchain.getExtent().height())
-                    .layers(1);
+    public Framebuffer(MemoryStack stack, Device device, Renderpass renderpass, Swapchain swapchain, ImageView imageView) {
+        VkFramebufferCreateInfo createInfo = VkFramebufferCreateInfo.malloc(stack)
+                .sType$Default()
+                .flags(0)
+                .pNext(0)
+                .renderPass(renderpass.getHandle())
+                .attachmentCount(1)
+                .pAttachments(stack.longs(imageView.getHandle()))
+                .width(swapchain.getExtent().width())
+                .height(swapchain.getExtent().height())
+                .layers(1);
 
             LongBuffer pFramebuffer = stack.mallocLong(1);
             Global.vkCheck(VK10.vkCreateFramebuffer(device.getHandle(), createInfo, null, pFramebuffer), "Failed to create framebuffer");
             handle = pFramebuffer.get(0);
-        }
     }
 
-    public static List<Framebuffer> createFramebuffers(Device device, Renderpass renderpass, Swapchain swapchain, List<ImageView> imageViews) {
+    public static List<Framebuffer> createFramebuffers(MemoryStack stack, Device device, Renderpass renderpass, Swapchain swapchain, List<ImageView> imageViews) {
         List<Framebuffer> framebuffers = new ArrayList<>(imageViews.size());
         for (ImageView imageView : imageViews) {
-            Framebuffer framebuffer = new Framebuffer(device, renderpass, swapchain, imageView);
+            Framebuffer framebuffer = new Framebuffer(stack, device, renderpass, swapchain, imageView);
             framebuffers.add(framebuffer);
         }
         return framebuffers;

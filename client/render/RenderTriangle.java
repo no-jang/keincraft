@@ -43,127 +43,144 @@ public class RenderTriangle {
     public static void main(String[] args) {
         // TODO Find solutions to remove this
         // TODO Add initialization (init everything) stack and framestack (stack per frame)
+        Window window;
+        Surface surface;
+        Instance instance;
+        Queue graphicsQueue;
+        Queue presentQueue;
+        Swapchain swapchain;
+        Pipeline pipeline;
+        Renderpass renderpass;
+        Device device;
+        CommandBuffers commandBuffers;
+        CommandPool commandPool;
+
+        List<Semaphore> imageAvailableSemaphores = new ArrayList<>(MAX_FRAMES_IN_FLIGHT);
+        List<Semaphore> renderFinishedSemaphores = new ArrayList<>(MAX_FRAMES_IN_FLIGHT);
+        List<Fence> inFlightFences = new ArrayList<>(MAX_FRAMES_IN_FLIGHT);
+        Map<Integer, Fence> imagesInFlight;
+        List<ImageView> imageViews;
+        List<Framebuffer> framebuffers;
+
         try (MemoryStack stack = MemoryStack.stackPush()) {
-            Window window = new Window(900, 900);
-            Instance instance = new Instance();
-            Surface surface = new Surface(instance, window);
+            window = new Window(900, 900);
+            instance = new Instance(stack);
+            surface = new Surface(stack, instance, window);
 
-            PhysicalDevice physicalDevice = PhysicalDevice.pickPhysicalDevice(instance, surface);
-            Queue queue = new Queue(physicalDevice.getQueueFamilies().getFamilyIndex());
-            Device device = new Device(physicalDevice, queue);
+            PhysicalDevice physicalDevice = PhysicalDevice.pickPhysicalDevice(stack, instance, surface);
+            graphicsQueue = new Queue(stack, physicalDevice.getQueueFamilies().getGraphicsFamilyIndex());
+            presentQueue = new Queue(stack, physicalDevice.getQueueFamilies().getPresentFamilyIndex());
+            device = new Device(stack, physicalDevice, queue);
 
-            queue.setup(device);
+            queue.setup(stack, device);
 
             // Recreate swapchain on window resize
-            Swapchain swapchain = new Swapchain(physicalDevice, device, surface, window);
-            List<Image> images = Image.createImages(device, swapchain);
-            List<ImageView> imageViews = ImageView.createImageViews(device, swapchain, images);
+            swapchain = new Swapchain(stack, physicalDevice, device, surface, window);
+            List<Image> images = Image.createImages(stack, device, swapchain);
+            imageViews = ImageView.createImageViews(stack, device, swapchain, images);
 
             List<Shader> shaders = List.of(
                     Shader.readFromFile(stack, device, ShaderType.VERTEX_SHADER, "shaders/base.vert.spv"),
                     Shader.readFromFile(stack, device, ShaderType.FRAGMENT_SHADER, "shaders/base.frag.spv")
             );
 
-            Renderpass renderpass = new Renderpass(device, swapchain);
-            Pipeline pipeline = new Pipeline(device, swapchain, renderpass, shaders);
+            renderpass = new Renderpass(stack, device, swapchain);
+            pipeline = new Pipeline(stack, device, swapchain, renderpass, shaders);
 
             for (Shader shader : shaders) {
                 shader.destroy(device);
             }
 
-            List<Framebuffer> framebuffers = Framebuffer.createFramebuffers(device, renderpass, swapchain, imageViews);
+            framebuffers = Framebuffer.createFramebuffers(stack, device, renderpass, swapchain, imageViews);
 
-            CommandPool commandPool = new CommandPool(physicalDevice, device);
+            commandPool = new CommandPool(stack, physicalDevice, device);
 
             // TODO Add builder for building command buffers easy
-            CommandBuffers commandBuffers = new CommandBuffers(device, commandPool, renderpass, swapchain, pipeline, framebuffers);
+            commandBuffers = new CommandBuffers(stack, device, commandPool, renderpass, swapchain, pipeline, framebuffers);
 
-            List<Semaphore> imageAvailableSemaphores = new ArrayList<>(MAX_FRAMES_IN_FLIGHT);
-            List<Semaphore> renderFinishedSemaphores = new ArrayList<>(MAX_FRAMES_IN_FLIGHT);
-            List<Fence> inFlightFences = new ArrayList<>(MAX_FRAMES_IN_FLIGHT);
-            Map<Integer, Fence> imagesInFlight = new HashMap<>(swapchain.getImageCount());
+            imagesInFlight = new HashMap<>(swapchain.getImageCount());
 
             for (int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
-                imageAvailableSemaphores.add(new Semaphore(device));
-                renderFinishedSemaphores.add(new Semaphore(device));
-                inFlightFences.add(new Fence(device));
+                imageAvailableSemaphores.add(new Semaphore(stack, device));
+                renderFinishedSemaphores.add(new Semaphore(stack, device));
+                inFlightFences.add(new Fence(stack, device));
             }
-
-            int currentFrame = 0;
-
-            // TODO Make smaller
-            while (!window.shouldClose()) {
-                window.input();
-
-                try (MemoryStack frameStack = MemoryStack.stackPush()) {
-                    VK10.vkWaitForFences(device.getHandle(), inFlightFences.get(currentFrame).getHandle(), true, ~0L);
-
-                    IntBuffer pImageIndex = frameStack.mallocInt(1);
-                    Global.vkCheck(KHRSwapchain.vkAcquireNextImageKHR(device.getHandle(), swapchain.getHandle(), ~0L, imageAvailableSemaphores.get(currentFrame).getHandle(), VK10.VK_NULL_HANDLE, pImageIndex),
-                            "Failed to acquire next image from swapchain");
-                    int imageIndex = pImageIndex.get(0);
-
-                    if (imagesInFlight.containsKey(imageIndex)) {
-                        VK10.vkWaitForFences(device.getHandle(), imagesInFlight.get(imageIndex).getHandle(), true, ~0L);
-                    }
-
-                    imagesInFlight.put(imageIndex, inFlightFences.get(currentFrame));
-
-                    VkSubmitInfo submitInfo = VkSubmitInfo.malloc(frameStack)
-                            .sType$Default()
-                            .pNext(0)
-                            .waitSemaphoreCount(1)
-                            .pWaitSemaphores(frameStack.longs(imageAvailableSemaphores.get(currentFrame).getHandle()))
-                            .pWaitDstStageMask(frameStack.ints(VK10.VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT))
-                            .pCommandBuffers(frameStack.pointers(commandBuffers.getHandles().get(imageIndex)))
-                            .pSignalSemaphores(frameStack.longs(renderFinishedSemaphores.get(currentFrame).getHandle()));
-
-                    VK10.vkResetFences(device.getHandle(), inFlightFences.get(currentFrame).getHandle());
-
-                    Global.vkCheck(VK10.vkQueueSubmit(queue.getHandle(), submitInfo, inFlightFences.get(currentFrame).getHandle()), "Failed to submit to graphics queue");
-
-                    VkPresentInfoKHR presentInfo = VkPresentInfoKHR.calloc(frameStack)
-                            .sType$Default()
-                            .pNext(0)
-                            .pWaitSemaphores(frameStack.longs(renderFinishedSemaphores.get(currentFrame).getHandle()))
-                            .swapchainCount(1)
-                            .pSwapchains(frameStack.longs(swapchain.getHandle()))
-                            .pImageIndices(frameStack.ints(imageIndex))
-                            .pResults(null);
-
-                    Global.vkCheck(KHRSwapchain.vkQueuePresentKHR(queue.getHandle(), presentInfo), "Failed to submit to present queue");
-                    VK10.vkQueueWaitIdle(queue.getHandle());
-
-                    currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
-                }
-            }
-
-            VK10.vkDeviceWaitIdle(device.getHandle());
-
-            for (int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
-                imageAvailableSemaphores.get(i).destroy(device);
-                renderFinishedSemaphores.get(i).destroy(device);
-                inFlightFences.get(i).destroy(device);
-            }
-
-            commandPool.destroy(device);
-
-            for (Framebuffer framebuffer : framebuffers) {
-                framebuffer.destroy(device);
-            }
-
-            pipeline.destroy(device);
-            renderpass.destroy(device);
-
-            for (ImageView view : imageViews) {
-                view.destroy(device);
-            }
-
-            swapchain.destroy(device);
-            device.destroy();
-            surface.destroy(instance);
-            instance.destroy();
-            window.destroy();
         }
+
+        int currentFrame = 0;
+
+        // TODO Make smaller
+        while (!window.shouldClose()) {
+            window.input();
+
+            try (MemoryStack stack = MemoryStack.stackPush()) {
+                VK10.vkWaitForFences(device.getHandle(), inFlightFences.get(currentFrame).getHandle(), true, ~0L);
+
+                IntBuffer pImageIndex = stack.mallocInt(1);
+                Global.vkCheck(KHRSwapchain.vkAcquireNextImageKHR(device.getHandle(), swapchain.getHandle(), ~0L, imageAvailableSemaphores.get(currentFrame).getHandle(), VK10.VK_NULL_HANDLE, pImageIndex),
+                        "Failed to acquire next image from swapchain");
+                int imageIndex = pImageIndex.get(0);
+
+                if (imagesInFlight.containsKey(imageIndex)) {
+                    VK10.vkWaitForFences(device.getHandle(), imagesInFlight.get(imageIndex).getHandle(), true, ~0L);
+                }
+
+                imagesInFlight.put(imageIndex, inFlightFences.get(currentFrame));
+
+                VkSubmitInfo submitInfo = VkSubmitInfo.malloc(stack)
+                        .sType$Default()
+                        .pNext(0)
+                        .waitSemaphoreCount(1)
+                        .pWaitSemaphores(stack.longs(imageAvailableSemaphores.get(currentFrame).getHandle()))
+                        .pWaitDstStageMask(stack.ints(VK10.VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT))
+                        .pCommandBuffers(stack.pointers(commandBuffers.getHandles().get(imageIndex)))
+                        .pSignalSemaphores(stack.longs(renderFinishedSemaphores.get(currentFrame).getHandle()));
+
+                VK10.vkResetFences(device.getHandle(), inFlightFences.get(currentFrame).getHandle());
+
+                Global.vkCheck(VK10.vkQueueSubmit(queue.getHandle(), submitInfo, inFlightFences.get(currentFrame).getHandle()), "Failed to submit to graphics queue");
+
+                VkPresentInfoKHR presentInfo = VkPresentInfoKHR.calloc(stack)
+                        .sType$Default()
+                        .pNext(0)
+                        .pWaitSemaphores(stack.longs(renderFinishedSemaphores.get(currentFrame).getHandle()))
+                        .swapchainCount(1)
+                        .pSwapchains(stack.longs(swapchain.getHandle()))
+                        .pImageIndices(stack.ints(imageIndex))
+                        .pResults(null);
+
+                Global.vkCheck(KHRSwapchain.vkQueuePresentKHR(queue.getHandle(), presentInfo), "Failed to submit to present queue");
+                VK10.vkQueueWaitIdle(queue.getHandle());
+
+                currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
+            }
+        }
+
+        VK10.vkDeviceWaitIdle(device.getHandle());
+
+        for (int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
+            imageAvailableSemaphores.get(i).destroy(device);
+            renderFinishedSemaphores.get(i).destroy(device);
+            inFlightFences.get(i).destroy(device);
+        }
+
+        commandPool.destroy(device);
+
+        for (Framebuffer framebuffer : framebuffers) {
+            framebuffer.destroy(device);
+        }
+
+        pipeline.destroy(device);
+        renderpass.destroy(device);
+
+        for (ImageView view : imageViews) {
+            view.destroy(device);
+        }
+
+        swapchain.destroy(device);
+        device.destroy();
+        surface.destroy(instance);
+        instance.destroy();
+        window.destroy();
     }
 }

@@ -11,17 +11,15 @@ import java.nio.LongBuffer;
 public class Semaphore {
     private final long handle;
 
-    public Semaphore(Device device) {
-        try (MemoryStack stack = MemoryStack.stackPush()) {
-            VkSemaphoreCreateInfo createInfo = VkSemaphoreCreateInfo.malloc(stack)
-                    .sType$Default()
-                    .flags(0)
-                    .pNext(0);
+    public Semaphore(MemoryStack stack, Device device) {
+        VkSemaphoreCreateInfo createInfo = VkSemaphoreCreateInfo.malloc(stack)
+                .sType$Default()
+                .flags(0)
+                .pNext(0);
 
-            LongBuffer pSemaphore = stack.mallocLong(1);
-            Global.vkCheck(VK10.vkCreateSemaphore(device.getHandle(), createInfo, null, pSemaphore), "Failed to create semaphore");
-            handle = pSemaphore.get(0);
-        }
+        LongBuffer pSemaphore = stack.mallocLong(1);
+        Global.vkCheck(VK10.vkCreateSemaphore(device.getHandle(), createInfo, null, pSemaphore), "Failed to create semaphore");
+        handle = pSemaphore.get(0);
     }
 
     public void destroy(Device device) {

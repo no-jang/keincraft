@@ -39,17 +39,16 @@ public class PhysicalDevice {
         score = checkDevice(stack, surface);
     }
 
-    public static PhysicalDevice pickPhysicalDevice(Instance instance, Surface surface) {
-        try (MemoryStack stack = MemoryStack.stackPush()) {
-            // Enumerate physical device count which supports vulkan
-            IntBuffer pPhysicalDeviceCount = stack.mallocInt(1);
-            vkCheck(vkEnumeratePhysicalDevices(instance.getHandle(), pPhysicalDeviceCount, null), "Failed to enumerate physical device count");
-            int physicalDeviceCount = pPhysicalDeviceCount.get(0);
-            pPhysicalDeviceCount.position(0);
+    public static PhysicalDevice pickPhysicalDevice(MemoryStack stack, Instance instance, Surface surface) {
+        // Enumerate physical device count which supports vulkan
+        IntBuffer pPhysicalDeviceCount = stack.mallocInt(1);
+        vkCheck(vkEnumeratePhysicalDevices(instance.getHandle(), pPhysicalDeviceCount, null), "Failed to enumerate physical device count");
+        int physicalDeviceCount = pPhysicalDeviceCount.get(0);
+        pPhysicalDeviceCount.position(0);
 
-            if (physicalDeviceCount == 0) {
-                throw new RuntimeException("Failed to find graphics device that supports vulkan");
-            }
+        if (physicalDeviceCount == 0) {
+            throw new RuntimeException("Failed to find graphics device that supports vulkan");
+        }
 
             SortedMap<Integer, PhysicalDevice> physicalDevices = new TreeMap<>();
 
@@ -68,7 +67,6 @@ public class PhysicalDevice {
             }
 
             return physicalDevices.get(bestDeviceScore);
-        }
     }
 
     private int checkDevice(MemoryStack stack, Surface surface) {
