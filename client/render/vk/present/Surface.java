@@ -1,7 +1,7 @@
 package client.render.vk.present;
 
 import client.render.Window;
-import client.render.vk.Instance;
+import client.render.vk.setup.Instance;
 import org.lwjgl.glfw.GLFWVulkan;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.KHRSurface;

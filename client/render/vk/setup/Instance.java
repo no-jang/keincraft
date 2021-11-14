@@ -1,5 +1,6 @@
-package client.render.vk;
+package client.render.vk.setup;
 
+import client.render.vk.Global;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.glfw.GLFWVulkan;
 import org.lwjgl.system.MemoryStack;

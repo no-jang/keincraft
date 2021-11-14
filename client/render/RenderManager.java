@@ -4,14 +4,14 @@
  */
 package client.render;
 
-import client.render.vk.Instance;
-import client.render.vk.device.Device;
-import client.render.vk.device.PhysicalDevice;
-import client.render.vk.device.queue.Queue;
 import client.render.vk.present.Image;
 import client.render.vk.present.ImageView;
 import client.render.vk.present.Surface;
 import client.render.vk.present.Swapchain;
+import client.render.vk.setup.Device;
+import client.render.vk.setup.Instance;
+import client.render.vk.setup.PhysicalDevice;
+import client.render.vk.setup.queue.Queue;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.*;

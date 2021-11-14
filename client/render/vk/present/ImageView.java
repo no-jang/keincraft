@@ -1,6 +1,6 @@
 package client.render.vk.present;
 
-import client.render.vk.device.Device;
+import client.render.vk.setup.Device;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.VkImageViewCreateInfo;
 

@@ -1,6 +1,6 @@
-package client.render.vk.device;
+package client.render.vk.setup;
 
-import client.render.vk.device.queue.Queue;
+import client.render.vk.setup.queue.Queue;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.VkDevice;
