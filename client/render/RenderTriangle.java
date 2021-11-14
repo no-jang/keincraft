@@ -1,5 +1,6 @@
 package client.render;
 
+import client.render.vk.draw.CommandPool;
 import client.render.vk.draw.Framebuffer;
 import client.render.vk.pipeline.Pipeline;
 import client.render.vk.pipeline.Renderpass;
@@ -45,6 +46,8 @@ public class RenderTriangle {
 
             List<Framebuffer> framebuffers = Framebuffer.createFramebuffers(device, renderpass, swapchain, imageViews);
 
+            CommandPool commandPool = new CommandPool(physicalDevice, device);
+
             for (Shader shader : shaders) {
                 shader.destroy(device);
             }
@@ -52,6 +55,8 @@ public class RenderTriangle {
             while (!window.shouldClose()) {
                 window.input();
             }
+
+            commandPool.destroy(device);
 
             for (Framebuffer framebuffer : framebuffers) {
                 framebuffer.destroy(device);
