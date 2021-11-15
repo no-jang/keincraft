@@ -14,6 +14,10 @@ import client.render.vk.draw.submit.PresentSubmit;
 import client.render.vk.draw.sync.Framebuffer;
 import client.render.vk.pipeline.Pipeline;
 import client.render.vk.pipeline.Renderpass;
+import client.render.vk.pipeline.fixed.ColorBlend;
+import client.render.vk.pipeline.fixed.Multisampling;
+import client.render.vk.pipeline.fixed.Rasterizer;
+import client.render.vk.pipeline.fixed.VertexInput;
 import client.render.vk.pipeline.shader.Shader;
 import client.render.vk.pipeline.shader.ShaderType;
 import client.render.vk.present.Surface;
@@ -24,7 +28,6 @@ import org.lwjgl.system.MemoryStack;
 
 import java.util.List;
 
-// TODO Make pipeline more configurable
 // TODO Make command buffers more configurable
 // TODO Recreate swapchain on window resize
 // TODO Add vertex buffers
@@ -79,7 +82,11 @@ public class RenderTriangle {
             );
 
             renderpass = new Renderpass(stack, device, swapchain);
-            pipeline = new Pipeline(stack, device, swapchain, renderpass, shaders);
+            ColorBlend colorBlend = new ColorBlend(stack);
+            Multisampling multisampling = new Multisampling(stack);
+            Rasterizer rasterizer = new Rasterizer(stack);
+            VertexInput vertexInput = new VertexInput(stack);
+            pipeline = new Pipeline(stack, device, swapchain, renderpass, shaders, vertexInput, rasterizer, multisampling, colorBlend);
 
             for (Shader shader : shaders) {
                 shader.destroy(device);
