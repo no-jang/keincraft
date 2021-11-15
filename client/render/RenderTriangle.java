@@ -24,6 +24,9 @@ import org.lwjgl.system.MemoryStack;
 
 import java.util.List;
 
+// TODO Make pipeline more configurable
+// TODO Make command buffers more configurable
+// TODO Recreate swapchain on window resize
 // TODO Add vertex buffers
 // TODO Add uniform buffers
 // TODO Add projection, model, view matrix
