@@ -69,7 +69,6 @@ public class RenderTriangle {
             graphicsQueue = Queue.createQueue(stack, device, queueFamilies, physicalDevice.getQueueFamilies().getGraphicsFamilyIndex());
             presentQueue = Queue.createQueue(stack, device, queueFamilies, physicalDevice.getQueueFamilies().getPresentFamilyIndex());
 
-            // TODO Recreate swapchain on window resize
             swapchain = new Swapchain(stack, physicalDevice, device, surface, window);
             List<Image> images = Image.createImages(stack, device, swapchain);
             imageViews = ImageView.createImageViews(stack, device, swapchain, images);
@@ -90,7 +89,6 @@ public class RenderTriangle {
 
             commandPool = new CommandPool(stack, physicalDevice, device);
 
-            // TODO Add builder for building command buffers easy
             commandBuffers = new CommandBuffers(stack, device, commandPool, renderpass, swapchain, pipeline, framebuffers);
 
             frameContext = new FrameContext(stack, device, 2);
