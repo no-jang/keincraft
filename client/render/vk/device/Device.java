@@ -10,8 +10,7 @@ import org.lwjgl.vulkan.VkDeviceQueueCreateInfo;
 import java.util.List;
 
 import static client.render.vk.Global.vkCheck;
-import static org.lwjgl.vulkan.VK10.vkCreateDevice;
-import static org.lwjgl.vulkan.VK10.vkDestroyDevice;
+import static org.lwjgl.vulkan.VK10.*;
 
 public class Device {
     private final VkDevice handle;
@@ -38,6 +37,10 @@ public class Device {
 
     public void destroy() {
         vkDestroyDevice(handle, null);
+    }
+
+    public void waitIdle() {
+        vkDeviceWaitIdle(handle);
     }
 
     public VkDevice getHandle() {
