@@ -45,4 +45,13 @@ public final class Global {
             throw new RuntimeException(message + ": " + getErrorMessage(result));
         }
     }
+
+    public static boolean vkCheckResized(int result, String message) {
+        if (result == KHRSwapchain.VK_ERROR_OUT_OF_DATE_KHR || result == KHRSwapchain.VK_SUBOPTIMAL_KHR) {
+            return true;
+        }
+
+        vkCheck(result, message);
+        return false;
+    }
 }

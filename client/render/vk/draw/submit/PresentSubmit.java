@@ -10,7 +10,7 @@ import org.lwjgl.vulkan.VK10;
 import org.lwjgl.vulkan.VkPresentInfoKHR;
 
 public final class PresentSubmit {
-    public static void submitPresent(MemoryStack stack, SwapChain swapchain, Queue presentQueue, Frame frame, int imageIndex) {
+    public static boolean submitPresent(MemoryStack stack, SwapChain swapchain, Queue presentQueue, Frame frame, int imageIndex) {
         VkPresentInfoKHR presentInfo = VkPresentInfoKHR.calloc(stack)
                 .sType$Default()
                 .pNext(0)
@@ -20,8 +20,11 @@ public final class PresentSubmit {
                 .pImageIndices(stack.ints(imageIndex))
                 .pResults(null);
 
-        Global.vkCheck(KHRSwapchain.vkQueuePresentKHR(presentQueue.getHandle(), presentInfo),
+        boolean framebufferResized = Global.vkCheckResized(KHRSwapchain.vkQueuePresentKHR(presentQueue.getHandle(), presentInfo),
                 "Failed to submit to present queue");
+
         VK10.vkQueueWaitIdle(presentQueue.getHandle());
+
+        return framebufferResized;
     }
 }

@@ -24,11 +24,14 @@ import client.render.vk.present.Surface;
 import client.render.vk.present.SwapChain;
 import client.render.vk.present.image.Image;
 import client.render.vk.present.image.ImageView;
+import org.lwjgl.glfw.GLFW;
 import org.lwjgl.system.MemoryStack;
 
 import java.util.List;
 
-// TODO Recreate swapchain on window resize
+// TODO Dynamic States
+// TODO Graphics context
+// TODO Sub context
 // TODO Add vertex buffers
 // TODO Add uniform buffers
 // TODO Add projection, model, view matrix
@@ -125,18 +128,34 @@ public class RenderTriangle {
 
             try (MemoryStack stack = MemoryStack.stackPush()) {
                 int imageIndex = imageAcquire.acquireImage(stack, device, swapChain, frameContext.getCurrentFrame());
-                GraphicsSubmit.submitGraphics(stack, device, commandBuffers, graphicsQueue, frameContext.getCurrentFrame(), imageIndex);
-                PresentSubmit.submitPresent(stack, swapChain, presentQueue, frameContext.getCurrentFrame(), imageIndex);
+                boolean framebufferResized = imageAcquire.isFramebufferResized();
+                framebufferResized = GraphicsSubmit.submitGraphics(stack, device, commandBuffers, graphicsQueue, frameContext.getCurrentFrame(), imageIndex);
+                framebufferResized = PresentSubmit.submitPresent(stack, swapChain, presentQueue, frameContext.getCurrentFrame(), imageIndex);
+
+                if (framebufferResized) {
+                    recreateSwapChain(stack);
+                }
+
                 frameContext.nextFrame();
             }
         }
+    }
+
+    public void recreateSwapChain(MemoryStack stack) {
+        window.gatherFramebufferSize();
+        while (window.getWidth() == 0 || window.getHeight() == 0) {
+            window.gatherFramebufferSize();
+            GLFW.glfwWaitEvents();
+        }
+
+        destroySwapChain();
+        createSwapChain(stack);
     }
 
     public void destroySwapChain() {
         device.waitIdle();
 
         frameContext.destroy(device);
-
         commandPool.destroy(device);
 
         for (Framebuffer framebuffer : framebuffers) {

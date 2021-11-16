@@ -15,14 +15,20 @@ import java.util.Map;
 public class ImageAcquire {
     private final Map<Integer, Frame> framesInFlight;
 
+    private boolean framebufferResized;
+
     public ImageAcquire(SwapChain swapchain) {
         framesInFlight = new HashMap<>(swapchain.getImageCount());
     }
 
     public int acquireImage(MemoryStack stack, Device device, SwapChain swapchain, Frame frame) {
+        framebufferResized = false;
+
         IntBuffer pImageIndex = stack.mallocInt(1);
-        Global.vkCheck(KHRSwapchain.vkAcquireNextImageKHR(device.getHandle(), swapchain.getHandle(), ~0L, frame.getImageAvailableSemaphore().getHandle(), VK10.VK_NULL_HANDLE, pImageIndex),
-                "Failed to acquire next image index from swapchain");
+        framebufferResized = Global.vkCheckResized(KHRSwapchain.vkAcquireNextImageKHR(device.getHandle(), swapchain.getHandle(),
+                        ~0L, frame.getImageAvailableSemaphore().getHandle(), VK10.VK_NULL_HANDLE, pImageIndex),
+                "Failed to acquire next image index from swapChain");
+
         int imageIndex = pImageIndex.get(0);
 
         if (framesInFlight.containsKey(imageIndex)) {
@@ -31,5 +37,9 @@ public class ImageAcquire {
         framesInFlight.put(imageIndex, frame);
 
         return imageIndex;
+    }
+
+    public boolean isFramebufferResized() {
+        return framebufferResized;
     }
 }

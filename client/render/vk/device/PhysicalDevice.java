@@ -30,7 +30,6 @@ public class PhysicalDevice {
     private PointerBuffer requiredExtensions;
     private VkPhysicalDeviceFeatures requiredFeatures;
     private VkPhysicalDeviceProperties properties;
-    private VkSurfaceCapabilitiesKHR surfaceCapabilities;
     private List<VkSurfaceFormatKHR> surfaceFormats;
     private List<PresentMode> surfacePresentModes;
 
@@ -180,10 +179,6 @@ public class PhysicalDevice {
     }
 
     private int checkSwapChain(MemoryStack stack, Surface surface) {
-        surfaceCapabilities = VkSurfaceCapabilitiesKHR.malloc(stack);
-        vkCheck(vkGetPhysicalDeviceSurfaceCapabilitiesKHR(handle, surface.getHandle(), surfaceCapabilities),
-                "Failed to get physical device surface capabilities");
-
         IntBuffer pFormatsCount = stack.mallocInt(1);
         vkCheck(vkGetPhysicalDeviceSurfaceFormatsKHR(handle, surface.getHandle(), pFormatsCount, null),
                 "Failed to get physical device surface format count");
@@ -216,6 +211,13 @@ public class PhysicalDevice {
         return 0;
     }
 
+    public VkSurfaceCapabilitiesKHR getSurfaceCapabilities(MemoryStack stack, Surface surface) {
+        VkSurfaceCapabilitiesKHR surfaceCapabilities = VkSurfaceCapabilitiesKHR.malloc(stack);
+        vkCheck(vkGetPhysicalDeviceSurfaceCapabilitiesKHR(handle, surface.getHandle(), surfaceCapabilities),
+                "Failed to get physical device surface capabilities");
+        return surfaceCapabilities;
+    }
+
     public VkPhysicalDevice getHandle() {
         return handle;
     }
@@ -238,10 +240,6 @@ public class PhysicalDevice {
 
     public QueueFamilies getQueueFamilies() {
         return queueFamilies;
-    }
-
-    public VkSurfaceCapabilitiesKHR getSurfaceCapabilities() {
-        return surfaceCapabilities;
     }
 
     public List<VkSurfaceFormatKHR> getSurfaceFormats() {

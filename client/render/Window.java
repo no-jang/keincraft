@@ -4,7 +4,10 @@ import org.lwjgl.glfw.Callbacks;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.glfw.GLFWVidMode;
 import org.lwjgl.glfw.GLFWVulkan;
+import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.Platform;
+
+import java.nio.IntBuffer;
 
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.system.MemoryUtil.NULL;
@@ -39,10 +42,6 @@ public class Window {
         if (handle == NULL) {
             throw new RuntimeException("Unable to create GLFW window");
         }
-
-        glfwSetFramebufferSizeCallback(handle, (window, newWidth, newHeight) -> {
-            setFramebufferSize(newWidth, newHeight);
-        });
 
         glfwSetKeyCallback(handle, (window, key, scancode, action, mods) -> {
             if (key == GLFW_KEY_ESCAPE && action == GLFW_RELEASE) {
@@ -80,8 +79,15 @@ public class Window {
         return handle;
     }
 
-    public void setFramebufferSize(int width, int height) {
-        this.width = width;
-        this.height = height;
+    public void gatherFramebufferSize() {
+        try (MemoryStack stack = MemoryStack.stackPush()) {
+            IntBuffer pWidth = stack.mallocInt(1);
+            IntBuffer pHeight = stack.mallocInt(1);
+
+            glfwGetFramebufferSize(handle, pWidth, pHeight);
+
+            width = pWidth.get(0);
+            height = pHeight.get(0);
+        }
     }
 }

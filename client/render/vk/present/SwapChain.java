@@ -3,7 +3,7 @@ package client.render.vk.present;
 import client.render.Window;
 import client.render.vk.device.Device;
 import client.render.vk.device.PhysicalDevice;
-import common.util.math.Math;
+import common.util.math.MathUtil;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.*;
 
@@ -21,7 +21,7 @@ public class SwapChain {
     private int imageCount;
 
     public SwapChain(MemoryStack stack, PhysicalDevice physicalDevice, Device device, Surface surface, Window window) {
-        VkSurfaceCapabilitiesKHR capabilities = physicalDevice.getSurfaceCapabilities();
+        VkSurfaceCapabilitiesKHR capabilities = physicalDevice.getSurfaceCapabilities(stack, surface);
 
         format = chooseSurfaceFormat(physicalDevice.getSurfaceFormats());
         PresentMode presentMode = choosePresentMode(physicalDevice.getSurfacePresentModes());
@@ -84,16 +84,17 @@ public class SwapChain {
     public static VkExtent2D chooseExtent(MemoryStack stack, Window window, VkSurfaceCapabilitiesKHR capabilities) {
         if (capabilities.currentExtent().width() != 0xFFFFFFFF) {
             return capabilities.currentExtent();
-        } else {
-            VkExtent2D actualExtent = VkExtent2D.malloc(stack)
-                    .width(window.getWidth())
-                    .height(window.getHeight());
-
-            actualExtent.width(Math.clamp(actualExtent.width(), capabilities.minImageExtent().width(), capabilities.maxImageExtent().width()));
-            actualExtent.height(Math.clamp(actualExtent.height(), capabilities.minImageExtent().height(), capabilities.maxImageExtent().height()));
-
-            return actualExtent;
         }
+
+        VkExtent2D actualExtent = VkExtent2D.malloc(stack).set(window.getWidth(), window.getHeight());
+
+        VkExtent2D minExtent = capabilities.minImageExtent();
+        VkExtent2D maxExtent = capabilities.maxImageExtent();
+
+        actualExtent.width(MathUtil.clamp(minExtent.width(), maxExtent.width(), actualExtent.width()));
+        actualExtent.height(MathUtil.clamp(minExtent.height(), maxExtent.height(), actualExtent.height()));
+
+        return actualExtent;
     }
 
     public int getImageCount() {
