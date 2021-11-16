@@ -41,85 +41,100 @@ import java.util.List;
 // TODO Generate chunk mesh
 // TODO Render chunk
 public class RenderTriangle {
-    public static void main(String[] args) {
-        Window window;
-        Surface surface;
-        Instance instance;
-        Queue graphicsQueue;
-        Queue presentQueue;
-        SwapChain swapchain;
-        Pipeline pipeline;
-        RenderPass renderpass;
-        Device device;
-        CommandBuffers commandBuffers;
-        CommandPool commandPool;
-        FrameContext frameContext;
-        ImageAcquire imageAcquire;
+    private final Window window;
+    private final Instance instance;
+    private final Surface surface;
+    private final PhysicalDevice physicalDevice;
+    private final Device device;
+    private final Queue graphicsQueue;
+    private final Queue presentQueue;
 
-        List<ImageView> imageViews;
-        List<Framebuffer> framebuffers;
+    private SwapChain swapChain;
+    private List<ImageView> imageViews;
+    private RenderPass renderPass;
+    private Pipeline pipeline;
+    private List<Framebuffer> framebuffers;
+    private CommandPool commandPool;
+    private CommandBuffers commandBuffers;
+    private FrameContext frameContext;
+    private ImageAcquire imageAcquire;
 
+    public RenderTriangle() {
         try (MemoryStack stack = MemoryStack.stackPush()) {
             window = new Window(900, 900);
             instance = new Instance(stack);
             surface = new Surface(stack, instance, window);
 
-            PhysicalDevice physicalDevice = PhysicalDevice.pickPhysicalDevice(stack, instance, surface);
+            physicalDevice = PhysicalDevice.pickPhysicalDevice(stack, instance, surface);
             List<QueueFamily> queueFamilies = QueueFamily.createQueueFamilies(stack, physicalDevice.getQueueFamilies());
             device = new Device(stack, physicalDevice, queueFamilies);
 
             graphicsQueue = Queue.createQueue(stack, device, queueFamilies, physicalDevice.getQueueFamilies().getGraphicsFamilyIndex());
             presentQueue = Queue.createQueue(stack, device, queueFamilies, physicalDevice.getQueueFamilies().getPresentFamilyIndex());
 
-            swapchain = new SwapChain(stack, physicalDevice, device, surface, window);
-            List<Image> images = Image.createImages(stack, device, swapchain);
-            imageViews = ImageView.createImageViews(stack, device, swapchain, images);
+            createSwapChain(stack);
+        }
+    }
 
-            List<Shader> shaders = List.of(
-                    Shader.readFromFile(stack, device, ShaderType.VERTEX_SHADER, "shaders/base.vert.spv"),
-                    Shader.readFromFile(stack, device, ShaderType.FRAGMENT_SHADER, "shaders/base.frag.spv")
-            );
+    public static void main(String[] args) {
+        RenderTriangle triangle = new RenderTriangle();
+        triangle.loop();
+        triangle.destroy();
+    }
 
-            renderpass = new RenderPass(stack, device, swapchain);
-            ColorBlend colorBlend = new ColorBlend(stack);
-            Multisampling multisampling = new Multisampling(stack);
-            Rasterizer rasterizer = new Rasterizer(stack);
-            VertexInput vertexInput = new VertexInput(stack);
-            pipeline = new Pipeline(stack, device, swapchain, renderpass, shaders, vertexInput, rasterizer, multisampling, colorBlend);
+    public void createSwapChain(MemoryStack stack) {
+        swapChain = new SwapChain(stack, physicalDevice, device, surface, window);
+        List<Image> images = Image.createImages(stack, device, swapChain);
+        imageViews = ImageView.createImageViews(stack, device, swapChain, images);
+        List<Shader> shaders = List.of(
+                Shader.readFromFile(stack, device, ShaderType.VERTEX_SHADER, "shaders/base.vert.spv"),
+                Shader.readFromFile(stack, device, ShaderType.FRAGMENT_SHADER, "shaders/base.frag.spv")
+        );
 
-            for (Shader shader : shaders) {
-                shader.destroy(device);
-            }
+        renderPass = new RenderPass(stack, device, swapChain);
+        ColorBlend colorBlend = new ColorBlend(stack);
+        Multisampling multisampling = new Multisampling(stack);
+        Rasterizer rasterizer = new Rasterizer(stack);
+        VertexInput vertexInput = new VertexInput(stack);
+        pipeline = new Pipeline(stack, device, swapChain, renderPass, shaders, vertexInput, rasterizer, multisampling, colorBlend);
 
-            framebuffers = Framebuffer.createFramebuffers(stack, device, renderpass, swapchain, imageViews);
-
-            commandPool = new CommandPool(stack, physicalDevice, device);
-
-            commandBuffers = new CommandBuffers(stack, device, commandPool, framebuffers, buffer -> {
-                buffer.begin();
-                buffer.beginRenderPass(swapchain, renderpass);
-                buffer.beginPipeline(pipeline);
-                buffer.draw(3, 1, 0, 0);
-                buffer.endRenderPass();
-                buffer.end();
-            });
-
-            frameContext = new FrameContext(stack, device, 2);
-            imageAcquire = new ImageAcquire(swapchain);
+        for (Shader shader : shaders) {
+            shader.destroy(device);
         }
 
+        framebuffers = Framebuffer.createFramebuffers(stack, device, renderPass, swapChain, imageViews);
+
+        commandPool = new CommandPool(stack, physicalDevice, device);
+
+        commandBuffers = new CommandBuffers(stack, device, commandPool, framebuffers, buffer -> {
+            buffer.begin();
+            buffer.beginRenderPass(swapChain, renderPass);
+            buffer.beginPipeline(pipeline);
+            buffer.draw(3, 1, 0, 0);
+            buffer.endRenderPass();
+            buffer.end();
+        });
+
+        frameContext = new FrameContext(stack, device, 2);
+        imageAcquire = new ImageAcquire(swapChain);
+    }
+
+    public void loop() {
         while (!window.shouldClose()) {
             window.input();
 
             try (MemoryStack stack = MemoryStack.stackPush()) {
-                int imageIndex = imageAcquire.acquireImage(stack, device, swapchain, frameContext.getCurrentFrame());
+                int imageIndex = imageAcquire.acquireImage(stack, device, swapChain, frameContext.getCurrentFrame());
                 GraphicsSubmit.submitGraphics(stack, device, commandBuffers, graphicsQueue, frameContext.getCurrentFrame(), imageIndex);
-                PresentSubmit.submitPresent(stack, swapchain, presentQueue, frameContext.getCurrentFrame(), imageIndex);
+                PresentSubmit.submitPresent(stack, swapChain, presentQueue, frameContext.getCurrentFrame(), imageIndex);
                 frameContext.nextFrame();
             }
         }
+    }
 
+    public void destroySwapChain() {
         device.waitIdle();
+
         frameContext.destroy(device);
 
         commandPool.destroy(device);
@@ -129,13 +144,18 @@ public class RenderTriangle {
         }
 
         pipeline.destroy(device);
-        renderpass.destroy(device);
+        renderPass.destroy(device);
 
         for (ImageView view : imageViews) {
             view.destroy(device);
         }
 
-        swapchain.destroy(device);
+        swapChain.destroy(device);
+    }
+
+    public void destroy() {
+        destroySwapChain();
+
         device.destroy();
         surface.destroy(instance);
         instance.destroy();
