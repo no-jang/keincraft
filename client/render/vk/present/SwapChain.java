@@ -13,14 +13,14 @@ import java.util.List;
 import static client.render.vk.Global.vkCheck;
 import static org.lwjgl.vulkan.VK10.*;
 
-public class Swapchain {
+public class SwapChain {
     private final long handle;
     private final VkSurfaceFormatKHR format;
     private final VkExtent2D extent;
 
     private int imageCount;
 
-    public Swapchain(MemoryStack stack, PhysicalDevice physicalDevice, Device device, Surface surface, Window window) {
+    public SwapChain(MemoryStack stack, PhysicalDevice physicalDevice, Device device, Surface surface, Window window) {
         VkSurfaceCapabilitiesKHR capabilities = physicalDevice.getSurfaceCapabilities();
 
         format = chooseSurfaceFormat(physicalDevice.getSurfaceFormats());

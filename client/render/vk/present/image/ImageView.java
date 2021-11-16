@@ -1,7 +1,7 @@
 package client.render.vk.present.image;
 
 import client.render.vk.device.Device;
-import client.render.vk.present.Swapchain;
+import client.render.vk.present.SwapChain;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.VkImageViewCreateInfo;
 
@@ -15,7 +15,7 @@ import static org.lwjgl.vulkan.VK10.*;
 public class ImageView {
     private final long handle;
 
-    public ImageView(MemoryStack stack, Device device, Swapchain swapchain, Image image) {
+    public ImageView(MemoryStack stack, Device device, SwapChain swapchain, Image image) {
         VkImageViewCreateInfo createInfo = VkImageViewCreateInfo.malloc(stack)
                 .sType$Default()
                 .image(image.getHandle())
@@ -41,7 +41,7 @@ public class ImageView {
         handle = pHandle.get(0);
     }
 
-    public static List<ImageView> createImageViews(MemoryStack stack, Device device, Swapchain swapchain, List<Image> images) {
+    public static List<ImageView> createImageViews(MemoryStack stack, Device device, SwapChain swapchain, List<Image> images) {
         List<ImageView> views = new ArrayList<>(images.size());
         for (Image image : images) {
             ImageView view = new ImageView(stack, device, swapchain, image);

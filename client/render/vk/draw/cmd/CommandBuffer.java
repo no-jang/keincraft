@@ -4,8 +4,8 @@ import client.render.vk.Global;
 import client.render.vk.device.Device;
 import client.render.vk.draw.sync.Framebuffer;
 import client.render.vk.pipeline.Pipeline;
-import client.render.vk.pipeline.Renderpass;
-import client.render.vk.present.Swapchain;
+import client.render.vk.pipeline.RenderPass;
+import client.render.vk.present.SwapChain;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.*;
 
@@ -31,7 +31,7 @@ public class CommandBuffer {
         Global.vkCheck(VK10.vkBeginCommandBuffer(handle, beginInfo), "Failed to begin recording command buffer");
     }
 
-    public void beginRenderPass(Swapchain swapchain, Renderpass renderpass) {
+    public void beginRenderPass(SwapChain swapchain, RenderPass renderpass) {
         VkRenderPassBeginInfo renderPassBeginInfo = VkRenderPassBeginInfo.malloc(stack)
                 .sType$Default()
                 .pNext(0)

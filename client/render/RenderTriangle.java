@@ -13,7 +13,7 @@ import client.render.vk.draw.submit.ImageAcquire;
 import client.render.vk.draw.submit.PresentSubmit;
 import client.render.vk.draw.sync.Framebuffer;
 import client.render.vk.pipeline.Pipeline;
-import client.render.vk.pipeline.Renderpass;
+import client.render.vk.pipeline.RenderPass;
 import client.render.vk.pipeline.fixed.ColorBlend;
 import client.render.vk.pipeline.fixed.Multisampling;
 import client.render.vk.pipeline.fixed.Rasterizer;
@@ -21,7 +21,7 @@ import client.render.vk.pipeline.fixed.VertexInput;
 import client.render.vk.pipeline.shader.Shader;
 import client.render.vk.pipeline.shader.ShaderType;
 import client.render.vk.present.Surface;
-import client.render.vk.present.Swapchain;
+import client.render.vk.present.SwapChain;
 import client.render.vk.present.image.Image;
 import client.render.vk.present.image.ImageView;
 import org.lwjgl.system.MemoryStack;
@@ -47,9 +47,9 @@ public class RenderTriangle {
         Instance instance;
         Queue graphicsQueue;
         Queue presentQueue;
-        Swapchain swapchain;
+        SwapChain swapchain;
         Pipeline pipeline;
-        Renderpass renderpass;
+        RenderPass renderpass;
         Device device;
         CommandBuffers commandBuffers;
         CommandPool commandPool;
@@ -71,7 +71,7 @@ public class RenderTriangle {
             graphicsQueue = Queue.createQueue(stack, device, queueFamilies, physicalDevice.getQueueFamilies().getGraphicsFamilyIndex());
             presentQueue = Queue.createQueue(stack, device, queueFamilies, physicalDevice.getQueueFamilies().getPresentFamilyIndex());
 
-            swapchain = new Swapchain(stack, physicalDevice, device, surface, window);
+            swapchain = new SwapChain(stack, physicalDevice, device, surface, window);
             List<Image> images = Image.createImages(stack, device, swapchain);
             imageViews = ImageView.createImageViews(stack, device, swapchain, images);
 
@@ -80,7 +80,7 @@ public class RenderTriangle {
                     Shader.readFromFile(stack, device, ShaderType.FRAGMENT_SHADER, "shaders/base.frag.spv")
             );
 
-            renderpass = new Renderpass(stack, device, swapchain);
+            renderpass = new RenderPass(stack, device, swapchain);
             ColorBlend colorBlend = new ColorBlend(stack);
             Multisampling multisampling = new Multisampling(stack);
             Rasterizer rasterizer = new Rasterizer(stack);

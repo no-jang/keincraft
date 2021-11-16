@@ -1,7 +1,7 @@
 package client.render.vk.present.image;
 
 import client.render.vk.device.Device;
-import client.render.vk.present.Swapchain;
+import client.render.vk.present.SwapChain;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.KHRSwapchain;
 
@@ -19,7 +19,7 @@ public class Image {
         this.handle = aHandle;
     }
 
-    public static List<Image> createImages(MemoryStack stack, Device device, Swapchain swapchain) {
+    public static List<Image> createImages(MemoryStack stack, Device device, SwapChain swapchain) {
         IntBuffer pImageCount = stack.mallocInt(1);
         vkCheck(KHRSwapchain.vkGetSwapchainImagesKHR(device.getHandle(), swapchain.getHandle(), pImageCount, null),
                 "Failed to get swapchain image count");

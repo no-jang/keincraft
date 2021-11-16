@@ -6,7 +6,7 @@ import client.render.vk.pipeline.fixed.Multisampling;
 import client.render.vk.pipeline.fixed.Rasterizer;
 import client.render.vk.pipeline.fixed.VertexInput;
 import client.render.vk.pipeline.shader.Shader;
-import client.render.vk.present.Swapchain;
+import client.render.vk.present.SwapChain;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.*;
 
@@ -21,7 +21,7 @@ public class Pipeline {
     private final long layoutHandle;
     private final long handle;
 
-    public Pipeline(MemoryStack stack, Device device, Swapchain swapchain, Renderpass renderpass, List<Shader> shaders,
+    public Pipeline(MemoryStack stack, Device device, SwapChain swapchain, RenderPass renderpass, List<Shader> shaders,
                     VertexInput vertexInput, Rasterizer rasterizer, Multisampling multisampling, ColorBlend colorBlend) {
         VkPipelineLayoutCreateInfo layoutCreateInfo = VkPipelineLayoutCreateInfo.malloc(stack)
                 .sType$Default()
