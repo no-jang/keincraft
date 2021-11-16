@@ -32,45 +32,33 @@ public class Swapchain {
 
         if (capabilities.maxImageCount() > 0 && imageCount > capabilities.maxImageCount()) {
             imageCount = capabilities.maxImageCount();
-            }
+        }
 
-            VkSwapchainCreateInfoKHR createInfo = VkSwapchainCreateInfoKHR.malloc(stack)
-                    .sType$Default()
-                    .surface(surface.getHandle())
-                    .minImageCount(imageCount)
-                    .imageFormat(format.format())
-                    .imageColorSpace(format.colorSpace())
-                    .imageExtent(extent)
-                    .imageArrayLayers(1)
-                    .imageUsage(VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT);
+        VkSwapchainCreateInfoKHR createInfo = VkSwapchainCreateInfoKHR.malloc(stack)
+                .sType$Default()
+                .surface(surface.getHandle())
+                .minImageCount(imageCount)
+                .imageFormat(format.format())
+                .imageColorSpace(format.colorSpace())
+                .imageExtent(extent)
+                .imageArrayLayers(1)
+                .imageUsage(VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT);
 
-            createInfo.imageSharingMode(VK_SHARING_MODE_EXCLUSIVE);
-            createInfo.queueFamilyIndexCount(0);
-            createInfo.pQueueFamilyIndices(null);
+        createInfo.imageSharingMode(VK_SHARING_MODE_EXCLUSIVE);
+        createInfo.queueFamilyIndexCount(0);
+        createInfo.pQueueFamilyIndices(null);
 
-            createInfo.preTransform(capabilities.currentTransform());
-            createInfo.compositeAlpha(KHRSurface.VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR);
-            createInfo.presentMode(presentMode.getIndex());
-            createInfo.clipped(true);
-            createInfo.oldSwapchain(VK_NULL_HANDLE);
-            createInfo.pNext(VK_NULL_HANDLE);
-            createInfo.flags(0);
+        createInfo.preTransform(capabilities.currentTransform());
+        createInfo.compositeAlpha(KHRSurface.VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR);
+        createInfo.presentMode(presentMode.getIndex());
+        createInfo.clipped(true);
+        createInfo.oldSwapchain(VK_NULL_HANDLE);
+        createInfo.pNext(VK_NULL_HANDLE);
+        createInfo.flags(0);
 
-            LongBuffer pSwapChain = stack.mallocLong(1);
-            vkCheck(KHRSwapchain.vkCreateSwapchainKHR(device.getHandle(), createInfo, null, pSwapChain), "Failed to create swapChain");
-            handle = pSwapChain.get(0);
-    }
-
-    public int getImageCount() {
-        return imageCount;
-    }
-
-    public VkSurfaceFormatKHR getFormat() {
-        return format;
-    }
-
-    public VkExtent2D getExtent() {
-        return extent;
+        LongBuffer pSwapChain = stack.mallocLong(1);
+        vkCheck(KHRSwapchain.vkCreateSwapchainKHR(device.getHandle(), createInfo, null, pSwapChain), "Failed to create swapChain");
+        handle = pSwapChain.get(0);
     }
 
     public static VkSurfaceFormatKHR chooseSurfaceFormat(List<VkSurfaceFormatKHR> availableFormats) {
@@ -106,6 +94,18 @@ public class Swapchain {
 
             return actualExtent;
         }
+    }
+
+    public int getImageCount() {
+        return imageCount;
+    }
+
+    public VkSurfaceFormatKHR getFormat() {
+        return format;
+    }
+
+    public VkExtent2D getExtent() {
+        return extent;
     }
 
     public void destroy(Device device) {

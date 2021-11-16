@@ -18,10 +18,6 @@ public enum PresentMode {
         this.index = index;
     }
 
-    public int getIndex() {
-        return index;
-    }
-
     public static PresentMode valueOf(int index) {
         if (!(index >= 0 && index <= 3)) {
             throw new IllegalArgumentException("Present mode index must be between 0 and 3");
@@ -43,5 +39,9 @@ public enum PresentMode {
             modes.add(valueOf(buffer.get(i)));
         }
         return modes;
+    }
+
+    public int getIndex() {
+        return index;
     }
 }

@@ -50,23 +50,23 @@ public class PhysicalDevice {
             throw new RuntimeException("Failed to find graphics device that supports vulkan");
         }
 
-            SortedMap<Integer, PhysicalDevice> physicalDevices = new TreeMap<>();
+        SortedMap<Integer, PhysicalDevice> physicalDevices = new TreeMap<>();
 
-            PointerBuffer pPhysicalDevices = stack.mallocPointer(physicalDeviceCount);
-            vkCheck(vkEnumeratePhysicalDevices(instance.getHandle(), pPhysicalDeviceCount, pPhysicalDevices), "Failed to enumerate physical devices");
-            for (int physicalDeviceIndex = 0; physicalDeviceIndex < pPhysicalDevices.capacity(); physicalDeviceIndex++) {
-                PhysicalDevice physicalDevice = new PhysicalDevice(stack, instance, pPhysicalDevices.get(physicalDeviceIndex), surface);
+        PointerBuffer pPhysicalDevices = stack.mallocPointer(physicalDeviceCount);
+        vkCheck(vkEnumeratePhysicalDevices(instance.getHandle(), pPhysicalDeviceCount, pPhysicalDevices), "Failed to enumerate physical devices");
+        for (int physicalDeviceIndex = 0; physicalDeviceIndex < pPhysicalDevices.capacity(); physicalDeviceIndex++) {
+            PhysicalDevice physicalDevice = new PhysicalDevice(stack, instance, pPhysicalDevices.get(physicalDeviceIndex), surface);
 
-                // Rate every physical device based on its features
-                physicalDevices.put(physicalDevice.getScore(), physicalDevice);
-            }
+            // Rate every physical device based on its features
+            physicalDevices.put(physicalDevice.getScore(), physicalDevice);
+        }
 
-            int bestDeviceScore = physicalDevices.firstKey();
-            if (bestDeviceScore < 0) {
-                throw new RuntimeException("No suitable graphics device found");
-            }
+        int bestDeviceScore = physicalDevices.firstKey();
+        if (bestDeviceScore < 0) {
+            throw new RuntimeException("No suitable graphics device found");
+        }
 
-            return physicalDevices.get(bestDeviceScore);
+        return physicalDevices.get(bestDeviceScore);
     }
 
     private int checkDevice(MemoryStack stack, Surface surface) {

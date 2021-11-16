@@ -18,15 +18,15 @@ public class Queue {
         handle = new VkQueue(pHandle.get(0), device.getHandle());
     }
 
-    public VkQueue getHandle() {
-        return handle;
-    }
-
     public static Queue createQueue(MemoryStack stack, Device device, List<QueueFamily> queueFamilies, int familyIndex) {
         QueueFamily family = queueFamilies.stream()
                 .filter(f -> f.getCreateInfo().queueFamilyIndex() == familyIndex)
                 .findFirst()
                 .orElseThrow(() -> new RuntimeException("Failed to find requested queue family in device queue families"));
         return new Queue(stack, device, family);
+    }
+
+    public VkQueue getHandle() {
+        return handle;
     }
 }

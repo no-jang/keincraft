@@ -23,38 +23,38 @@ public class Renderpass {
                 .initialLayout(VK10.VK_IMAGE_LAYOUT_UNDEFINED)
                 .finalLayout(KHRSwapchain.VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
 
-            VkAttachmentReference colorAttachmentReference = VkAttachmentReference.malloc(stack)
-                    .attachment(0)
-                    .layout(VK10.VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+        VkAttachmentReference colorAttachmentReference = VkAttachmentReference.malloc(stack)
+                .attachment(0)
+                .layout(VK10.VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
 
-            VkSubpassDescription subpass = VkSubpassDescription.calloc(stack)
-                    .flags(0)
-                    .pipelineBindPoint(VK10.VK_PIPELINE_BIND_POINT_GRAPHICS)
-                    .colorAttachmentCount(1)
-                    .pColorAttachments(VkAttachmentReference.malloc(1, stack)
-                            .put(0, colorAttachmentReference));
+        VkSubpassDescription subpass = VkSubpassDescription.calloc(stack)
+                .flags(0)
+                .pipelineBindPoint(VK10.VK_PIPELINE_BIND_POINT_GRAPHICS)
+                .colorAttachmentCount(1)
+                .pColorAttachments(VkAttachmentReference.malloc(1, stack)
+                        .put(0, colorAttachmentReference));
 
-            VkSubpassDependency dependency = VkSubpassDependency.malloc(stack)
-                    .srcSubpass(VK10.VK_SUBPASS_EXTERNAL)
-                    .dstSubpass(0)
-                    .srcStageMask(VK10.VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT)
-                    .srcAccessMask(0)
-                    .dstStageMask(VK10.VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT)
-                    .dstAccessMask(VK10.VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT);
+        VkSubpassDependency dependency = VkSubpassDependency.malloc(stack)
+                .srcSubpass(VK10.VK_SUBPASS_EXTERNAL)
+                .dstSubpass(0)
+                .srcStageMask(VK10.VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT)
+                .srcAccessMask(0)
+                .dstStageMask(VK10.VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT)
+                .dstAccessMask(VK10.VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT);
 
-            VkRenderPassCreateInfo createInfo = VkRenderPassCreateInfo.malloc(stack)
-                    .sType$Default()
-                    .flags(0)
-                    .pNext(0)
-                    .pDependencies(VkSubpassDependency.malloc(1, stack).put(0, dependency))
-                    .pAttachments(VkAttachmentDescription.malloc(1, stack)
-                            .put(0, colorAttachment))
-                    .pSubpasses(VkSubpassDescription.malloc(1, stack)
-                            .put(0, subpass));
+        VkRenderPassCreateInfo createInfo = VkRenderPassCreateInfo.malloc(stack)
+                .sType$Default()
+                .flags(0)
+                .pNext(0)
+                .pDependencies(VkSubpassDependency.malloc(1, stack).put(0, dependency))
+                .pAttachments(VkAttachmentDescription.malloc(1, stack)
+                        .put(0, colorAttachment))
+                .pSubpasses(VkSubpassDescription.malloc(1, stack)
+                        .put(0, subpass));
 
-            LongBuffer pRenderPass = stack.mallocLong(1);
-            Global.vkCheck(VK10.vkCreateRenderPass(device.getHandle(), createInfo, null, pRenderPass), "Failed to create render pass");
-            handle = pRenderPass.get(0);
+        LongBuffer pRenderPass = stack.mallocLong(1);
+        Global.vkCheck(VK10.vkCreateRenderPass(device.getHandle(), createInfo, null, pRenderPass), "Failed to create render pass");
+        handle = pRenderPass.get(0);
     }
 
     public void destroy(Device device) {

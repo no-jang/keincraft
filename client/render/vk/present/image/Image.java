@@ -30,12 +30,12 @@ public class Image {
                 "Failed to get swapchain images");
 
         List<Image> images = new ArrayList<>(imageCount);
-            for (int i = 0; i < imageCount; i++) {
-                Image image = new Image(pImages.get(i));
-                images.add(image);
-            }
+        for (int i = 0; i < imageCount; i++) {
+            Image image = new Image(pImages.get(i));
+            images.add(image);
+        }
 
-            return images;
+        return images;
     }
 
     public long getHandle() {

@@ -49,32 +49,32 @@ public class Instance {
 
         VkApplicationInfo appInfo = VkApplicationInfo.malloc(stack)
                 .sType$Default()
-                    .pNext(NULL)
-                    .pApplicationName(appName)
-                    .applicationVersion(appVersion)
-                    .pEngineName(appName)
-                    .engineVersion(appVersion)
-                    .apiVersion(VK.getInstanceVersionSupported());
+                .pNext(NULL)
+                .pApplicationName(appName)
+                .applicationVersion(appVersion)
+                .pEngineName(appName)
+                .engineVersion(appVersion)
+                .apiVersion(VK.getInstanceVersionSupported());
 
-            // Instance creation information
-            VkInstanceCreateInfo createInfo = VkInstanceCreateInfo.malloc(stack)
-                    .sType$Default()
-                    .pNext(NULL)
-                    .flags(0)
-                    .pApplicationInfo(appInfo)
-                    .ppEnabledExtensionNames(requiredExtensions)
-                    .ppEnabledLayerNames(requiredLayers);
+        // Instance creation information
+        VkInstanceCreateInfo createInfo = VkInstanceCreateInfo.malloc(stack)
+                .sType$Default()
+                .pNext(NULL)
+                .flags(0)
+                .pApplicationInfo(appInfo)
+                .ppEnabledExtensionNames(requiredExtensions)
+                .ppEnabledLayerNames(requiredLayers);
 
-            VkDebugReportCallbackCreateInfoEXT debugCallbackCreateInfo = createDebugCallback(stack, createInfo);
+        VkDebugReportCallbackCreateInfoEXT debugCallbackCreateInfo = createDebugCallback(stack, createInfo);
 
-            PointerBuffer pInstance = stack.mallocPointer(1);
-            vkCheck(vkCreateInstance(createInfo, null, pInstance), "Failed to create vulkan instance");
-            handle = new VkInstance(pInstance.get(0), createInfo);
+        PointerBuffer pInstance = stack.mallocPointer(1);
+        vkCheck(vkCreateInstance(createInfo, null, pInstance), "Failed to create vulkan instance");
+        handle = new VkInstance(pInstance.get(0), createInfo);
 
-            if (debugCallbackCreateInfo != null) {
-                LongBuffer pDebugReportCallback = stack.mallocLong(1);
-                vkCheck(vkCreateDebugReportCallbackEXT(handle, debugCallbackCreateInfo, null, pDebugReportCallback), "Failed to create debug report callback");
-                aDebugCallback = pDebugReportCallback.get(0);
+        if (debugCallbackCreateInfo != null) {
+            LongBuffer pDebugReportCallback = stack.mallocLong(1);
+            vkCheck(vkCreateDebugReportCallbackEXT(handle, debugCallbackCreateInfo, null, pDebugReportCallback), "Failed to create debug report callback");
+            aDebugCallback = pDebugReportCallback.get(0);
         }
     }
 
@@ -155,14 +155,6 @@ public class Instance {
         return createInfo;
     }
 
-    public void destroy() {
-        if (Global.isDebug) {
-            vkDestroyDebugReportCallbackEXT(handle, aDebugCallback, null);
-        }
-
-        vkDestroyInstance(handle, null);
-    }
-
     private static PointerBuffer checkExtensions(MemoryStack stack) {
         PointerBuffer pRequiredGlfwExtensions = GLFWVulkan.glfwGetRequiredInstanceExtensions();
         if (pRequiredGlfwExtensions == null) {
@@ -205,6 +197,14 @@ public class Instance {
 
         pRequiredExtensions.flip();
         return pRequiredExtensions;
+    }
+
+    public void destroy() {
+        if (Global.isDebug) {
+            vkDestroyDebugReportCallbackEXT(handle, aDebugCallback, null);
+        }
+
+        vkDestroyInstance(handle, null);
     }
 
     public VkInstance getHandle() {

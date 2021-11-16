@@ -28,7 +28,6 @@ import org.lwjgl.system.MemoryStack;
 
 import java.util.List;
 
-// TODO Make command buffers more configurable
 // TODO Recreate swapchain on window resize
 // TODO Add vertex buffers
 // TODO Add uniform buffers
@@ -96,7 +95,14 @@ public class RenderTriangle {
 
             commandPool = new CommandPool(stack, physicalDevice, device);
 
-            commandBuffers = new CommandBuffers(stack, device, commandPool, renderpass, swapchain, pipeline, framebuffers);
+            commandBuffers = new CommandBuffers(stack, device, commandPool, framebuffers, buffer -> {
+                buffer.begin();
+                buffer.beginRenderPass(swapchain, renderpass);
+                buffer.beginPipeline(pipeline);
+                buffer.draw(3, 1, 0, 0);
+                buffer.endRenderPass();
+                buffer.end();
+            });
 
             frameContext = new FrameContext(stack, device, 2);
             imageAcquire = new ImageAcquire(swapchain);

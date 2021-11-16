@@ -28,9 +28,9 @@ public class Framebuffer {
                 .height(swapchain.getExtent().height())
                 .layers(1);
 
-            LongBuffer pFramebuffer = stack.mallocLong(1);
-            Global.vkCheck(VK10.vkCreateFramebuffer(device.getHandle(), createInfo, null, pFramebuffer), "Failed to create framebuffer");
-            handle = pFramebuffer.get(0);
+        LongBuffer pFramebuffer = stack.mallocLong(1);
+        Global.vkCheck(VK10.vkCreateFramebuffer(device.getHandle(), createInfo, null, pFramebuffer), "Failed to create framebuffer");
+        handle = pFramebuffer.get(0);
     }
 
     public static List<Framebuffer> createFramebuffers(MemoryStack stack, Device device, Renderpass renderpass, Swapchain swapchain, List<ImageView> imageViews) {

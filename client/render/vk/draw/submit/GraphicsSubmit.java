@@ -17,7 +17,7 @@ public final class GraphicsSubmit {
                 .waitSemaphoreCount(1)
                 .pWaitSemaphores(stack.longs(frame.getImageAvailableSemaphore().getHandle()))
                 .pWaitDstStageMask(stack.ints(VK10.VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT))
-                .pCommandBuffers(stack.pointers(commandBuffers.getHandles().get(imageIndex)))
+                .pCommandBuffers(stack.pointers(commandBuffers.getBuffer(imageIndex).getHandle()))
                 .pSignalSemaphores(stack.longs(frame.getRenderFinishedSemaphore().getHandle()));
 
         VK10.vkResetFences(device.getHandle(), frame.getInFlightFence().getHandle());
