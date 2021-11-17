@@ -5,6 +5,5 @@ This project might turn into something, but we might also just lose motivation a
 ### prefixes
 
 | Prefix | Function                                                                        |
-| ------ | ------------------------------------------------------------------------------- |      
-| a      | memory address (long)                                                           |
+| ------ | ------------------------------------------------------------------------------- |
 | p      | pointer class represent (IntBuffer, ByteBuffer, LongBuffer, PointerBuffer, ...) |
