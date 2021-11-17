@@ -14,10 +14,7 @@ import client.render.vk.draw.submit.PresentSubmit;
 import client.render.vk.draw.sync.Framebuffer;
 import client.render.vk.pipeline.Pipeline;
 import client.render.vk.pipeline.RenderPass;
-import client.render.vk.pipeline.fixed.ColorBlend;
-import client.render.vk.pipeline.fixed.Multisampling;
-import client.render.vk.pipeline.fixed.Rasterizer;
-import client.render.vk.pipeline.fixed.VertexInput;
+import client.render.vk.pipeline.part.*;
 import client.render.vk.pipeline.shader.Shader;
 import client.render.vk.pipeline.shader.ShaderType;
 import client.render.vk.present.Surface;
@@ -29,7 +26,6 @@ import org.lwjgl.system.MemoryStack;
 
 import java.util.List;
 
-// TODO Dynamic States
 // TODO Graphics context
 // TODO Sub context
 // TODO Add vertex buffers
@@ -54,11 +50,11 @@ public class RenderTriangle {
 
     private SwapChain swapChain;
     private List<ImageView> imageViews;
-    private RenderPass renderPass;
-    private Pipeline pipeline;
+    private final RenderPass renderPass;
+    private final Pipeline pipeline;
     private List<Framebuffer> framebuffers;
-    private CommandPool commandPool;
-    private CommandBuffers commandBuffers;
+    private final CommandPool commandPool;
+    private final CommandBuffers commandBuffers;
     private FrameContext frameContext;
     private ImageAcquire imageAcquire;
 
@@ -76,6 +72,30 @@ public class RenderTriangle {
             presentQueue = Queue.createQueue(stack, device, queueFamilies, physicalDevice.getQueueFamilies().getPresentFamilyIndex());
 
             createSwapChain(stack);
+
+            List<Shader> shaders = List.of(
+                    Shader.readFromFile(stack, device, ShaderType.VERTEX_SHADER, "shaders/base.vert.spv"),
+                    Shader.readFromFile(stack, device, ShaderType.FRAGMENT_SHADER, "shaders/base.frag.spv")
+            );
+
+            renderPass = new RenderPass(stack, device, swapChain);
+            ColorBlend colorBlend = new ColorBlend(stack);
+            Multisampling multisampling = new Multisampling(stack);
+            Rasterizer rasterizer = new Rasterizer(stack);
+            VertexInput vertexInput = new VertexInput(stack);
+            DynamicState dynamicState = new DynamicState(stack);
+            pipeline = new Pipeline(stack, device, swapChain, renderPass, shaders, vertexInput, rasterizer, multisampling, colorBlend, dynamicState);
+
+            for (Shader shader : shaders) {
+                shader.destroy(device);
+            }
+
+            createFramebuffers(stack);
+
+            commandPool = new CommandPool(stack, physicalDevice, device);
+
+            commandBuffers = new CommandBuffers(stack, device, commandPool, framebuffers);
+            recordCommandBuffers();
         }
     }
 
@@ -89,37 +109,23 @@ public class RenderTriangle {
         swapChain = new SwapChain(stack, physicalDevice, device, surface, window);
         List<Image> images = Image.createImages(stack, device, swapChain);
         imageViews = ImageView.createImageViews(stack, device, swapChain, images);
-        List<Shader> shaders = List.of(
-                Shader.readFromFile(stack, device, ShaderType.VERTEX_SHADER, "shaders/base.vert.spv"),
-                Shader.readFromFile(stack, device, ShaderType.FRAGMENT_SHADER, "shaders/base.frag.spv")
-        );
 
-        renderPass = new RenderPass(stack, device, swapChain);
-        ColorBlend colorBlend = new ColorBlend(stack);
-        Multisampling multisampling = new Multisampling(stack);
-        Rasterizer rasterizer = new Rasterizer(stack);
-        VertexInput vertexInput = new VertexInput(stack);
-        pipeline = new Pipeline(stack, device, swapChain, renderPass, shaders, vertexInput, rasterizer, multisampling, colorBlend);
+        imageAcquire = new ImageAcquire(swapChain);
+        frameContext = new FrameContext(stack, device, 2);
+    }
 
-        for (Shader shader : shaders) {
-            shader.destroy(device);
-        }
-
+    public void createFramebuffers(MemoryStack stack) {
         framebuffers = Framebuffer.createFramebuffers(stack, device, renderPass, swapChain, imageViews);
+    }
 
-        commandPool = new CommandPool(stack, physicalDevice, device);
-
-        commandBuffers = new CommandBuffers(stack, device, commandPool, framebuffers, buffer -> {
-            buffer.begin();
+    public void recordCommandBuffers() {
+        commandBuffers.record(buffer -> {
+            buffer.setViewport(swapChain);
             buffer.beginRenderPass(swapChain, renderPass);
             buffer.beginPipeline(pipeline);
             buffer.draw(3, 1, 0, 0);
             buffer.endRenderPass();
-            buffer.end();
         });
-
-        frameContext = new FrameContext(stack, device, 2);
-        imageAcquire = new ImageAcquire(swapChain);
     }
 
     public void loop() {
@@ -150,20 +156,20 @@ public class RenderTriangle {
 
         destroySwapChain();
         createSwapChain(stack);
+        createFramebuffers(stack);
+        commandBuffers.reset();
+        commandBuffers.update(framebuffers);
+        recordCommandBuffers();
     }
 
     public void destroySwapChain() {
         device.waitIdle();
 
         frameContext.destroy(device);
-        commandPool.destroy(device);
 
         for (Framebuffer framebuffer : framebuffers) {
             framebuffer.destroy(device);
         }
-
-        pipeline.destroy(device);
-        renderPass.destroy(device);
 
         for (ImageView view : imageViews) {
             view.destroy(device);
@@ -174,6 +180,11 @@ public class RenderTriangle {
 
     public void destroy() {
         destroySwapChain();
+
+        commandPool.destroy(device);
+
+        pipeline.destroy(device);
+        renderPass.destroy(device);
 
         device.destroy();
         surface.destroy(instance);

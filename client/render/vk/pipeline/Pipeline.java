@@ -1,10 +1,7 @@
 package client.render.vk.pipeline;
 
 import client.render.vk.device.Device;
-import client.render.vk.pipeline.fixed.ColorBlend;
-import client.render.vk.pipeline.fixed.Multisampling;
-import client.render.vk.pipeline.fixed.Rasterizer;
-import client.render.vk.pipeline.fixed.VertexInput;
+import client.render.vk.pipeline.part.*;
 import client.render.vk.pipeline.shader.Shader;
 import client.render.vk.present.SwapChain;
 import org.lwjgl.system.MemoryStack;
@@ -21,8 +18,9 @@ public class Pipeline {
     private final long layoutHandle;
     private final long handle;
 
-    public Pipeline(MemoryStack stack, Device device, SwapChain swapchain, RenderPass renderpass, List<Shader> shaders,
-                    VertexInput vertexInput, Rasterizer rasterizer, Multisampling multisampling, ColorBlend colorBlend) {
+    public Pipeline(MemoryStack stack, Device device, SwapChain swapChain, RenderPass renderpass, List<Shader> shaders,
+                    VertexInput vertexInput, Rasterizer rasterizer, Multisampling multisampling, ColorBlend colorBlend,
+                    DynamicState dynamicState) {
         VkPipelineLayoutCreateInfo layoutCreateInfo = VkPipelineLayoutCreateInfo.malloc(stack)
                 .sType$Default()
                 .flags(0)
@@ -43,13 +41,13 @@ public class Pipeline {
         VkViewport viewport = VkViewport.malloc(stack)
                 .x(0.0f)
                 .y(0.0f)
-                .width(swapchain.getExtent().width())
-                .height(swapchain.getExtent().height())
+                .width(swapChain.getExtent().width())
+                .height(swapChain.getExtent().height())
                 .minDepth(0.0f)
                 .maxDepth(1.0f);
 
         VkRect2D scissors = VkRect2D.malloc(stack)
-                .extent(swapchain.getExtent())
+                .extent(swapChain.getExtent())
                 .offset(VkOffset2D.malloc(stack)
                         .set(0, 0));
 
@@ -76,7 +74,7 @@ public class Pipeline {
                 .pMultisampleState(multisampling.getMultisampling())
                 .pDepthStencilState(null)
                 .pColorBlendState(colorBlend.getColorBlend())
-                .pDynamicState(null)
+                .pDynamicState(dynamicState.getDynamicState())
                 .layout(layoutHandle)
                 .renderPass(renderpass.getHandle())
                 .subpass(0)

@@ -15,7 +15,7 @@ public class CommandPool {
     public CommandPool(MemoryStack stack, PhysicalDevice physicalDevice, Device device) {
         VkCommandPoolCreateInfo createInfo = VkCommandPoolCreateInfo.malloc(stack)
                 .sType$Default()
-                .flags(0)
+                .flags(VK10.VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT)
                 .pNext(0)
                 .queueFamilyIndex(physicalDevice.getQueueFamilies().getGraphicsFamilyIndex());
 

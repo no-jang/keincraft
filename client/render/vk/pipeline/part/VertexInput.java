@@ -1,4 +1,4 @@
-package client.render.vk.pipeline.fixed;
+package client.render.vk.pipeline.part;
 
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.VK10;

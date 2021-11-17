@@ -11,8 +11,9 @@ import org.lwjgl.vulkan.*;
 
 public class CommandBuffer {
     private final MemoryStack stack;
-    private final Framebuffer framebuffer;
     private final VkCommandBuffer handle;
+
+    private Framebuffer framebuffer;
 
     public CommandBuffer(MemoryStack stack, Device device, Framebuffer framebuffer, long pCommandBuffer) {
         this.stack = stack;
@@ -29,6 +30,24 @@ public class CommandBuffer {
                 .pInheritanceInfo(null);
 
         Global.vkCheck(VK10.vkBeginCommandBuffer(handle, beginInfo), "Failed to begin recording command buffer");
+    }
+
+    public void setViewport(SwapChain swapChain) {
+        VkViewport viewport = VkViewport.malloc(stack)
+                .x(0.0f)
+                .y(0.0f)
+                .width(swapChain.getExtent().width())
+                .height(swapChain.getExtent().height())
+                .minDepth(0.0f)
+                .maxDepth(1.0f);
+
+        VkRect2D scissors = VkRect2D.malloc(stack)
+                .extent(swapChain.getExtent())
+                .offset(VkOffset2D.malloc(stack)
+                        .set(0, 0));
+
+        VK10.vkCmdSetViewport(handle, 0, VkViewport.malloc(1, stack).put(0, viewport));
+        VK10.vkCmdSetScissor(handle, 0, VkRect2D.malloc(1, stack).put(0, scissors));
     }
 
     public void beginRenderPass(SwapChain swapchain, RenderPass renderpass) {
@@ -65,6 +84,14 @@ public class CommandBuffer {
 
     public void end() {
         Global.vkCheck(VK10.vkEndCommandBuffer(handle), "Failed to end command buffer");
+    }
+
+    public void update(Framebuffer framebuffer) {
+        this.framebuffer = framebuffer;
+    }
+
+    public void reset() {
+        Global.vkCheck(VK10.vkResetCommandBuffer(handle, 0), "Failed to reset command buffer");
     }
 
     public VkCommandBuffer getHandle() {

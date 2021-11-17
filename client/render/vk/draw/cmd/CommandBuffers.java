@@ -14,7 +14,7 @@ import java.util.List;
 public class CommandBuffers {
     private final List<CommandBuffer> buffers;
 
-    public CommandBuffers(MemoryStack stack, Device device, CommandPool commandPool, List<Framebuffer> framebuffers, CommandRecording commandRecording) {
+    public CommandBuffers(MemoryStack stack, Device device, CommandPool commandPool, List<Framebuffer> framebuffers) {
         buffers = new ArrayList<>(framebuffers.size());
 
         VkCommandBufferAllocateInfo allocateInfo = VkCommandBufferAllocateInfo.malloc(stack)
@@ -30,7 +30,30 @@ public class CommandBuffers {
         for (int i = 0; i < framebuffers.size(); i++) {
             CommandBuffer commandBuffer = new CommandBuffer(stack, device, framebuffers.get(i), pCommandBuffers.get(i));
             buffers.add(commandBuffer);
-            commandRecording.record(commandBuffer);
+        }
+    }
+
+    public void record(CommandRecording recording) {
+        for (CommandBuffer commandBuffer : buffers) {
+            commandBuffer.begin();
+            recording.record(commandBuffer);
+            commandBuffer.end();
+        }
+    }
+
+    public void update(List<Framebuffer> framebuffers) {
+        if (framebuffers.size() != buffers.size()) {
+            throw new RuntimeException("Failed to update command buffer framebuffers: there " + framebuffers.size() + " framebuffers for " + buffers.size() + " command buffers");
+        }
+
+        for (int i = 0; i < framebuffers.size(); i++) {
+            buffers.get(i).update(framebuffers.get(i));
+        }
+    }
+
+    public void reset() {
+        for (CommandBuffer commandBuffer : buffers) {
+            commandBuffer.reset();
         }
     }
 
