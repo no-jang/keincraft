@@ -1,8 +1,8 @@
 package client.render.vk.pipeline;
 
+import client.graphics.device.Device;
+import client.graphics.device.Surface;
 import client.render.vk.Global;
-import client.render.vk.device.Device;
-import client.render.vk.present.SwapChain;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.*;
 
@@ -11,10 +11,10 @@ import java.nio.LongBuffer;
 public class RenderPass {
     private final long handle;
 
-    public RenderPass(MemoryStack stack, Device device, SwapChain swapchain) {
+    public RenderPass(MemoryStack stack, Device device, Surface surface) {
         VkAttachmentDescription colorAttachment = VkAttachmentDescription.malloc(stack)
                 .flags(0)
-                .format(swapchain.getFormat().format())
+                .format(surface.getFormat().format())
                 .samples(VK10.VK_SAMPLE_COUNT_1_BIT)
                 .loadOp(VK10.VK_ATTACHMENT_LOAD_OP_CLEAR)
                 .storeOp(VK10.VK_ATTACHMENT_STORE_OP_STORE)

@@ -1,6 +1,6 @@
-package client.render.vk.draw.frame;
+package client.render.context.frame;
 
-import client.render.vk.device.Device;
+import client.graphics.device.Device;
 import client.render.vk.draw.sync.Fence;
 import client.render.vk.draw.sync.Semaphore;
 import org.lwjgl.system.MemoryStack;

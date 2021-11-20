@@ -1,13 +1,12 @@
 package client.render;
 
-import client.render.vk.device.Device;
-import client.render.vk.device.Instance;
-import client.render.vk.device.PhysicalDevice;
-import client.render.vk.device.queue.Queue;
-import client.render.vk.device.queue.QueueFamily;
+import client.graphics.device.Device;
+import client.graphics.device.Instance;
+import client.graphics.device.PhysicalDevice;
+import client.graphics.device.Surface;
+import client.render.context.frame.FrameContext;
 import client.render.vk.draw.cmd.CommandBuffers;
 import client.render.vk.draw.cmd.CommandPool;
-import client.render.vk.draw.frame.FrameContext;
 import client.render.vk.draw.submit.GraphicsSubmit;
 import client.render.vk.draw.submit.ImageAcquire;
 import client.render.vk.draw.submit.PresentSubmit;
@@ -17,11 +16,9 @@ import client.render.vk.pipeline.RenderPass;
 import client.render.vk.pipeline.part.*;
 import client.render.vk.pipeline.shader.Shader;
 import client.render.vk.pipeline.shader.ShaderType;
-import client.render.vk.present.Surface;
 import client.render.vk.present.SwapChain;
 import client.render.vk.present.image.Image;
 import client.render.vk.present.image.ImageView;
-import org.lwjgl.glfw.GLFW;
 import org.lwjgl.system.MemoryStack;
 
 import java.util.List;
@@ -40,13 +37,11 @@ import java.util.List;
 // TODO Generate chunk mesh
 // TODO Render chunk
 public class RenderTriangle {
-    private final Window window;
+    private final client.graphics.device.Window window;
     private final Instance instance;
-    private final Surface surface;
     private final PhysicalDevice physicalDevice;
+    private final Surface surface;
     private final Device device;
-    private final Queue graphicsQueue;
-    private final Queue presentQueue;
 
     private SwapChain swapChain;
     private List<ImageView> imageViews;
@@ -60,16 +55,11 @@ public class RenderTriangle {
 
     public RenderTriangle() {
         try (MemoryStack stack = MemoryStack.stackPush()) {
-            window = new Window(900, 900);
+            window = new client.graphics.device.Window("triangle", 900, 900);
             instance = new Instance(stack);
-            surface = new Surface(stack, instance, window);
-
-            physicalDevice = PhysicalDevice.pickPhysicalDevice(stack, instance, surface);
-            List<QueueFamily> queueFamilies = QueueFamily.createQueueFamilies(stack, physicalDevice.getQueueFamilies());
-            device = new Device(stack, physicalDevice, queueFamilies);
-
-            graphicsQueue = Queue.createQueue(stack, device, queueFamilies, physicalDevice.getQueueFamilies().getGraphicsFamilyIndex());
-            presentQueue = Queue.createQueue(stack, device, queueFamilies, physicalDevice.getQueueFamilies().getPresentFamilyIndex());
+            physicalDevice = PhysicalDevice.getPhysicalDevice(stack, instance);
+            surface = new Surface(stack, instance, physicalDevice, window);
+            device = new Device(stack, physicalDevice, surface);
 
             createSwapChain(stack);
 
@@ -78,7 +68,7 @@ public class RenderTriangle {
                     Shader.readFromFile(stack, device, ShaderType.FRAGMENT_SHADER, "shaders/base.frag.spv")
             );
 
-            renderPass = new RenderPass(stack, device, swapChain);
+            renderPass = new RenderPass(stack, device, surface);
             ColorBlend colorBlend = new ColorBlend(stack);
             Multisampling multisampling = new Multisampling(stack);
             Rasterizer rasterizer = new Rasterizer(stack);
@@ -92,7 +82,7 @@ public class RenderTriangle {
 
             createFramebuffers(stack);
 
-            commandPool = new CommandPool(stack, physicalDevice, device);
+            commandPool = new CommandPool(stack, device);
 
             commandBuffers = new CommandBuffers(stack, device, commandPool, framebuffers);
             recordCommandBuffers();
@@ -106,9 +96,9 @@ public class RenderTriangle {
     }
 
     public void createSwapChain(MemoryStack stack) {
-        swapChain = new SwapChain(stack, physicalDevice, device, surface, window);
+        swapChain = new SwapChain(stack, device, surface, window);
         List<Image> images = Image.createImages(stack, device, swapChain);
-        imageViews = ImageView.createImageViews(stack, device, swapChain, images);
+        imageViews = ImageView.createImageViews(stack, device, swapChain, surface, images);
 
         imageAcquire = new ImageAcquire(swapChain);
         frameContext = new FrameContext(stack, device, 2);
@@ -135,11 +125,11 @@ public class RenderTriangle {
             try (MemoryStack stack = MemoryStack.stackPush()) {
                 int imageIndex = imageAcquire.acquireImage(stack, device, swapChain, frameContext.getCurrentFrame());
                 boolean framebufferResized = imageAcquire.isFramebufferResized();
-                framebufferResized = GraphicsSubmit.submitGraphics(stack, device, commandBuffers, graphicsQueue, frameContext.getCurrentFrame(), imageIndex);
-                framebufferResized = PresentSubmit.submitPresent(stack, swapChain, presentQueue, frameContext.getCurrentFrame(), imageIndex);
+                framebufferResized = GraphicsSubmit.submitGraphics(stack, device, commandBuffers, frameContext.getCurrentFrame(), imageIndex);
+                framebufferResized = PresentSubmit.submitPresent(stack, device, swapChain, frameContext.getCurrentFrame(), imageIndex);
 
                 if (framebufferResized) {
-                    recreateSwapChain(stack);
+                    //recreateSwapChain(stack);
                 }
 
                 frameContext.nextFrame();
@@ -147,7 +137,7 @@ public class RenderTriangle {
         }
     }
 
-    public void recreateSwapChain(MemoryStack stack) {
+/*    public void recreateSwapChain(MemoryStack stack) {
         window.gatherFramebufferSize();
         while (window.getWidth() == 0 || window.getHeight() == 0) {
             window.gatherFramebufferSize();
@@ -160,7 +150,7 @@ public class RenderTriangle {
         commandBuffers.reset();
         commandBuffers.update(framebuffers);
         recordCommandBuffers();
-    }
+    }*/
 
     public void destroySwapChain() {
         device.waitIdle();

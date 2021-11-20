@@ -1,7 +1,7 @@
 package client.render.vk.draw.cmd;
 
+import client.graphics.device.Device;
 import client.render.vk.Global;
-import client.render.vk.device.Device;
 import client.render.vk.draw.sync.Framebuffer;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.system.MemoryStack;

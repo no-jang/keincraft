@@ -16,3 +16,6 @@ build
 
 # Vscode
 .vscode
+
+# Logs
+logs

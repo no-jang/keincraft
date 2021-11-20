@@ -1,4 +1,4 @@
-package client.render.vk.present;
+package client.graphics.device;
 
 import org.lwjgl.vulkan.KHRSurface;
 
@@ -6,6 +6,9 @@ import java.nio.IntBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Wrapper for VkPresentModeKHR
+ */
 public enum PresentMode {
     IMMEDIATE(KHRSurface.VK_PRESENT_MODE_IMMEDIATE_KHR),
     MAILBOX(KHRSurface.VK_PRESENT_MODE_MAILBOX_KHR),
@@ -33,6 +36,12 @@ public enum PresentMode {
         return null;
     }
 
+    /**
+     * Transforms a present mode int buffer into a list of PresentModes
+     *
+     * @param buffer buffer to transform
+     * @return present mode list
+     */
     public static List<PresentMode> fromBuffer(IntBuffer buffer) {
         List<PresentMode> modes = new ArrayList<>(buffer.capacity());
         for (int i = 0; i < buffer.capacity(); i++) {
@@ -41,6 +50,9 @@ public enum PresentMode {
         return modes;
     }
 
+    /**
+     * @return vulkan int code for corresponding present mode
+     */
     public int getIndex() {
         return index;
     }

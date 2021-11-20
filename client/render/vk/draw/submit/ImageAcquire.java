@@ -1,8 +1,8 @@
 package client.render.vk.draw.submit;
 
+import client.graphics.device.Device;
+import client.render.context.frame.Frame;
 import client.render.vk.Global;
-import client.render.vk.device.Device;
-import client.render.vk.draw.frame.Frame;
 import client.render.vk.present.SwapChain;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.KHRSwapchain;

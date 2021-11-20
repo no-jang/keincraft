@@ -1,6 +1,6 @@
 package client.render.vk.present.image;
 
-import client.render.vk.device.Device;
+import client.graphics.device.Device;
 import client.render.vk.present.SwapChain;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.KHRSwapchain;

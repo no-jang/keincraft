@@ -1,7 +1,7 @@
 package client.render.vk.draw.sync;
 
+import client.graphics.device.Device;
 import client.render.vk.Global;
-import client.render.vk.device.Device;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.VK10;
 import org.lwjgl.vulkan.VkFenceCreateInfo;

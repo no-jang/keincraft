@@ -1,30 +1,28 @@
 package client.render.vk.present;
 
-import client.render.Window;
-import client.render.vk.device.Device;
-import client.render.vk.device.PhysicalDevice;
+import client.graphics.device.Device;
+import client.graphics.device.PresentMode;
+import client.graphics.device.Surface;
+import client.graphics.device.Window;
 import common.util.math.MathUtil;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.*;
 
 import java.nio.LongBuffer;
-import java.util.List;
 
 import static client.render.vk.Global.vkCheck;
 import static org.lwjgl.vulkan.VK10.*;
 
 public class SwapChain {
     private final long handle;
-    private final VkSurfaceFormatKHR format;
     private final VkExtent2D extent;
 
     private int imageCount;
 
-    public SwapChain(MemoryStack stack, PhysicalDevice physicalDevice, Device device, Surface surface, Window window) {
-        VkSurfaceCapabilitiesKHR capabilities = physicalDevice.getSurfaceCapabilities(stack, surface);
+    public SwapChain(MemoryStack stack, Device device, Surface surface, Window window) {
+        VkSurfaceCapabilitiesKHR capabilities = surface.getCapabilities();
 
-        format = chooseSurfaceFormat(physicalDevice.getSurfaceFormats());
-        PresentMode presentMode = choosePresentMode(physicalDevice.getSurfacePresentModes());
+        PresentMode presentMode = surface.getPresentMode();
         extent = chooseExtent(stack, window, capabilities);
 
         // Swap chain image count, +1 because we don't want to wait for the driver before starting next frame
@@ -38,8 +36,8 @@ public class SwapChain {
                 .sType$Default()
                 .surface(surface.getHandle())
                 .minImageCount(imageCount)
-                .imageFormat(format.format())
-                .imageColorSpace(format.colorSpace())
+                .imageFormat(surface.getFormat().format())
+                .imageColorSpace(surface.getFormat().colorSpace())
                 .imageExtent(extent)
                 .imageArrayLayers(1)
                 .imageUsage(VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT);
@@ -61,26 +59,6 @@ public class SwapChain {
         handle = pSwapChain.get(0);
     }
 
-    public static VkSurfaceFormatKHR chooseSurfaceFormat(List<VkSurfaceFormatKHR> availableFormats) {
-        for (VkSurfaceFormatKHR format : availableFormats) {
-            if (format.format() == VK_FORMAT_B8G8R8A8_SRGB && format.colorSpace() == KHRSurface.VK_COLOR_SPACE_SRGB_NONLINEAR_KHR) {
-                return format;
-            }
-        }
-
-        return availableFormats.get(0);
-    }
-
-    public static PresentMode choosePresentMode(List<PresentMode> availablePresentModes) {
-        for (PresentMode presentMode : availablePresentModes) {
-            if (presentMode == PresentMode.MAILBOX) {
-                return presentMode;
-            }
-        }
-
-        return PresentMode.FIFO;
-    }
-
     public static VkExtent2D chooseExtent(MemoryStack stack, Window window, VkSurfaceCapabilitiesKHR capabilities) {
         if (capabilities.currentExtent().width() != 0xFFFFFFFF) {
             return capabilities.currentExtent();
@@ -99,10 +77,6 @@ public class SwapChain {
 
     public int getImageCount() {
         return imageCount;
-    }
-
-    public VkSurfaceFormatKHR getFormat() {
-        return format;
     }
 
     public VkExtent2D getExtent() {

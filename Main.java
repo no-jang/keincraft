@@ -1,4 +1,4 @@
-import client.MinecraftClient;
+import client.KeincraftClient;
 
 import java.util.Objects;
 
@@ -21,8 +21,9 @@ public class Main {
     }
 
     public static void runClient() {
-        MinecraftClient client = new MinecraftClient();
-        client.run();
+        KeincraftClient client = new KeincraftClient();
+        client.loop();
+        client.destroy();
     }
 
     public static void runServer() {

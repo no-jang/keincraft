@@ -1,6 +1,6 @@
 package client.render.vk.pipeline;
 
-import client.render.vk.device.Device;
+import client.graphics.device.Device;
 import client.render.vk.pipeline.part.*;
 import client.render.vk.pipeline.shader.Shader;
 import client.render.vk.present.SwapChain;

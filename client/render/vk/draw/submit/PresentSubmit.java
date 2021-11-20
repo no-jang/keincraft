@@ -1,8 +1,8 @@
 package client.render.vk.draw.submit;
 
+import client.graphics.device.Device;
+import client.render.context.frame.Frame;
 import client.render.vk.Global;
-import client.render.vk.device.queue.Queue;
-import client.render.vk.draw.frame.Frame;
 import client.render.vk.present.SwapChain;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.KHRSwapchain;
@@ -10,7 +10,7 @@ import org.lwjgl.vulkan.VK10;
 import org.lwjgl.vulkan.VkPresentInfoKHR;
 
 public final class PresentSubmit {
-    public static boolean submitPresent(MemoryStack stack, SwapChain swapchain, Queue presentQueue, Frame frame, int imageIndex) {
+    public static boolean submitPresent(MemoryStack stack, Device device, SwapChain swapchain, Frame frame, int imageIndex) {
         VkPresentInfoKHR presentInfo = VkPresentInfoKHR.calloc(stack)
                 .sType$Default()
                 .pNext(0)
@@ -20,10 +20,10 @@ public final class PresentSubmit {
                 .pImageIndices(stack.ints(imageIndex))
                 .pResults(null);
 
-        boolean framebufferResized = Global.vkCheckResized(KHRSwapchain.vkQueuePresentKHR(presentQueue.getHandle(), presentInfo),
+        boolean framebufferResized = Global.vkCheckResized(KHRSwapchain.vkQueuePresentKHR(device.getPresentQueue(), presentInfo),
                 "Failed to submit to present queue");
 
-        VK10.vkQueueWaitIdle(presentQueue.getHandle());
+        VK10.vkQueueWaitIdle(device.getPresentQueue());
 
         return framebufferResized;
     }

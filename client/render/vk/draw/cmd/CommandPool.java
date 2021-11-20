@@ -1,8 +1,7 @@
 package client.render.vk.draw.cmd;
 
+import client.graphics.device.Device;
 import client.render.vk.Global;
-import client.render.vk.device.Device;
-import client.render.vk.device.PhysicalDevice;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.VK10;
 import org.lwjgl.vulkan.VkCommandPoolCreateInfo;
@@ -12,12 +11,12 @@ import java.nio.LongBuffer;
 public class CommandPool {
     private final long handle;
 
-    public CommandPool(MemoryStack stack, PhysicalDevice physicalDevice, Device device) {
+    public CommandPool(MemoryStack stack, Device device) {
         VkCommandPoolCreateInfo createInfo = VkCommandPoolCreateInfo.malloc(stack)
                 .sType$Default()
                 .flags(VK10.VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT)
                 .pNext(0)
-                .queueFamilyIndex(physicalDevice.getQueueFamilies().getGraphicsFamilyIndex());
+                .queueFamilyIndex(device.getGraphicsQueueFamilyIndex());
 
         LongBuffer pCommandPool = stack.mallocLong(1);
         Global.vkCheck(VK10.vkCreateCommandPool(device.getHandle(), createInfo, null, pCommandPool), "Failed to create command pool");

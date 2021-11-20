@@ -1,7 +1,7 @@
 package client.render.vk.draw.sync;
 
+import client.graphics.device.Device;
 import client.render.vk.Global;
-import client.render.vk.device.Device;
 import client.render.vk.pipeline.RenderPass;
 import client.render.vk.present.SwapChain;
 import client.render.vk.present.image.ImageView;

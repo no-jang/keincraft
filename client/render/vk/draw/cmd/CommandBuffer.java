@@ -1,7 +1,7 @@
 package client.render.vk.draw.cmd;
 
+import client.graphics.device.Device;
 import client.render.vk.Global;
-import client.render.vk.device.Device;
 import client.render.vk.draw.sync.Framebuffer;
 import client.render.vk.pipeline.Pipeline;
 import client.render.vk.pipeline.RenderPass;
