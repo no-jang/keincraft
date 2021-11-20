@@ -1,10 +1,13 @@
 package client.render;
 
-import client.graphics.device.Device;
-import client.graphics.device.Instance;
-import client.graphics.device.PhysicalDevice;
-import client.graphics.device.Surface;
-import client.graphics.renderpass.SwapChain;
+import client.graphics.vk.device.Device;
+import client.graphics.vk.device.Instance;
+import client.graphics.vk.device.PhysicalDevice;
+import client.graphics.vk.device.Surface;
+import client.graphics.vk.renderpass.Attachment;
+import client.graphics.vk.renderpass.Renderpass;
+import client.graphics.vk.renderpass.Subpass;
+import client.graphics.vk.renderpass.Swapchain;
 import client.render.context.frame.FrameContext;
 import client.render.vk.draw.cmd.CommandBuffers;
 import client.render.vk.draw.cmd.CommandPool;
@@ -12,7 +15,6 @@ import client.render.vk.draw.submit.GraphicsSubmit;
 import client.render.vk.draw.submit.PresentSubmit;
 import client.render.vk.draw.sync.Framebuffer;
 import client.render.vk.pipeline.Pipeline;
-import client.render.vk.pipeline.RenderPass;
 import client.render.vk.pipeline.part.*;
 import client.render.vk.pipeline.shader.Shader;
 import client.render.vk.pipeline.shader.ShaderType;
@@ -34,13 +36,12 @@ import java.util.List;
 // TODO Generate chunk mesh
 // TODO Render chunk
 public class RenderTriangle {
-    private final client.graphics.device.Window window;
+    private final client.graphics.vk.device.Window window;
     private final Instance instance;
     private final Surface surface;
     private final Device device;
-
-    private SwapChain swapChain;
-    private final RenderPass renderPass;
+    private final Renderpass renderPass;
+    private Swapchain swapChain;
     private final Pipeline pipeline;
     private List<Framebuffer> framebuffers;
     private final CommandPool commandPool;
@@ -49,7 +50,7 @@ public class RenderTriangle {
 
     public RenderTriangle() {
         try (MemoryStack stack = MemoryStack.stackPush()) {
-            window = new client.graphics.device.Window("triangle", 900, 900);
+            window = new client.graphics.vk.device.Window("triangle", 900, 900);
             instance = new Instance(stack);
             PhysicalDevice physicalDevice = PhysicalDevice.getPhysicalDevice(stack, instance);
             surface = new Surface(stack, instance, physicalDevice, window);
@@ -62,7 +63,9 @@ public class RenderTriangle {
                     Shader.readFromFile(stack, device, ShaderType.FRAGMENT_SHADER, "shaders/base.frag.spv")
             );
 
-            renderPass = new RenderPass(stack, device, surface);
+            List<Attachment> attachments = List.of(new Attachment(stack, true, surface.getFormat().format(), 0));
+            List<Subpass> subpasses = List.of(new Subpass(stack, attachments, null, 0, false));
+            renderPass = new Renderpass(stack, device, subpasses, attachments);
             ColorBlend colorBlend = new ColorBlend(stack);
             Multisampling multisampling = new Multisampling(stack);
             Rasterizer rasterizer = new Rasterizer(stack);
@@ -90,7 +93,7 @@ public class RenderTriangle {
     }
 
     public void createSwapChain(MemoryStack stack) {
-        swapChain = new SwapChain(stack, device, surface, window, null);
+        swapChain = new Swapchain(stack, device, surface, window, null);
 
         frameContext = new FrameContext(stack, device, 2);
     }

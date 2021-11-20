@@ -1,9 +1,9 @@
 package client.render.vk.present;
 
-import client.graphics.device.Device;
-import client.graphics.device.PresentMode;
-import client.graphics.device.Surface;
-import client.graphics.device.Window;
+import client.graphics.vk.device.Device;
+import client.graphics.vk.device.PresentMode;
+import client.graphics.vk.device.Surface;
+import client.graphics.vk.device.Window;
 import common.util.math.MathUtil;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.*;

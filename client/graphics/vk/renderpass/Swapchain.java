@@ -1,13 +1,13 @@
-package client.graphics.renderpass;
+package client.graphics.vk.renderpass;
 
-import client.graphics.device.Device;
-import client.graphics.device.PresentMode;
-import client.graphics.device.Surface;
-import client.graphics.device.Window;
-import client.graphics.image.Image;
-import client.graphics.image.ImageView;
-import client.graphics.sync.Frame;
-import client.graphics.util.Check;
+import client.graphics.vk.device.Device;
+import client.graphics.vk.device.PresentMode;
+import client.graphics.vk.device.Surface;
+import client.graphics.vk.device.Window;
+import client.graphics.vk.image.Image;
+import client.graphics.vk.image.ImageView;
+import client.graphics.vk.sync.Frame;
+import client.graphics.vk.util.Check;
 import common.util.math.MathUtil;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.*;
@@ -22,7 +22,7 @@ import java.util.Map;
 /**
  * Holds all framebuffers the image is being rendered to before pushing them to screen
  */
-public class SwapChain {
+public class Swapchain {
     private final long handle;
     private final int imageCount;
     private final List<ImageView> imageViews;
@@ -41,7 +41,7 @@ public class SwapChain {
      * @param window       window
      * @param oldSwapchain if available old swapchain to speed up creation process
      */
-    public SwapChain(MemoryStack stack, Device device, Surface surface, Window window, SwapChain oldSwapchain) {
+    public Swapchain(MemoryStack stack, Device device, Surface surface, Window window, Swapchain oldSwapchain) {
         VkSurfaceCapabilitiesKHR capabilities = surface.getCapabilities();
         PresentMode presentMode = surface.getPresentMode();
 

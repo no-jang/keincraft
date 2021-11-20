@@ -1,4 +1,4 @@
-package client.graphics.image;
+package client.graphics.vk.image;
 
 /**
  * Represent one image. This is currently only a simple wrapper

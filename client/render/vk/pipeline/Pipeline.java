@@ -1,7 +1,8 @@
 package client.render.vk.pipeline;
 
-import client.graphics.device.Device;
-import client.graphics.renderpass.SwapChain;
+import client.graphics.vk.device.Device;
+import client.graphics.vk.renderpass.Renderpass;
+import client.graphics.vk.renderpass.Swapchain;
 import client.render.vk.pipeline.part.*;
 import client.render.vk.pipeline.shader.Shader;
 import org.lwjgl.system.MemoryStack;
@@ -18,7 +19,7 @@ public class Pipeline {
     private final long layoutHandle;
     private final long handle;
 
-    public Pipeline(MemoryStack stack, Device device, SwapChain swapChain, RenderPass renderpass, List<Shader> shaders,
+    public Pipeline(MemoryStack stack, Device device, Swapchain swapChain, Renderpass renderpass, List<Shader> shaders,
                     VertexInput vertexInput, Rasterizer rasterizer, Multisampling multisampling, ColorBlend colorBlend,
                     DynamicState dynamicState) {
         VkPipelineLayoutCreateInfo layoutCreateInfo = VkPipelineLayoutCreateInfo.malloc(stack)

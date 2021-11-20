@@ -1,6 +1,6 @@
 package client;
 
-public final class Constants {
+public final class ClientConstants {
     /**
      * If true:
      * vulkan validation layers are activated

@@ -1,4 +1,4 @@
-package client.graphics.util;
+package client.graphics.vk.util;
 
 import org.lwjgl.vulkan.KHRSurface;
 import org.lwjgl.vulkan.KHRSwapchain;

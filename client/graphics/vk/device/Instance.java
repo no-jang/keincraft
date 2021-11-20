@@ -1,7 +1,7 @@
-package client.graphics.device;
+package client.graphics.vk.device;
 
-import client.Constants;
-import client.graphics.util.Check;
+import client.ClientConstants;
+import client.graphics.vk.util.Check;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.glfw.GLFWVulkan;
 import org.lwjgl.system.MemoryStack;
@@ -39,7 +39,7 @@ public class Instance {
 
     static {
         // If debug mode is enabled activate validation layer debug output
-        if (Constants.isDebug) {
+        if (ClientConstants.isDebug) {
             requiredExtensions.add(EXTDebugReport.VK_EXT_DEBUG_REPORT_EXTENSION_NAME);
         }
     }
@@ -105,7 +105,7 @@ public class Instance {
      */
     private static VkDebugReportCallbackCreateInfoEXT createDebugCallback(MemoryStack stack, VkInstanceCreateInfo instanceCreateInfo) {
         // Only if debug mode is enabled
-        if (!Constants.isDebug) {
+        if (!ClientConstants.isDebug) {
             return null;
         }
 
@@ -151,7 +151,7 @@ public class Instance {
      */
     private static PointerBuffer checkValidationLayers(MemoryStack stack) {
         // Don't use validation layers if no debug mode
-        if (!Constants.isDebug) {
+        if (!ClientConstants.isDebug) {
             Logger.debug("Debug mode is disable. No validation layers");
             return null;
         }
@@ -260,7 +260,7 @@ public class Instance {
      */
     public void destroy() {
         // If debug mode destroy debug callback
-        if (Constants.isDebug) {
+        if (ClientConstants.isDebug) {
             vkDestroyDebugReportCallbackEXT(handle, debugCallback, null);
         }
 

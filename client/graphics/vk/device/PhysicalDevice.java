@@ -1,6 +1,6 @@
-package client.graphics.device;
+package client.graphics.vk.device;
 
-import client.graphics.util.Check;
+import client.graphics.vk.util.Check;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.*;

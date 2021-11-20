@@ -1,8 +1,8 @@
 package client.render.vk.draw.submit;
 
-import client.graphics.device.Device;
-import client.graphics.renderpass.SwapChain;
-import client.graphics.sync.Frame;
+import client.graphics.vk.device.Device;
+import client.graphics.vk.renderpass.Swapchain;
+import client.graphics.vk.sync.Frame;
 import client.render.vk.Global;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.KHRSwapchain;
@@ -10,7 +10,7 @@ import org.lwjgl.vulkan.VK10;
 import org.lwjgl.vulkan.VkPresentInfoKHR;
 
 public final class PresentSubmit {
-    public static boolean submitPresent(MemoryStack stack, Device device, SwapChain swapchain, Frame frame) {
+    public static boolean submitPresent(MemoryStack stack, Device device, Swapchain swapchain, Frame frame) {
         VkPresentInfoKHR presentInfo = VkPresentInfoKHR.calloc(stack)
                 .sType$Default()
                 .pNext(0)

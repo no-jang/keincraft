@@ -1,7 +1,7 @@
 package client.render.vk.pipeline;
 
-import client.graphics.device.Device;
-import client.graphics.device.Surface;
+import client.graphics.vk.device.Device;
+import client.graphics.vk.device.Surface;
 import client.render.vk.Global;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.*;

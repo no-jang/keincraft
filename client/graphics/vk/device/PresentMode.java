@@ -1,4 +1,4 @@
-package client.graphics.device;
+package client.graphics.vk.device;
 
 import org.lwjgl.vulkan.KHRSurface;
 

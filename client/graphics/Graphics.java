@@ -1,6 +1,6 @@
 package client.graphics;
 
-import client.graphics.device.*;
+import client.graphics.vk.device.*;
 import org.lwjgl.system.MemoryStack;
 
 /**

@@ -1,7 +1,7 @@
-package client.graphics.sync;
+package client.graphics.vk.sync;
 
-import client.graphics.device.Device;
-import client.graphics.util.Check;
+import client.graphics.vk.device.Device;
+import client.graphics.vk.util.Check;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.VK10;
 import org.lwjgl.vulkan.VkSemaphoreCreateInfo;
