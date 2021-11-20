@@ -1,21 +1,16 @@
 package client.graphics.vk.renderpass;
 
-import org.lwjgl.system.MemoryStack;
-import org.lwjgl.vulkan.KHRSwapchain;
-import org.lwjgl.vulkan.VK10;
-import org.lwjgl.vulkan.VkAttachmentDescription;
-import org.lwjgl.vulkan.VkAttachmentReference;
-
-// TODO Merge with RenderPass
 public class Attachment {
     private final int binding;
-    private final VkAttachmentDescription description;
-    private final VkAttachmentReference reference;
+    private final AttachmentType type;
+    private final int format;
 
-    public Attachment(MemoryStack stack, boolean usedBySwapChain, int format, int binding) {
+    public Attachment(int binding, AttachmentType type, int format) {
         this.binding = binding;
+        this.type = type;
+        this.format = format;
 
-        description = VkAttachmentDescription.malloc(stack)
+/*        description = VkAttachmentDescription.malloc(stack)
                 .flags(0)
                 .loadOp(VK10.VK_ATTACHMENT_LOAD_OP_CLEAR)
                 .storeOp(VK10.VK_ATTACHMENT_STORE_OP_STORE)
@@ -32,18 +27,18 @@ public class Attachment {
 
         reference = VkAttachmentReference.malloc(stack)
                 .attachment(binding)
-                .layout(VK10.VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+                .layout(VK10.VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);*/
     }
 
     public int getBinding() {
         return binding;
     }
 
-    public VkAttachmentReference getReference() {
-        return reference;
+    public AttachmentType getType() {
+        return type;
     }
 
-    public VkAttachmentDescription getDescription() {
-        return description;
+    public int getFormat() {
+        return format;
     }
 }

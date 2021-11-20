@@ -4,10 +4,7 @@ import client.graphics.vk.device.Device;
 import client.graphics.vk.device.Instance;
 import client.graphics.vk.device.PhysicalDevice;
 import client.graphics.vk.device.Surface;
-import client.graphics.vk.renderpass.Attachment;
-import client.graphics.vk.renderpass.Renderpass;
-import client.graphics.vk.renderpass.Subpass;
-import client.graphics.vk.renderpass.Swapchain;
+import client.graphics.vk.renderpass.*;
 import client.render.context.frame.FrameContext;
 import client.render.vk.draw.cmd.CommandBuffers;
 import client.render.vk.draw.cmd.CommandPool;
@@ -63,8 +60,8 @@ public class RenderTriangle {
                     Shader.readFromFile(stack, device, ShaderType.FRAGMENT_SHADER, "shaders/base.frag.spv")
             );
 
-            List<Attachment> attachments = List.of(new Attachment(stack, true, surface.getFormat().format(), 0));
-            List<Subpass> subpasses = List.of(new Subpass(stack, attachments, null, 0, false));
+            List<Attachment> attachments = List.of(new Attachment(0, AttachmentType.Swapchain, surface.getFormat().format()));
+            List<Subpass> subpasses = List.of(new Subpass(0, attachments));
             renderPass = new Renderpass(stack, device, subpasses, attachments);
             ColorBlend colorBlend = new ColorBlend(stack);
             Multisampling multisampling = new Multisampling(stack);

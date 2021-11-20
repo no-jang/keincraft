@@ -1,20 +1,26 @@
 package client.graphics.vk.renderpass;
 
-import org.lwjgl.system.MemoryStack;
-import org.lwjgl.vulkan.VK10;
-import org.lwjgl.vulkan.VkAttachmentReference;
-import org.lwjgl.vulkan.VkSubpassDependency;
-import org.lwjgl.vulkan.VkSubpassDescription;
-
 import java.util.List;
 
 // TODO Merge with RenderPass
 public class Subpass {
-    private final VkSubpassDescription description;
-    private final VkSubpassDependency dependency;
+    private final int binding;
+    private final List<Attachment> attachments;
 
-    public Subpass(MemoryStack stack, List<Attachment> attachments, DepthAttachment depthAttachment, int binding, boolean lastSubPass) {
-        VkAttachmentReference.Buffer pAttachmentReferences = VkAttachmentReference.malloc(attachments.size(), stack);
+    public Subpass(int binding, List<Attachment> attachments) {
+        this.binding = binding;
+        this.attachments = attachments;
+    }
+
+    public int getBinding() {
+        return binding;
+    }
+
+    public List<Attachment> getAttachments() {
+        return attachments;
+    }
+
+    /*VkAttachmentReference.Buffer pAttachmentReferences = VkAttachmentReference.malloc(attachments.size(), stack);
 
         description = VkSubpassDescription.malloc(stack)
                 .flags(0)
@@ -63,5 +69,5 @@ public class Subpass {
 
     public VkSubpassDescription getDescription() {
         return description;
-    }
+    }*/
 }
