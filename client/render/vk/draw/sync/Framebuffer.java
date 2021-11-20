@@ -1,10 +1,10 @@
 package client.render.vk.draw.sync;
 
 import client.graphics.device.Device;
+import client.graphics.image.ImageView;
+import client.graphics.renderpass.SwapChain;
 import client.render.vk.Global;
 import client.render.vk.pipeline.RenderPass;
-import client.render.vk.present.SwapChain;
-import client.render.vk.present.image.ImageView;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.VK10;
 import org.lwjgl.vulkan.VkFramebufferCreateInfo;
@@ -33,9 +33,9 @@ public class Framebuffer {
         handle = pFramebuffer.get(0);
     }
 
-    public static List<Framebuffer> createFramebuffers(MemoryStack stack, Device device, RenderPass renderpass, SwapChain swapchain, List<ImageView> imageViews) {
-        List<Framebuffer> framebuffers = new ArrayList<>(imageViews.size());
-        for (ImageView imageView : imageViews) {
+    public static List<Framebuffer> createFramebuffers(MemoryStack stack, Device device, RenderPass renderpass, SwapChain swapchain) {
+        List<Framebuffer> framebuffers = new ArrayList<>(swapchain.getImageCount());
+        for (ImageView imageView : swapchain.getImageViews()) {
             Framebuffer framebuffer = new Framebuffer(stack, device, renderpass, swapchain, imageView);
             framebuffers.add(framebuffer);
         }

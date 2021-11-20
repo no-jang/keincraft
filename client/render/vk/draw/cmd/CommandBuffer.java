@@ -1,11 +1,11 @@
 package client.render.vk.draw.cmd;
 
 import client.graphics.device.Device;
+import client.graphics.renderpass.SwapChain;
 import client.render.vk.Global;
 import client.render.vk.draw.sync.Framebuffer;
 import client.render.vk.pipeline.Pipeline;
 import client.render.vk.pipeline.RenderPass;
-import client.render.vk.present.SwapChain;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.*;
 

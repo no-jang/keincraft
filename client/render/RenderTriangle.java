@@ -4,11 +4,11 @@ import client.graphics.device.Device;
 import client.graphics.device.Instance;
 import client.graphics.device.PhysicalDevice;
 import client.graphics.device.Surface;
+import client.graphics.renderpass.SwapChain;
 import client.render.context.frame.FrameContext;
 import client.render.vk.draw.cmd.CommandBuffers;
 import client.render.vk.draw.cmd.CommandPool;
 import client.render.vk.draw.submit.GraphicsSubmit;
-import client.render.vk.draw.submit.ImageAcquire;
 import client.render.vk.draw.submit.PresentSubmit;
 import client.render.vk.draw.sync.Framebuffer;
 import client.render.vk.pipeline.Pipeline;
@@ -16,9 +16,6 @@ import client.render.vk.pipeline.RenderPass;
 import client.render.vk.pipeline.part.*;
 import client.render.vk.pipeline.shader.Shader;
 import client.render.vk.pipeline.shader.ShaderType;
-import client.render.vk.present.SwapChain;
-import client.render.vk.present.image.Image;
-import client.render.vk.present.image.ImageView;
 import org.lwjgl.system.MemoryStack;
 
 import java.util.List;
@@ -39,25 +36,22 @@ import java.util.List;
 public class RenderTriangle {
     private final client.graphics.device.Window window;
     private final Instance instance;
-    private final PhysicalDevice physicalDevice;
     private final Surface surface;
     private final Device device;
 
     private SwapChain swapChain;
-    private List<ImageView> imageViews;
     private final RenderPass renderPass;
     private final Pipeline pipeline;
     private List<Framebuffer> framebuffers;
     private final CommandPool commandPool;
     private final CommandBuffers commandBuffers;
     private FrameContext frameContext;
-    private ImageAcquire imageAcquire;
 
     public RenderTriangle() {
         try (MemoryStack stack = MemoryStack.stackPush()) {
             window = new client.graphics.device.Window("triangle", 900, 900);
             instance = new Instance(stack);
-            physicalDevice = PhysicalDevice.getPhysicalDevice(stack, instance);
+            PhysicalDevice physicalDevice = PhysicalDevice.getPhysicalDevice(stack, instance);
             surface = new Surface(stack, instance, physicalDevice, window);
             device = new Device(stack, physicalDevice, surface);
 
@@ -96,16 +90,13 @@ public class RenderTriangle {
     }
 
     public void createSwapChain(MemoryStack stack) {
-        swapChain = new SwapChain(stack, device, surface, window);
-        List<Image> images = Image.createImages(stack, device, swapChain);
-        imageViews = ImageView.createImageViews(stack, device, swapChain, surface, images);
+        swapChain = new SwapChain(stack, device, surface, window, null);
 
-        imageAcquire = new ImageAcquire(swapChain);
         frameContext = new FrameContext(stack, device, 2);
     }
 
     public void createFramebuffers(MemoryStack stack) {
-        framebuffers = Framebuffer.createFramebuffers(stack, device, renderPass, swapChain, imageViews);
+        framebuffers = Framebuffer.createFramebuffers(stack, device, renderPass, swapChain);
     }
 
     public void recordCommandBuffers() {
@@ -123,14 +114,9 @@ public class RenderTriangle {
             window.input();
 
             try (MemoryStack stack = MemoryStack.stackPush()) {
-                int imageIndex = imageAcquire.acquireImage(stack, device, swapChain, frameContext.getCurrentFrame());
-                boolean framebufferResized = imageAcquire.isFramebufferResized();
-                framebufferResized = GraphicsSubmit.submitGraphics(stack, device, commandBuffers, frameContext.getCurrentFrame(), imageIndex);
-                framebufferResized = PresentSubmit.submitPresent(stack, device, swapChain, frameContext.getCurrentFrame(), imageIndex);
-
-                if (framebufferResized) {
-                    //recreateSwapChain(stack);
-                }
+                swapChain.acquireNextImage(stack, device, frameContext.getCurrentFrame());
+                GraphicsSubmit.submitGraphics(stack, device, commandBuffers, swapChain, frameContext.getCurrentFrame());
+                PresentSubmit.submitPresent(stack, device, swapChain, frameContext.getCurrentFrame());
 
                 frameContext.nextFrame();
             }
@@ -159,10 +145,6 @@ public class RenderTriangle {
 
         for (Framebuffer framebuffer : framebuffers) {
             framebuffer.destroy(device);
-        }
-
-        for (ImageView view : imageViews) {
-            view.destroy(device);
         }
 
         swapChain.destroy(device);
