@@ -1,5 +1,7 @@
 package client.render;
 
+import client.graphics.vk.command.CommandBuffer;
+import client.graphics.vk.command.CommandPool;
 import client.graphics.vk.device.Device;
 import client.graphics.vk.device.Instance;
 import client.graphics.vk.device.PhysicalDevice;
@@ -8,8 +10,6 @@ import client.graphics.vk.pipeline.Pipeline;
 import client.graphics.vk.pipeline.Shader;
 import client.graphics.vk.renderpass.*;
 import client.render.context.frame.FrameContext;
-import client.render.vk.draw.cmd.CommandBuffers;
-import client.render.vk.draw.cmd.CommandPool;
 import client.render.vk.draw.submit.GraphicsSubmit;
 import client.render.vk.draw.submit.PresentSubmit;
 import org.lwjgl.system.MemoryStack;
@@ -41,7 +41,6 @@ public class RenderTriangle {
     private final List<Attachment> attachments;
     private Framebuffers framebuffers;
     private final CommandPool commandPool;
-    private final CommandBuffers commandBuffers;
     private FrameContext frameContext;
 
     public RenderTriangle() {
@@ -70,10 +69,8 @@ public class RenderTriangle {
 
             createFramebuffers(stack);
 
-            commandPool = new CommandPool(stack, device);
-
-            commandBuffers = new CommandBuffers(stack, device, commandPool, framebuffers);
-            recordCommandBuffers();
+            commandPool = new CommandPool(stack, device, swapChain);
+            recordCommandBuffers(stack);
         }
     }
 
@@ -93,14 +90,15 @@ public class RenderTriangle {
         framebuffers = new Framebuffers(stack, device, renderPass, swapChain, attachments);
     }
 
-    public void recordCommandBuffers() {
-        commandBuffers.record(buffer -> {
-            buffer.setViewport(swapChain);
-            buffer.beginRenderPass(swapChain, renderPass);
+    public void recordCommandBuffers(MemoryStack stack) {
+        for (CommandBuffer buffer : commandPool.getCommandBuffers()) {
+            buffer.begin(stack, swapChain);
+            buffer.beginRenderPass(stack, renderPass, swapChain, framebuffers);
             buffer.beginPipeline(pipeline);
             buffer.draw(3, 1, 0, 0);
             buffer.endRenderPass();
-        });
+            buffer.end();
+        }
     }
 
     public void loop() {
@@ -109,7 +107,7 @@ public class RenderTriangle {
 
             try (MemoryStack stack = MemoryStack.stackPush()) {
                 swapChain.acquireNextImage(stack, device, frameContext.getCurrentFrame());
-                GraphicsSubmit.submitGraphics(stack, device, commandBuffers, swapChain, frameContext.getCurrentFrame());
+                GraphicsSubmit.submitGraphics(stack, device, commandPool, swapChain, frameContext.getCurrentFrame());
                 PresentSubmit.submitPresent(stack, device, swapChain, frameContext.getCurrentFrame());
 
                 frameContext.nextFrame();
