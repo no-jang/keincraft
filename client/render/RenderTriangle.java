@@ -4,19 +4,17 @@ import client.graphics.vk.device.Device;
 import client.graphics.vk.device.Instance;
 import client.graphics.vk.device.PhysicalDevice;
 import client.graphics.vk.device.Surface;
+import client.graphics.vk.pipeline.Pipeline;
+import client.graphics.vk.pipeline.Shader;
 import client.graphics.vk.renderpass.*;
 import client.render.context.frame.FrameContext;
 import client.render.vk.draw.cmd.CommandBuffers;
 import client.render.vk.draw.cmd.CommandPool;
 import client.render.vk.draw.submit.GraphicsSubmit;
 import client.render.vk.draw.submit.PresentSubmit;
-import client.render.vk.draw.sync.Framebuffer;
-import client.render.vk.pipeline.Pipeline;
-import client.render.vk.pipeline.part.*;
-import client.render.vk.pipeline.shader.Shader;
-import client.render.vk.pipeline.shader.ShaderType;
 import org.lwjgl.system.MemoryStack;
 
+import java.nio.file.Path;
 import java.util.List;
 
 // TODO Graphics context
@@ -40,7 +38,8 @@ public class RenderTriangle {
     private final Renderpass renderPass;
     private Swapchain swapChain;
     private final Pipeline pipeline;
-    private List<Framebuffer> framebuffers;
+    private final List<Attachment> attachments;
+    private Framebuffers framebuffers;
     private final CommandPool commandPool;
     private final CommandBuffers commandBuffers;
     private FrameContext frameContext;
@@ -56,19 +55,14 @@ public class RenderTriangle {
             createSwapChain(stack);
 
             List<Shader> shaders = List.of(
-                    Shader.readFromFile(stack, device, ShaderType.VERTEX_SHADER, "shaders/base.vert.spv"),
-                    Shader.readFromFile(stack, device, ShaderType.FRAGMENT_SHADER, "shaders/base.frag.spv")
+                    new Shader(stack, device, Path.of("shaders/base.vert.spv")),
+                    new Shader(stack, device, Path.of("shaders/base.frag.spv"))
             );
 
-            List<Attachment> attachments = List.of(new Attachment(0, AttachmentType.Swapchain, surface.getFormat().format()));
+            attachments = List.of(new Attachment(0, AttachmentType.Swapchain, surface.getFormat().format()));
             List<Subpass> subpasses = List.of(new Subpass(0, attachments));
             renderPass = new Renderpass(stack, device, subpasses, attachments);
-            ColorBlend colorBlend = new ColorBlend(stack);
-            Multisampling multisampling = new Multisampling(stack);
-            Rasterizer rasterizer = new Rasterizer(stack);
-            VertexInput vertexInput = new VertexInput(stack);
-            DynamicState dynamicState = new DynamicState(stack);
-            pipeline = new Pipeline(stack, device, swapChain, renderPass, shaders, vertexInput, rasterizer, multisampling, colorBlend, dynamicState);
+            pipeline = new Pipeline(stack, device, swapChain, renderPass, shaders);
 
             for (Shader shader : shaders) {
                 shader.destroy(device);
@@ -96,7 +90,7 @@ public class RenderTriangle {
     }
 
     public void createFramebuffers(MemoryStack stack) {
-        framebuffers = Framebuffer.createFramebuffers(stack, device, renderPass, swapChain);
+        framebuffers = new Framebuffers(stack, device, renderPass, swapChain, attachments);
     }
 
     public void recordCommandBuffers() {
@@ -143,9 +137,7 @@ public class RenderTriangle {
 
         frameContext.destroy(device);
 
-        for (Framebuffer framebuffer : framebuffers) {
-            framebuffer.destroy(device);
-        }
+        framebuffers.destroy(device);
 
         swapChain.destroy(device);
     }

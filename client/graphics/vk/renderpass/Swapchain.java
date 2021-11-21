@@ -4,8 +4,8 @@ import client.graphics.vk.device.Device;
 import client.graphics.vk.device.PresentMode;
 import client.graphics.vk.device.Surface;
 import client.graphics.vk.device.Window;
-import client.graphics.vk.image.Image;
-import client.graphics.vk.image.ImageView;
+import client.graphics.vk.image.ImageOld;
+import client.graphics.vk.image.ImageViewOld;
 import client.graphics.vk.sync.Frame;
 import client.graphics.vk.util.Check;
 import common.util.math.MathUtil;
@@ -25,7 +25,7 @@ import java.util.Map;
 public class Swapchain {
     private final long handle;
     private final int imageCount;
-    private final List<ImageView> imageViews;
+    private final List<ImageViewOld> imageViews;
     private final VkExtent2D extent;
 
     private final Map<Integer, Frame> framesInFlight;
@@ -104,7 +104,7 @@ public class Swapchain {
 
         imageViews = new ArrayList<>(imageCount);
         for (int i = 0; i < imageCount; i++) {
-            ImageView view = new ImageView(stack, device, surface, new Image(pImages.get(i)));
+            ImageViewOld view = new ImageViewOld(stack, device, surface, new ImageOld(pImages.get(i)));
             imageViews.add(view);
         }
 
@@ -133,7 +133,7 @@ public class Swapchain {
      * @param device vulkan device
      */
     public void destroy(Device device) {
-        for (ImageView view : imageViews) {
+        for (ImageViewOld view : imageViews) {
             view.destroy(device);
         }
 
@@ -179,7 +179,7 @@ public class Swapchain {
     /**
      * @return image views holding images which are being rendered to
      */
-    public List<ImageView> getImageViews() {
+    public List<ImageViewOld> getImageViews() {
         return imageViews;
     }
 

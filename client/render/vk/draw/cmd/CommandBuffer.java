@@ -1,11 +1,10 @@
 package client.render.vk.draw.cmd;
 
 import client.graphics.vk.device.Device;
+import client.graphics.vk.pipeline.Pipeline;
 import client.graphics.vk.renderpass.Renderpass;
 import client.graphics.vk.renderpass.Swapchain;
 import client.render.vk.Global;
-import client.render.vk.draw.sync.Framebuffer;
-import client.render.vk.pipeline.Pipeline;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.*;
 
@@ -13,9 +12,9 @@ public class CommandBuffer {
     private final MemoryStack stack;
     private final VkCommandBuffer handle;
 
-    private Framebuffer framebuffer;
+    private long framebuffer;
 
-    public CommandBuffer(MemoryStack stack, Device device, Framebuffer framebuffer, long pCommandBuffer) {
+    public CommandBuffer(MemoryStack stack, Device device, long framebuffer, long pCommandBuffer) {
         this.stack = stack;
         this.framebuffer = framebuffer;
 
@@ -55,7 +54,7 @@ public class CommandBuffer {
                 .sType$Default()
                 .pNext(0)
                 .renderPass(renderpass.getHandle())
-                .framebuffer(framebuffer.getHandle())
+                .framebuffer(framebuffer)
                 .renderArea(vkRect2D -> {
                     vkRect2D.offset(vkOffset2D -> vkOffset2D.set(0, 0));
                     vkRect2D.extent(swapchain.getExtent());
@@ -86,7 +85,7 @@ public class CommandBuffer {
         Global.vkCheck(VK10.vkEndCommandBuffer(handle), "Failed to end command buffer");
     }
 
-    public void update(Framebuffer framebuffer) {
+    public void update(long framebuffer) {
         this.framebuffer = framebuffer;
     }
 

@@ -15,9 +15,9 @@ import static org.lwjgl.vulkan.VK10.*;
  * ImageViews represent how an image is presented
  */
 // TODO Replace surface with format for textures
-public class ImageView {
+public class ImageViewOld {
     private final long handle;
-    private final Image image;
+    private final ImageOld image;
 
     /**
      * Creates new image view for corresponding image
@@ -27,7 +27,7 @@ public class ImageView {
      * @param surface surface
      * @param image   corresponding image
      */
-    public ImageView(MemoryStack stack, Device device, Surface surface, Image image) {
+    public ImageViewOld(MemoryStack stack, Device device, Surface surface, ImageOld image) {
         this.image = image;
 
         VkImageViewCreateInfo createInfo = VkImageViewCreateInfo.malloc(stack)
@@ -73,7 +73,7 @@ public class ImageView {
     /**
      * @return corresponding image
      */
-    public Image getImage() {
+    public ImageOld getImage() {
         return image;
     }
 }

@@ -1,25 +1,26 @@
 package client.graphics.vk.image;
 
-/**
- * Represent one image. This is currently only a simple wrapper
- */
-// TODO Textures
+// TODO Finish
 public class Image {
-    private final long handle;
+    protected final long image;
+    protected final long sampler;
+    protected final long view;
 
-    /**
-     * Creates new image wrapper object with internal vulkan handle
-     *
-     * @param handle internal vulkan handle
-     */
-    public Image(long handle) {
-        this.handle = handle;
+    protected Image(long image, long sampler, long view) {
+        this.image = image;
+        this.sampler = sampler;
+        this.view = view;
     }
 
-    /**
-     * @return internal vulkan image handle
-     */
-    public long getHandle() {
-        return handle;
+    public long getImage() {
+        return image;
+    }
+
+    public long getSampler() {
+        return sampler;
+    }
+
+    public long getView() {
+        return view;
     }
 }

@@ -40,7 +40,7 @@ public class Shader {
                 .sType$Default()
                 .flags(0)
                 .pNext(0)
-                .pCode(stack.bytes());
+                .pCode(stack.bytes(code));
 
         // Create shader
         LongBuffer pShader = stack.mallocLong(1);
@@ -63,6 +63,7 @@ public class Shader {
      */
     private static int getShaderStage(Path path) {
         String fileName = path.getFileName().toString();
+        fileName = fileName.replace(".spv", ""); // Remove compiled shader ending
         String fileExtension = fileName.substring(fileName.lastIndexOf('.') + 1);
 
         switch (fileExtension) {
