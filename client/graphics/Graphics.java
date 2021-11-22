@@ -1,10 +1,14 @@
 package client.graphics;
 
+import client.graphics.vk.device.Instance;
+import org.lwjgl.system.MemoryStack;
+
 /**
  * Graphics module for managing everything regarded to window, graphics and rendering
  */
 public class Graphics {
     private final Window window;
+    private final Instance instance;
 
     /**
      * Creates new graphics module for window
@@ -13,6 +17,10 @@ public class Graphics {
      */
     public Graphics(Window window) {
         this.window = window;
+
+        try (MemoryStack stack = MemoryStack.stackPush()) {
+            instance = new Instance(stack);
+        }
     }
 
     /**
@@ -33,6 +41,6 @@ public class Graphics {
      * Destroys every graphics component
      */
     public void destroy() {
-
+        instance.destroy();
     }
 }
