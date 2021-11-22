@@ -37,11 +37,11 @@ public class RenderTriangle {
     private final Surface surface;
     private final Device device;
     private final Renderpass renderPass;
-    private Swapchain swapChain;
     private final Pipeline pipeline;
     private final List<Attachment> attachments;
-    private Framebuffers framebuffers;
     private final CommandPool commandPool;
+    private Swapchain swapChain;
+    private Framebuffers framebuffers;
     private FrameContext frameContext;
 
     public RenderTriangle() {

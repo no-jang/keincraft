@@ -30,6 +30,13 @@ public class ColoredTriangleDemo {
      * This is just -1L, but it is nicer as a symbolic constant.
      */
     private static final long UINT64_MAX = 0xFFFFFFFFFFFFFFFFL;
+    /*
+     * All resources that must be reallocated on window resize.
+     */
+    private static Swapchain swapchain;
+    private static long[] framebuffers;
+    private static int width, height;
+    private static VkCommandBuffer[] renderCommandBuffers;
 
     /**
      * Create a Vulkan instance using LWJGL 3.
@@ -102,12 +109,6 @@ public class ColoredTriangleDemo {
         return new VkPhysicalDevice(physicalDevice, instance);
     }
 
-    private static class DeviceAndGraphicsQueueFamily {
-        VkDevice device;
-        int queueFamilyIndex;
-        VkPhysicalDeviceMemoryProperties memoryProperties;
-    }
-
     private static DeviceAndGraphicsQueueFamily createDeviceAndGetGraphicsQueueFamily(VkPhysicalDevice physicalDevice) {
         IntBuffer pQueueFamilyPropertyCount = memAllocInt(1);
         vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice, pQueueFamilyPropertyCount, null);
@@ -159,11 +160,6 @@ public class ColoredTriangleDemo {
         memFree(extensions);
         memFree(pQueuePriorities);
         return ret;
-    }
-
-    private static class ColorFormatAndSpace {
-        int colorFormat;
-        int colorSpace;
     }
 
     private static ColorFormatAndSpace getColorFormatAndSpace(VkPhysicalDevice physicalDevice, long surface) {
@@ -291,12 +287,6 @@ public class ColoredTriangleDemo {
             throw new AssertionError("Failed to allocate command buffer: " + translateVulkanResult(err));
         }
         return new VkCommandBuffer(commandBuffer, device);
-    }
-
-    private static class Swapchain {
-        long swapchainHandle;
-        long[] images;
-        long[] imageViews;
     }
 
     private static Swapchain createSwapChain(VkDevice device, VkPhysicalDevice physicalDevice, long surface, long oldSwapChain, VkCommandBuffer commandBuffer, int newWidth,
@@ -568,11 +558,6 @@ public class ColoredTriangleDemo {
             bits >>= 1;
         }
         return false;
-    }
-
-    private static class Vertices {
-        long verticesBuf;
-        VkPipelineVertexInputStateCreateInfo createInfo;
     }
 
     private static Vertices createVertices(VkPhysicalDeviceMemoryProperties deviceMemoryProperties, VkDevice device) {
@@ -874,14 +859,6 @@ public class ColoredTriangleDemo {
         return renderCommandBuffers;
     }
 
-    /*
-     * All resources that must be reallocated on window resize.
-     */
-    private static Swapchain swapchain;
-    private static long[] framebuffers;
-    private static int width, height;
-    private static VkCommandBuffer[] renderCommandBuffers;
-
     public static void main(String[] args) throws IOException {
         if (!glfwInit()) {
             throw new RuntimeException("Failed to initialize GLFW");
@@ -898,51 +875,7 @@ public class ColoredTriangleDemo {
 
         // Create the Vulkan instance
         final VkInstance instance = createInstance(requiredExtensions);
-        final VkDebugReportCallbackEXT debugCallback = new VkDebugReportCallbackEXT() {
-            public int invoke(int flags, int objectType, long object, long location, int messageCode, long pLayerPrefix, long pMessage, long pUserData) {
-                System.err.println("ERROR OCCURED: " + VkDebugReportCallbackEXT.getString(pMessage));
-                return 0;
-            }
-        };
-        final long debugCallbackHandle = setupDebugging(instance, VK_DEBUG_REPORT_ERROR_BIT_EXT | VK_DEBUG_REPORT_WARNING_BIT_EXT, debugCallback);
-        final VkPhysicalDevice physicalDevice = getFirstPhysicalDevice(instance);
-        final DeviceAndGraphicsQueueFamily deviceAndGraphicsQueueFamily = createDeviceAndGetGraphicsQueueFamily(physicalDevice);
-        final VkDevice device = deviceAndGraphicsQueueFamily.device;
-        int queueFamilyIndex = deviceAndGraphicsQueueFamily.queueFamilyIndex;
-        final VkPhysicalDeviceMemoryProperties memoryProperties = deviceAndGraphicsQueueFamily.memoryProperties;
-
-        // Create GLFW window
-        glfwDefaultWindowHints();
-        glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-        glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
-        long window = glfwCreateWindow(800, 600, "GLFW Vulkan Demo", NULL, NULL);
-        GLFWKeyCallback keyCallback;
-        glfwSetKeyCallback(window, keyCallback = new GLFWKeyCallback() {
-            public void invoke(long window, int key, int scancode, int action, int mods) {
-                if (action != GLFW_RELEASE)
-                    return;
-                if (key == GLFW_KEY_ESCAPE)
-                    glfwSetWindowShouldClose(window, true);
-            }
-        });
-        LongBuffer pSurface = memAllocLong(1);
-        int err = glfwCreateWindowSurface(instance, window, null, pSurface);
-        final long surface = pSurface.get(0);
-        if (err != VK_SUCCESS) {
-            throw new AssertionError("Failed to create surface: " + translateVulkanResult(err));
-        }
-
-        // Create static Vulkan resources
-        final ColorFormatAndSpace colorFormatAndSpace = getColorFormatAndSpace(physicalDevice, surface);
-        final long commandPool = createCommandPool(device, queueFamilyIndex);
-        final VkCommandBuffer setupCommandBuffer = createCommandBuffer(device, commandPool);
-        final VkQueue queue = createDeviceQueue(device, queueFamilyIndex);
-        final long renderPass = createRenderPass(device, colorFormatAndSpace.colorFormat);
-        final long renderCommandPool = createCommandPool(device, queueFamilyIndex);
-        final Vertices vertices = createVertices(memoryProperties, device);
-        final long pipeline = createPipeline(device, renderPass, vertices.createInfo);
-
-        final class SwapchainRecreator {
+        final VkDebugReportCallbackEXT debugCallback = new final class SwapchainRecreator {
             boolean mustRecreate = true;
 
             void recreate() {
@@ -978,6 +911,50 @@ public class ColoredTriangleDemo {
                         vertices.verticesBuf);
 
                 mustRecreate = false;
+            }
+        }
+        final long debugCallbackHandle = setupDebugging(instance, VK_DEBUG_REPORT_ERROR_BIT_EXT | VK_DEBUG_REPORT_WARNING_BIT_EXT, debugCallback);
+        final VkPhysicalDevice physicalDevice = getFirstPhysicalDevice(instance);
+        final DeviceAndGraphicsQueueFamily deviceAndGraphicsQueueFamily = createDeviceAndGetGraphicsQueueFamily(physicalDevice);
+        final VkDevice device = deviceAndGraphicsQueueFamily.device;
+        int queueFamilyIndex = deviceAndGraphicsQueueFamily.queueFamilyIndex;
+        final VkPhysicalDeviceMemoryProperties memoryProperties = deviceAndGraphicsQueueFamily.memoryProperties;
+
+        // Create GLFW window
+        glfwDefaultWindowHints();
+        glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+        glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
+        long window = glfwCreateWindow(800, 600, "GLFW Vulkan Demo", NULL, NULL);
+        GLFWKeyCallback keyCallback;
+        glfwSetKeyCallback(window, keyCallback = new VkDebugReportCallbackEXT() {
+            public int invoke(int flags, int objectType, long object, long location, int messageCode, long pLayerPrefix, long pMessage, long pUserData) {
+                System.err.println("ERROR OCCURED: " + VkDebugReportCallbackEXT.getString(pMessage));
+                return 0;
+            }
+        });
+        LongBuffer pSurface = memAllocLong(1);
+        int err = glfwCreateWindowSurface(instance, window, null, pSurface);
+        final long surface = pSurface.get(0);
+        if (err != VK_SUCCESS) {
+            throw new AssertionError("Failed to create surface: " + translateVulkanResult(err));
+        }
+
+        // Create static Vulkan resources
+        final ColorFormatAndSpace colorFormatAndSpace = getColorFormatAndSpace(physicalDevice, surface);
+        final long commandPool = createCommandPool(device, queueFamilyIndex);
+        final VkCommandBuffer setupCommandBuffer = createCommandBuffer(device, commandPool);
+        final VkQueue queue = createDeviceQueue(device, queueFamilyIndex);
+        final long renderPass = createRenderPass(device, colorFormatAndSpace.colorFormat);
+        final long renderCommandPool = createCommandPool(device, queueFamilyIndex);
+        final Vertices vertices = createVertices(memoryProperties, device);
+        final long pipeline = createPipeline(device, renderPass, vertices.createInfo);
+
+        GLFWKeyCallback() {
+            public void invoke ( long window, int key, int scancode, int action, int mods){
+                if (action != GLFW_RELEASE)
+                    return;
+                if (key == GLFW_KEY_ESCAPE)
+                    glfwSetWindowShouldClose(window, true);
             }
         }
         final SwapchainRecreator swapchainRecreator = new SwapchainRecreator();
@@ -1096,6 +1073,28 @@ public class ColoredTriangleDemo {
 
         // We don't bother disposing of all Vulkan resources.
         // Let the OS process manager take care of it.
+    }
+
+    private static class DeviceAndGraphicsQueueFamily {
+        VkDevice device;
+        int queueFamilyIndex;
+        VkPhysicalDeviceMemoryProperties memoryProperties;
+    }
+
+    private static class ColorFormatAndSpace {
+        int colorFormat;
+        int colorSpace;
+    }
+
+    private static class Swapchain {
+        long swapchainHandle;
+        long[] images;
+        long[] imageViews;
+    }
+
+    private static class Vertices {
+        long verticesBuf;
+        VkPipelineVertexInputStateCreateInfo createInfo;
     }
 
 }

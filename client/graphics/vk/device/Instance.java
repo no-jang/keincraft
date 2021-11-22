@@ -15,9 +15,6 @@ import java.nio.LongBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.lwjgl.vulkan.EXTDebugReport.*;
-import static org.lwjgl.vulkan.VK10.*;
-
 /**
  * Wrapper around a vulkan instance. Because there is no global state in vulkan this information needs to be stored in an
  * instance. In addition, the vulkan library initializes the vulkan library and allows the application to pass information
@@ -83,13 +80,13 @@ public class Instance {
         VkDebugReportCallbackCreateInfoEXT debugCallbackCreateInfo = createDebugCallback(stack, createInfo);
 
         PointerBuffer pInstance = stack.mallocPointer(1);
-        Check.vkCheck(vkCreateInstance(createInfo, null, pInstance), "Failed to create vulkan instance");
+        Check.vkCheck(VK10.vkCreateInstance(createInfo, null, pInstance), "Failed to create vulkan instance");
         handle = new VkInstance(pInstance.get(0), createInfo);
 
         // Setup final debug logging callback
         if (debugCallbackCreateInfo != null) {
             LongBuffer pDebugReportCallback = stack.mallocLong(1);
-            Check.vkCheck(vkCreateDebugReportCallbackEXT(handle, debugCallbackCreateInfo, null, pDebugReportCallback), "Failed to create debug report callback");
+            Check.vkCheck(EXTDebugReport.vkCreateDebugReportCallbackEXT(handle, debugCallbackCreateInfo, null, pDebugReportCallback), "Failed to create debug report callback");
             debugCallback = pDebugReportCallback.get(0);
         } else {
             debugCallback = 0;
@@ -114,27 +111,27 @@ public class Instance {
                     String layerPrefix = MemoryUtil.memASCII(pLayerPrefix);
                     String message = VkDebugReportCallbackEXT.getString(pMessage);
 
-                    if ((flags & VK_DEBUG_REPORT_INFORMATION_BIT_EXT) != 0) {
+                    if ((flags & EXTDebugReport.VK_DEBUG_REPORT_INFORMATION_BIT_EXT) != 0) {
                         Logger.info("validation layer {}: {} {}", layerPrefix, messageCode, message);
-                    } else if ((flags & VK_DEBUG_REPORT_WARNING_BIT_EXT) != 0) {
+                    } else if ((flags & EXTDebugReport.VK_DEBUG_REPORT_WARNING_BIT_EXT) != 0) {
                         Logger.warn("validation layer {}: {} {}", layerPrefix, messageCode, message);
-                    } else if ((flags & VK_DEBUG_REPORT_PERFORMANCE_WARNING_BIT_EXT) != 0) {
+                    } else if ((flags & EXTDebugReport.VK_DEBUG_REPORT_PERFORMANCE_WARNING_BIT_EXT) != 0) {
                         Logger.warn("validation layer performance {}: {} {}", layerPrefix, messageCode, message);
-                    } else if ((flags & VK_DEBUG_REPORT_ERROR_BIT_EXT) != 0) {
+                    } else if ((flags & EXTDebugReport.VK_DEBUG_REPORT_ERROR_BIT_EXT) != 0) {
                         Logger.error("validation layer {}: {} {}", layerPrefix, messageCode, message);
-                    } else if ((flags & VK_DEBUG_REPORT_DEBUG_BIT_EXT) != 0) {
+                    } else if ((flags & EXTDebugReport.VK_DEBUG_REPORT_DEBUG_BIT_EXT) != 0) {
                         Logger.debug("validation layer {}: {} {}", layerPrefix, messageCode, message);
                     } else {
                         Logger.info("validation layer unknown {}: {} {}", layerPrefix, messageCode, message);
                     }
 
-                    return VK_FALSE;
+                    return VK10.VK_FALSE;
                 });
 
         VkDebugReportCallbackCreateInfoEXT createInfo = VkDebugReportCallbackCreateInfoEXT.malloc(stack)
                 .sType$Default()
                 .pNext(0)
-                .flags(VK_DEBUG_REPORT_ERROR_BIT_EXT | VK_DEBUG_REPORT_WARNING_BIT_EXT | VK_DEBUG_REPORT_PERFORMANCE_WARNING_BIT_EXT)
+                .flags(EXTDebugReport.VK_DEBUG_REPORT_ERROR_BIT_EXT | EXTDebugReport.VK_DEBUG_REPORT_WARNING_BIT_EXT | EXTDebugReport.VK_DEBUG_REPORT_PERFORMANCE_WARNING_BIT_EXT)
                 .pfnCallback(debugCallbackFunction)
                 .pUserData(0);
 
@@ -261,10 +258,10 @@ public class Instance {
     public void destroy() {
         // If debug mode destroy debug callback
         if (ClientConstants.isDebug) {
-            vkDestroyDebugReportCallbackEXT(handle, debugCallback, null);
+            EXTDebugReport.vkDestroyDebugReportCallbackEXT(handle, debugCallback, null);
         }
 
-        vkDestroyInstance(handle, null);
+        VK10.vkDestroyInstance(handle, null);
     }
 
     /**

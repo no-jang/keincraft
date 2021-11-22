@@ -41,6 +41,16 @@ public class InstancedSpheresDemo {
     private static final int SPHERE_COUNT = 512;
     private static final float SPHERE_SPACING = 20.0f;
     private static final Matrix4f[] spheres;
+    private static final Matrix4f viewProj = new Matrix4f();
+    /*
+     * All resources that must be reallocated on window resize.
+     */
+    private static Swapchain swapchain;
+    private static long[] framebuffers;
+    private static VkCommandBuffer[] renderCommandBuffers;
+    private static int width, height;
+    private static DepthStencil depthStencil;
+
     static {
         spheres = new Matrix4f[SPHERE_COUNT];
         Random rnd = new Random();
@@ -52,8 +62,6 @@ public class InstancedSpheresDemo {
             spheres[i] = new Matrix4f().translate(x, y, z * SPHERE_SPACING).scale(0.5f);
         }
     }
-
-    private static final Matrix4f viewProj = new Matrix4f();
 
     /**
      * Create a Vulkan instance using LWJGL 3.
@@ -124,12 +132,6 @@ public class InstancedSpheresDemo {
             throw new AssertionError("Failed to get physical devices: " + translateVulkanResult(err));
         }
         return new VkPhysicalDevice(physicalDevice, instance);
-    }
-
-    private static class DeviceAndGraphicsQueueFamily {
-        VkDevice device;
-        int queueFamilyIndex;
-        VkPhysicalDeviceMemoryProperties memoryProperties;
     }
 
     private static DeviceAndGraphicsQueueFamily createDeviceAndGetGraphicsQueueFamily(VkPhysicalDevice physicalDevice) {
@@ -206,12 +208,6 @@ public class InstancedSpheresDemo {
             }
         }
         return false;
-    }
-
-    private static class ColorAndDepthFormatAndSpace {
-        int colorFormat;
-        int colorSpace;
-        int depthFormat;
     }
 
     private static ColorAndDepthFormatAndSpace getColorFormatAndSpace(VkPhysicalDevice physicalDevice, long surface) {
@@ -345,12 +341,6 @@ public class InstancedSpheresDemo {
             throw new AssertionError("Failed to allocate command buffer: " + translateVulkanResult(err));
         }
         return new VkCommandBuffer(commandBuffer, device);
-    }
-
-    private static class Swapchain {
-        long swapchainHandle;
-        long[] images;
-        long[] imageViews;
     }
 
     private static Swapchain createSwapChain(VkDevice device, VkPhysicalDevice physicalDevice, long surface, long oldSwapChain, VkCommandBuffer commandBuffer, int newWidth,
@@ -490,10 +480,6 @@ public class InstancedSpheresDemo {
         ret.imageViews = imageViews;
         ret.swapchainHandle = swapChain;
         return ret;
-    }
-
-    private static class DepthStencil {
-        long view;
     }
 
     private static DepthStencil createDepthStencil(VkDevice device, VkPhysicalDeviceMemoryProperties physicalDeviceMemoryProperties, int depthFormat, VkCommandBuffer setupCmdBuffer) {
@@ -717,11 +703,6 @@ public class InstancedSpheresDemo {
         return false;
     }
 
-    private static class Vertices {
-        long verticesBuf;
-        VkPipelineVertexInputStateCreateInfo createInfo;
-    }
-
     private static Vertices createVertices(VkPhysicalDeviceMemoryProperties deviceMemoryProperties, VkDevice device) {
         ByteBuffer vertexBuffer = memAlloc(SPHERE_TESSELATION * SPHERE_TESSELATION * 2 * 3 * 4);
         FloatBuffer fb = vertexBuffer.asFloatBuffer();
@@ -857,13 +838,6 @@ public class InstancedSpheresDemo {
         return descriptorPool;
     }
 
-    private static class UboDescriptor {
-        long memory;
-        long buffer;
-        long offset;
-        long range;
-    }
-
     private static UboDescriptor createUniformBuffer(VkPhysicalDeviceMemoryProperties deviceMemoryProperties, VkDevice device) {
         int err;
         // Create a new buffer
@@ -983,11 +957,6 @@ public class InstancedSpheresDemo {
             throw new AssertionError("Failed to create descriptor set layout: " + translateVulkanResult(err));
         }
         return descriptorSetLayout;
-    }
-
-    private static class Pipeline {
-        long pipeline;
-        long layout;
     }
 
     private static Pipeline createPipeline(VkDevice device, long renderPass, VkPipelineVertexInputStateCreateInfo vi, long descriptorSetLayout) throws IOException {
@@ -1232,15 +1201,6 @@ public class InstancedSpheresDemo {
         vkUnmapMemory(device, ubo.memory);
     }
 
-    /*
-     * All resources that must be reallocated on window resize.
-     */
-    private static Swapchain swapchain;
-    private static long[] framebuffers;
-    private static VkCommandBuffer[] renderCommandBuffers;
-    private static int width, height;
-    private static DepthStencil depthStencil;
-
     public static void main(String[] args) throws IOException {
         if (!glfwInit()) {
             throw new RuntimeException("Failed to initialize GLFW");
@@ -1257,55 +1217,7 @@ public class InstancedSpheresDemo {
 
         // Create the Vulkan instance
         final VkInstance instance = createInstance(requiredExtensions);
-        final VkDebugReportCallbackEXT debugCallback = new VkDebugReportCallbackEXT() {
-            public int invoke(int flags, int objectType, long object, long location, int messageCode, long pLayerPrefix, long pMessage, long pUserData) {
-                System.err.println("ERROR OCCURED: " + VkDebugReportCallbackEXT.getString(pMessage));
-                return 0;
-            }
-        };
-        final long debugCallbackHandle = setupDebugging(instance, VK_DEBUG_REPORT_ERROR_BIT_EXT | VK_DEBUG_REPORT_WARNING_BIT_EXT, debugCallback);
-        final VkPhysicalDevice physicalDevice = getFirstPhysicalDevice(instance);
-        final DeviceAndGraphicsQueueFamily deviceAndGraphicsQueueFamily = createDeviceAndGetGraphicsQueueFamily(physicalDevice);
-        final VkDevice device = deviceAndGraphicsQueueFamily.device;
-        int queueFamilyIndex = deviceAndGraphicsQueueFamily.queueFamilyIndex;
-        final VkPhysicalDeviceMemoryProperties memoryProperties = deviceAndGraphicsQueueFamily.memoryProperties;
-
-        // Create GLFW window
-        glfwDefaultWindowHints();
-        glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-        glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
-        long window = glfwCreateWindow(800, 600, "GLFW Vulkan Demo", NULL, NULL);
-        GLFWKeyCallback keyCallback;
-        glfwSetKeyCallback(window, keyCallback = new GLFWKeyCallback() {
-            public void invoke(long window, int key, int scancode, int action, int mods) {
-                if (action != GLFW_RELEASE)
-                    return;
-                if (key == GLFW_KEY_ESCAPE)
-                    glfwSetWindowShouldClose(window, true);
-            }
-        });
-        LongBuffer pSurface = memAllocLong(1);
-        int err = glfwCreateWindowSurface(instance, window, null, pSurface);
-        final long surface = pSurface.get(0);
-        if (err != VK_SUCCESS) {
-            throw new AssertionError("Failed to create surface: " + translateVulkanResult(err));
-        }
-
-        // Create static Vulkan resources
-        final ColorAndDepthFormatAndSpace colorAndDepthFormatAndSpace = getColorFormatAndSpace(physicalDevice, surface);
-        final long commandPool = createCommandPool(device, queueFamilyIndex);
-        final VkCommandBuffer setupCommandBuffer = createCommandBuffer(device, commandPool);
-        final VkQueue queue = createDeviceQueue(device, queueFamilyIndex);
-        final long renderPass = createRenderPass(device, colorAndDepthFormatAndSpace.colorFormat, colorAndDepthFormatAndSpace.depthFormat);
-        final long renderCommandPool = createCommandPool(device, queueFamilyIndex);
-        final Vertices vertices = createVertices(memoryProperties, device);
-        UboDescriptor uboDescriptor = createUniformBuffer(memoryProperties, device);
-        final long descriptorPool = createDescriptorPool(device);
-        final long descriptorSetLayout = createDescriptorSetLayout(device);
-        final long descriptorSet = createDescriptorSet(device, descriptorPool, descriptorSetLayout, uboDescriptor);
-        final Pipeline pipeline = createPipeline(device, renderPass, vertices.createInfo, descriptorSetLayout);
-
-        final class SwapchainRecreator {
+        final VkDebugReportCallbackEXT debugCallback = new final class SwapchainRecreator {
             boolean mustRecreate = true;
 
             void recreate() {
@@ -1343,6 +1255,54 @@ public class InstancedSpheresDemo {
                         vertices.verticesBuf);
 
                 mustRecreate = false;
+            }
+        }
+        final long debugCallbackHandle = setupDebugging(instance, VK_DEBUG_REPORT_ERROR_BIT_EXT | VK_DEBUG_REPORT_WARNING_BIT_EXT, debugCallback);
+        final VkPhysicalDevice physicalDevice = getFirstPhysicalDevice(instance);
+        final DeviceAndGraphicsQueueFamily deviceAndGraphicsQueueFamily = createDeviceAndGetGraphicsQueueFamily(physicalDevice);
+        final VkDevice device = deviceAndGraphicsQueueFamily.device;
+        int queueFamilyIndex = deviceAndGraphicsQueueFamily.queueFamilyIndex;
+        final VkPhysicalDeviceMemoryProperties memoryProperties = deviceAndGraphicsQueueFamily.memoryProperties;
+
+        // Create GLFW window
+        glfwDefaultWindowHints();
+        glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+        glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
+        long window = glfwCreateWindow(800, 600, "GLFW Vulkan Demo", NULL, NULL);
+        GLFWKeyCallback keyCallback;
+        glfwSetKeyCallback(window, keyCallback = new VkDebugReportCallbackEXT() {
+            public int invoke(int flags, int objectType, long object, long location, int messageCode, long pLayerPrefix, long pMessage, long pUserData) {
+                System.err.println("ERROR OCCURED: " + VkDebugReportCallbackEXT.getString(pMessage));
+                return 0;
+            }
+        });
+        LongBuffer pSurface = memAllocLong(1);
+        int err = glfwCreateWindowSurface(instance, window, null, pSurface);
+        final long surface = pSurface.get(0);
+        if (err != VK_SUCCESS) {
+            throw new AssertionError("Failed to create surface: " + translateVulkanResult(err));
+        }
+
+        // Create static Vulkan resources
+        final ColorAndDepthFormatAndSpace colorAndDepthFormatAndSpace = getColorFormatAndSpace(physicalDevice, surface);
+        final long commandPool = createCommandPool(device, queueFamilyIndex);
+        final VkCommandBuffer setupCommandBuffer = createCommandBuffer(device, commandPool);
+        final VkQueue queue = createDeviceQueue(device, queueFamilyIndex);
+        final long renderPass = createRenderPass(device, colorAndDepthFormatAndSpace.colorFormat, colorAndDepthFormatAndSpace.depthFormat);
+        final long renderCommandPool = createCommandPool(device, queueFamilyIndex);
+        final Vertices vertices = createVertices(memoryProperties, device);
+        UboDescriptor uboDescriptor = createUniformBuffer(memoryProperties, device);
+        final long descriptorPool = createDescriptorPool(device);
+        final long descriptorSetLayout = createDescriptorSetLayout(device);
+        final long descriptorSet = createDescriptorSet(device, descriptorPool, descriptorSetLayout, uboDescriptor);
+        final Pipeline pipeline = createPipeline(device, renderPass, vertices.createInfo, descriptorSetLayout);
+
+        GLFWKeyCallback() {
+            public void invoke ( long window, int key, int scancode, int action, int mods){
+                if (action != GLFW_RELEASE)
+                    return;
+                if (key == GLFW_KEY_ESCAPE)
+                    glfwSetWindowShouldClose(window, true);
             }
         }
         final SwapchainRecreator swapchainRecreator = new SwapchainRecreator();
@@ -1469,6 +1429,45 @@ public class InstancedSpheresDemo {
 
         // We don't bother disposing of all Vulkan resources.
         // Let the OS process manager take care of it.
+    }
+
+    private static class DeviceAndGraphicsQueueFamily {
+        VkDevice device;
+        int queueFamilyIndex;
+        VkPhysicalDeviceMemoryProperties memoryProperties;
+    }
+
+    private static class ColorAndDepthFormatAndSpace {
+        int colorFormat;
+        int colorSpace;
+        int depthFormat;
+    }
+
+    private static class Swapchain {
+        long swapchainHandle;
+        long[] images;
+        long[] imageViews;
+    }
+
+    private static class DepthStencil {
+        long view;
+    }
+
+    private static class Vertices {
+        long verticesBuf;
+        VkPipelineVertexInputStateCreateInfo createInfo;
+    }
+
+    private static class UboDescriptor {
+        long memory;
+        long buffer;
+        long offset;
+        long range;
+    }
+
+    private static class Pipeline {
+        long pipeline;
+        long layout;
     }
 
 }
