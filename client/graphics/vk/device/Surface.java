@@ -1,5 +1,6 @@
 package client.graphics.vk.device;
 
+import client.graphics.Window;
 import client.graphics.vk.util.Check;
 import org.lwjgl.glfw.GLFWVulkan;
 import org.lwjgl.system.MemoryStack;

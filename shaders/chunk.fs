@@ -1,4 +1,4 @@
-#version 330 core
+#version 330 org.oreon.core
 
 in vec3 passTextureCoord;
 out vec4 fragColor;

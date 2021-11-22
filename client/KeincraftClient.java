@@ -1,7 +1,7 @@
 package client;
 
 import client.graphics.Graphics;
-import client.graphics.vk.device.Window;
+import client.graphics.Window;
 
 /**
  * Core class for keincraft
@@ -47,14 +47,14 @@ public class KeincraftClient {
      * Everything regarded to rendering a frame
      */
     private void render() {
-
+        //graphics.render();
     }
 
     /**
      * Destroys the game instance and unloads everything
      */
     public void destroy() {
-        graphics.destroy();
+        //graphics.destroy();
         window.destroy();
     }
 
@@ -70,7 +70,7 @@ public class KeincraftClient {
      * @return graphics module
      * @see Graphics
      */
-    public Graphics getGraphics() {
-        return graphics;
-    }
+    //public Graphics getGraphics() {
+    //return graphics;
+    //}
 }

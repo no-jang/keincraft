@@ -1,5 +1,6 @@
 package client.render;
 
+import client.graphics.Window;
 import client.graphics.vk.command.CommandBuffer;
 import client.graphics.vk.command.CommandPool;
 import client.graphics.vk.device.Device;
@@ -31,7 +32,7 @@ import java.util.List;
 // TODO Generate chunk mesh
 // TODO Render chunk
 public class RenderTriangle {
-    private final client.graphics.vk.device.Window window;
+    private final Window window;
     private final Instance instance;
     private final Surface surface;
     private final Device device;
@@ -45,7 +46,7 @@ public class RenderTriangle {
 
     public RenderTriangle() {
         try (MemoryStack stack = MemoryStack.stackPush()) {
-            window = new client.graphics.vk.device.Window("triangle", 900, 900);
+            window = new Window("triangle", 900, 900);
             instance = new Instance(stack);
             PhysicalDevice physicalDevice = PhysicalDevice.getPhysicalDevice(stack, instance);
             surface = new Surface(stack, instance, physicalDevice, window);

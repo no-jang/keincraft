@@ -1,9 +1,9 @@
 package client.graphics.vk.renderpass;
 
+import client.graphics.Window;
 import client.graphics.vk.device.Device;
 import client.graphics.vk.device.PresentMode;
 import client.graphics.vk.device.Surface;
-import client.graphics.vk.device.Window;
 import client.graphics.vk.image.ImageOld;
 import client.graphics.vk.image.ImageViewOld;
 import client.graphics.vk.sync.Frame;
