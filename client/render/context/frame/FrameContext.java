@@ -1,7 +1,7 @@
 package client.render.context.frame;
 
-import client.graphics.vk.device.Device;
-import client.graphics.vk.sync.Frame;
+import client.graphics2.vk.device.Device;
+import client.graphics2.vk.sync.Frame;
 import org.lwjgl.system.MemoryStack;
 
 import java.util.ArrayList;

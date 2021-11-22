@@ -1,4 +1,4 @@
-package client.graphics;
+package client.graphics2;
 
 import org.lwjgl.glfw.*;
 import org.lwjgl.system.MemoryUtil;
@@ -38,7 +38,7 @@ public class Window {
 
         // Sets window parameters
         GLFW.glfwWindowHint(GLFW.GLFW_VISIBLE, GLFW.GLFW_FALSE); // Don't show window immediately after creation
-        GLFW.glfwWindowHint(GLFW.GLFW_CLIENT_API, GLFW.GLFW_NO_API); // Don't initialize opengl context
+        //GLFW.glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API); // Don't initialize opengl context
 
         // Create new window
         handle = GLFW.glfwCreateWindow(width, height, title, 0, 0);
@@ -73,9 +73,6 @@ public class Window {
      */
     public void input() {
         GLFW.glfwPollEvents();
-        if (framebufferResized) {
-            framebufferResized = false;
-        }
     }
 
     /**
@@ -102,7 +99,12 @@ public class Window {
      * @return true if framebuffer size changed and the swapchain could be out of date
      */
     public boolean isFramebufferResized() {
-        return framebufferResized;
+        if (framebufferResized) {
+            framebufferResized = false;
+            return true;
+        } else {
+            return false;
+        }
     }
 
     /**

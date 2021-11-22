@@ -40,21 +40,21 @@ public class KeincraftClient {
      * Everything regarded update the game logic like receiving packets, calculate entities, ...
      */
     private void update() {
-
+        graphics.update();
     }
 
     /**
      * Everything regarded to rendering a frame
      */
     private void render() {
-        //graphics.render();
+        graphics.render();
     }
 
     /**
      * Destroys the game instance and unloads everything
      */
     public void destroy() {
-        //graphics.destroy();
+        graphics.destroy();
         window.destroy();
     }
 
@@ -70,7 +70,7 @@ public class KeincraftClient {
      * @return graphics module
      * @see Graphics
      */
-    //public Graphics getGraphics() {
-    //return graphics;
-    //}
+    public Graphics getGraphics() {
+        return graphics;
+    }
 }

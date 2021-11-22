@@ -1,7 +1,8 @@
-package client.render.vk.draw.cmd;
+package client.graphics2.vk.command;
 
 import client.graphics2.vk.device.Device;
 import client.graphics2.vk.pipeline.Pipeline;
+import client.graphics2.vk.renderpass.Framebuffers;
 import client.graphics2.vk.renderpass.Renderpass;
 import client.graphics2.vk.renderpass.Swapchain;
 import client.render.vk.Global;
@@ -9,19 +10,13 @@ import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.*;
 
 public class CommandBuffer {
-    private final MemoryStack stack;
     private final VkCommandBuffer handle;
 
-    private long framebuffer;
-
-    public CommandBuffer(MemoryStack stack, Device device, long framebuffer, long pCommandBuffer) {
-        this.stack = stack;
-        this.framebuffer = framebuffer;
-
+    public CommandBuffer(Device device, long pCommandBuffer) {
         this.handle = new VkCommandBuffer(pCommandBuffer, device.getHandle());
     }
 
-    public void begin() {
+    public void begin(MemoryStack stack, Swapchain swapchain) {
         VkCommandBufferBeginInfo beginInfo = VkCommandBufferBeginInfo.malloc(stack)
                 .sType$Default()
                 .flags(0)
@@ -29,19 +24,17 @@ public class CommandBuffer {
                 .pInheritanceInfo(null);
 
         Global.vkCheck(VK10.vkBeginCommandBuffer(handle, beginInfo), "Failed to begin recording command buffer");
-    }
 
-    public void setViewport(Swapchain swapChain) {
         VkViewport viewport = VkViewport.malloc(stack)
                 .x(0.0f)
                 .y(0.0f)
-                .width(swapChain.getExtent().width())
-                .height(swapChain.getExtent().height())
+                .width(swapchain.getExtent().width())
+                .height(swapchain.getExtent().height())
                 .minDepth(0.0f)
                 .maxDepth(1.0f);
 
         VkRect2D scissors = VkRect2D.malloc(stack)
-                .extent(swapChain.getExtent())
+                .extent(swapchain.getExtent())
                 .offset(VkOffset2D.malloc(stack)
                         .set(0, 0));
 
@@ -49,7 +42,14 @@ public class CommandBuffer {
         VK10.vkCmdSetScissor(handle, 0, VkRect2D.malloc(1, stack).put(0, scissors));
     }
 
-    public void beginRenderPass(Swapchain swapchain, Renderpass renderpass) {
+    public void beginRenderPass(MemoryStack stack, Renderpass renderpass, Swapchain swapchain, Framebuffers framebuffers) {
+        long framebuffer;
+        if (swapchain.getActiveImageIndex() > framebuffers.getFramebuffers().size()) {
+            framebuffer = framebuffers.getFramebuffers().get(0);
+        } else {
+            framebuffer = framebuffers.getFramebuffers().get(swapchain.getActiveImageIndex());
+        }
+
         VkRenderPassBeginInfo renderPassBeginInfo = VkRenderPassBeginInfo.malloc(stack)
                 .sType$Default()
                 .pNext(0)
@@ -83,14 +83,6 @@ public class CommandBuffer {
 
     public void end() {
         Global.vkCheck(VK10.vkEndCommandBuffer(handle), "Failed to end command buffer");
-    }
-
-    public void update(long framebuffer) {
-        this.framebuffer = framebuffer;
-    }
-
-    public void reset() {
-        Global.vkCheck(VK10.vkResetCommandBuffer(handle, 0), "Failed to reset command buffer");
     }
 
     public VkCommandBuffer getHandle() {

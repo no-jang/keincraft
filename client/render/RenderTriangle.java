@@ -1,15 +1,15 @@
 package client.render;
 
-import client.graphics.Window;
-import client.graphics.vk.command.CommandBuffer;
-import client.graphics.vk.command.CommandPool;
-import client.graphics.vk.device.Device;
-import client.graphics.vk.device.Instance;
-import client.graphics.vk.device.PhysicalDevice;
-import client.graphics.vk.device.Surface;
-import client.graphics.vk.pipeline.Pipeline;
-import client.graphics.vk.pipeline.Shader;
-import client.graphics.vk.renderpass.*;
+import client.graphics2.Window;
+import client.graphics2.vk.command.CommandBuffer;
+import client.graphics2.vk.command.CommandPool;
+import client.graphics2.vk.device.Device;
+import client.graphics2.vk.device.Instance;
+import client.graphics2.vk.device.PhysicalDevice;
+import client.graphics2.vk.device.Surface;
+import client.graphics2.vk.pipeline.Pipeline;
+import client.graphics2.vk.pipeline.Shader;
+import client.graphics2.vk.renderpass.*;
 import client.render.context.frame.FrameContext;
 import client.render.vk.draw.submit.GraphicsSubmit;
 import client.render.vk.draw.submit.PresentSubmit;

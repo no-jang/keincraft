@@ -1,9 +1,9 @@
 package client.render.vk.draw.submit;
 
-import client.graphics.vk.command.CommandPool;
-import client.graphics.vk.device.Device;
-import client.graphics.vk.renderpass.Swapchain;
-import client.graphics.vk.sync.Frame;
+import client.graphics2.vk.command.CommandPool;
+import client.graphics2.vk.device.Device;
+import client.graphics2.vk.renderpass.Swapchain;
+import client.graphics2.vk.sync.Frame;
 import client.render.vk.Global;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.VK10;
