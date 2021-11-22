@@ -2,7 +2,6 @@ import org.lwjgl.PointerBuffer;
 import org.lwjgl.glfw.GLFWKeyCallback;
 import org.lwjgl.glfw.GLFWWindowSizeCallback;
 import org.lwjgl.vulkan.*;
-import test.VKUtil;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -17,6 +16,7 @@ import static org.lwjgl.vulkan.EXTDebugReport.*;
 import static org.lwjgl.vulkan.KHRSurface.*;
 import static org.lwjgl.vulkan.KHRSwapchain.*;
 import static org.lwjgl.vulkan.VK10.*;
+import static test.VKUtil.*;
 
 public class ColoredTriangleDemo {
     private static final boolean debug = System.getProperty("NDEBUG") == null;
@@ -30,13 +30,6 @@ public class ColoredTriangleDemo {
      * This is just -1L, but it is nicer as a symbolic constant.
      */
     private static final long UINT64_MAX = 0xFFFFFFFFFFFFFFFFL;
-    /*
-     * All resources that must be reallocated on window resize.
-     */
-    private static Swapchain swapchain;
-    private static long[] framebuffers;
-    private static int width, height;
-    private static VkCommandBuffer[] renderCommandBuffers;
 
     /**
      * Create a Vulkan instance using LWJGL 3.
@@ -52,7 +45,7 @@ public class ColoredTriangleDemo {
         ByteBuffer VK_EXT_DEBUG_REPORT_EXTENSION = memUTF8(VK_EXT_DEBUG_REPORT_EXTENSION_NAME);
         ppEnabledExtensionNames.put(VK_EXT_DEBUG_REPORT_EXTENSION);
         ppEnabledExtensionNames.flip();
-        PointerBuffer ppEnabledLayerNames = debug ? VKUtil.allocateLayerBuffer(layers) : null;
+        PointerBuffer ppEnabledLayerNames = debug ? allocateLayerBuffer(layers) : null;
         VkInstanceCreateInfo pCreateInfo = VkInstanceCreateInfo.calloc()
                 .sType$Default()
                 .pApplicationInfo(appInfo)
@@ -63,7 +56,7 @@ public class ColoredTriangleDemo {
         long instance = pInstance.get(0);
         memFree(pInstance);
         if (err != VK_SUCCESS) {
-            throw new AssertionError("Failed to create VkInstance: " + VKUtil.translateVulkanResult(err));
+            throw new AssertionError("Failed to create VkInstance: " + translateVulkanResult(err));
         }
         VkInstance ret = new VkInstance(instance, pCreateInfo);
         pCreateInfo.free();
@@ -87,7 +80,7 @@ public class ColoredTriangleDemo {
         memFree(pCallback);
         dbgCreateInfo.free();
         if (err != VK_SUCCESS) {
-            throw new AssertionError("Failed to create VkInstance: " + VKUtil.translateVulkanResult(err));
+            throw new AssertionError("Failed to create VkInstance: " + translateVulkanResult(err));
         }
         return callbackHandle;
     }
@@ -96,7 +89,7 @@ public class ColoredTriangleDemo {
         IntBuffer pPhysicalDeviceCount = memAllocInt(1);
         int err = vkEnumeratePhysicalDevices(instance, pPhysicalDeviceCount, null);
         if (err != VK_SUCCESS) {
-            throw new AssertionError("Failed to get number of physical devices: " + VKUtil.translateVulkanResult(err));
+            throw new AssertionError("Failed to get number of physical devices: " + translateVulkanResult(err));
         }
         PointerBuffer pPhysicalDevices = memAllocPointer(pPhysicalDeviceCount.get(0));
         err = vkEnumeratePhysicalDevices(instance, pPhysicalDeviceCount, pPhysicalDevices);
@@ -104,9 +97,15 @@ public class ColoredTriangleDemo {
         memFree(pPhysicalDeviceCount);
         memFree(pPhysicalDevices);
         if (err != VK_SUCCESS) {
-            throw new AssertionError("Failed to get physical devices: " + VKUtil.translateVulkanResult(err));
+            throw new AssertionError("Failed to get physical devices: " + translateVulkanResult(err));
         }
         return new VkPhysicalDevice(physicalDevice, instance);
+    }
+
+    private static class DeviceAndGraphicsQueueFamily {
+        VkDevice device;
+        int queueFamilyIndex;
+        VkPhysicalDeviceMemoryProperties memoryProperties;
     }
 
     private static DeviceAndGraphicsQueueFamily createDeviceAndGetGraphicsQueueFamily(VkPhysicalDevice physicalDevice) {
@@ -144,7 +143,7 @@ public class ColoredTriangleDemo {
         long device = pDevice.get(0);
         memFree(pDevice);
         if (err != VK_SUCCESS) {
-            throw new AssertionError("Failed to create device: " + VKUtil.translateVulkanResult(err));
+            throw new AssertionError("Failed to create device: " + translateVulkanResult(err));
         }
 
         VkPhysicalDeviceMemoryProperties memoryProperties = VkPhysicalDeviceMemoryProperties.calloc();
@@ -162,6 +161,11 @@ public class ColoredTriangleDemo {
         return ret;
     }
 
+    private static class ColorFormatAndSpace {
+        int colorFormat;
+        int colorSpace;
+    }
+
     private static ColorFormatAndSpace getColorFormatAndSpace(VkPhysicalDevice physicalDevice, long surface) {
         IntBuffer pQueueFamilyPropertyCount = memAllocInt(1);
         vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice, pQueueFamilyPropertyCount, null);
@@ -176,7 +180,7 @@ public class ColoredTriangleDemo {
             supportsPresent.position(i);
             int err = vkGetPhysicalDeviceSurfaceSupportKHR(physicalDevice, i, surface, supportsPresent);
             if (err != VK_SUCCESS) {
-                throw new AssertionError("Failed to physical device surface support: " + VKUtil.translateVulkanResult(err));
+                throw new AssertionError("Failed to physical device surface support: " + translateVulkanResult(err));
             }
         }
 
@@ -223,14 +227,14 @@ public class ColoredTriangleDemo {
         int err = vkGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice, surface, pFormatCount, null);
         int formatCount = pFormatCount.get(0);
         if (err != VK_SUCCESS) {
-            throw new AssertionError("Failed to query number of physical device surface formats: " + VKUtil.translateVulkanResult(err));
+            throw new AssertionError("Failed to query number of physical device surface formats: " + translateVulkanResult(err));
         }
 
         VkSurfaceFormatKHR.Buffer surfFormats = VkSurfaceFormatKHR.calloc(formatCount);
         err = vkGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice, surface, pFormatCount, surfFormats);
         memFree(pFormatCount);
         if (err != VK_SUCCESS) {
-            throw new AssertionError("Failed to query physical device surface formats: " + VKUtil.translateVulkanResult(err));
+            throw new AssertionError("Failed to query physical device surface formats: " + translateVulkanResult(err));
         }
 
         int colorFormat;
@@ -259,7 +263,7 @@ public class ColoredTriangleDemo {
         cmdPoolInfo.free();
         memFree(pCmdPool);
         if (err != VK_SUCCESS) {
-            throw new AssertionError("Failed to create command pool: " + VKUtil.translateVulkanResult(err));
+            throw new AssertionError("Failed to create command pool: " + translateVulkanResult(err));
         }
         return commandPool;
     }
@@ -284,9 +288,15 @@ public class ColoredTriangleDemo {
         long commandBuffer = pCommandBuffer.get(0);
         memFree(pCommandBuffer);
         if (err != VK_SUCCESS) {
-            throw new AssertionError("Failed to allocate command buffer: " + VKUtil.translateVulkanResult(err));
+            throw new AssertionError("Failed to allocate command buffer: " + translateVulkanResult(err));
         }
         return new VkCommandBuffer(commandBuffer, device);
+    }
+
+    private static class Swapchain {
+        long swapchainHandle;
+        long[] images;
+        long[] imageViews;
     }
 
     private static Swapchain createSwapChain(VkDevice device, VkPhysicalDevice physicalDevice, long surface, long oldSwapChain, VkCommandBuffer commandBuffer, int newWidth,
@@ -296,21 +306,21 @@ public class ColoredTriangleDemo {
         VkSurfaceCapabilitiesKHR surfCaps = VkSurfaceCapabilitiesKHR.calloc();
         err = vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physicalDevice, surface, surfCaps);
         if (err != VK_SUCCESS) {
-            throw new AssertionError("Failed to get physical device surface capabilities: " + VKUtil.translateVulkanResult(err));
+            throw new AssertionError("Failed to get physical device surface capabilities: " + translateVulkanResult(err));
         }
 
         IntBuffer pPresentModeCount = memAllocInt(1);
         err = vkGetPhysicalDeviceSurfacePresentModesKHR(physicalDevice, surface, pPresentModeCount, null);
         int presentModeCount = pPresentModeCount.get(0);
         if (err != VK_SUCCESS) {
-            throw new AssertionError("Failed to get number of physical device surface presentation modes: " + VKUtil.translateVulkanResult(err));
+            throw new AssertionError("Failed to get number of physical device surface presentation modes: " + translateVulkanResult(err));
         }
 
         IntBuffer pPresentModes = memAllocInt(presentModeCount);
         err = vkGetPhysicalDeviceSurfacePresentModesKHR(physicalDevice, surface, pPresentModeCount, pPresentModes);
         memFree(pPresentModeCount);
         if (err != VK_SUCCESS) {
-            throw new AssertionError("Failed to get physical device surface presentation modes: " + VKUtil.translateVulkanResult(err));
+            throw new AssertionError("Failed to get physical device surface presentation modes: " + translateVulkanResult(err));
         }
 
         // Try to use mailbox mode. Low latency and non-tearing
@@ -374,7 +384,7 @@ public class ColoredTriangleDemo {
         long swapChain = pSwapChain.get(0);
         memFree(pSwapChain);
         if (err != VK_SUCCESS) {
-            throw new AssertionError("Failed to create swap chain: " + VKUtil.translateVulkanResult(err));
+            throw new AssertionError("Failed to create swap chain: " + translateVulkanResult(err));
         }
 
         // If we just re-created an existing swapchain, we should destroy the old swapchain at this point.
@@ -387,13 +397,13 @@ public class ColoredTriangleDemo {
         err = vkGetSwapchainImagesKHR(device, swapChain, pImageCount, null);
         int imageCount = pImageCount.get(0);
         if (err != VK_SUCCESS) {
-            throw new AssertionError("Failed to get number of swapchain images: " + VKUtil.translateVulkanResult(err));
+            throw new AssertionError("Failed to get number of swapchain images: " + translateVulkanResult(err));
         }
 
         LongBuffer pSwapchainImages = memAllocLong(imageCount);
         err = vkGetSwapchainImagesKHR(device, swapChain, pImageCount, pSwapchainImages);
         if (err != VK_SUCCESS) {
-            throw new AssertionError("Failed to get swapchain images: " + VKUtil.translateVulkanResult(err));
+            throw new AssertionError("Failed to get swapchain images: " + translateVulkanResult(err));
         }
         memFree(pImageCount);
 
@@ -414,7 +424,7 @@ public class ColoredTriangleDemo {
             err = vkCreateImageView(device, colorAttachmentView, null, pBufferView);
             imageViews[i] = pBufferView.get(0);
             if (err != VK_SUCCESS) {
-                throw new AssertionError("Failed to create image view: " + VKUtil.translateVulkanResult(err));
+                throw new AssertionError("Failed to create image view: " + translateVulkanResult(err));
             }
         }
         colorAttachmentView.free();
@@ -472,7 +482,7 @@ public class ColoredTriangleDemo {
         subpass.free();
         attachments.free();
         if (err != VK_SUCCESS) {
-            throw new AssertionError("Failed to create clear render pass: " + VKUtil.translateVulkanResult(err));
+            throw new AssertionError("Failed to create clear render pass: " + translateVulkanResult(err));
         }
         return renderPass;
     }
@@ -494,7 +504,7 @@ public class ColoredTriangleDemo {
             int err = vkCreateFramebuffer(device, fci, null, pFramebuffer);
             long framebuffer = pFramebuffer.get(0);
             if (err != VK_SUCCESS) {
-                throw new AssertionError("Failed to create framebuffer: " + VKUtil.translateVulkanResult(err));
+                throw new AssertionError("Failed to create framebuffer: " + translateVulkanResult(err));
             }
             framebuffers[i] = framebuffer;
         }
@@ -517,12 +527,12 @@ public class ColoredTriangleDemo {
         memFree(pCommandBuffers);
         submitInfo.free();
         if (err != VK_SUCCESS) {
-            throw new AssertionError("Failed to submit command buffer: " + VKUtil.translateVulkanResult(err));
+            throw new AssertionError("Failed to submit command buffer: " + translateVulkanResult(err));
         }
     }
 
     private static long loadShader(String classPath, VkDevice device, int stage) throws IOException {
-        ByteBuffer shaderCode = VKUtil.glslToSpirv(classPath, stage);
+        ByteBuffer shaderCode = glslToSpirv(classPath, stage);
         int err;
         VkShaderModuleCreateInfo moduleCreateInfo = VkShaderModuleCreateInfo.calloc()
                 .sType$Default()
@@ -532,7 +542,7 @@ public class ColoredTriangleDemo {
         long shaderModule = pShaderModule.get(0);
         memFree(pShaderModule);
         if (err != VK_SUCCESS) {
-            throw new AssertionError("Failed to create shader module: " + VKUtil.translateVulkanResult(err));
+            throw new AssertionError("Failed to create shader module: " + translateVulkanResult(err));
         }
         return shaderModule;
     }
@@ -558,6 +568,11 @@ public class ColoredTriangleDemo {
             bits >>= 1;
         }
         return false;
+    }
+
+    private static class Vertices {
+        long verticesBuf;
+        VkPipelineVertexInputStateCreateInfo createInfo;
     }
 
     private static Vertices createVertices(VkPhysicalDeviceMemoryProperties deviceMemoryProperties, VkDevice device) {
@@ -587,7 +602,7 @@ public class ColoredTriangleDemo {
         memFree(pBuffer);
         bufInfo.free();
         if (err != VK_SUCCESS) {
-            throw new AssertionError("Failed to create vertex buffer: " + VKUtil.translateVulkanResult(err));
+            throw new AssertionError("Failed to create vertex buffer: " + translateVulkanResult(err));
         }
 
         vkGetBufferMemoryRequirements(device, verticesBuf, memReqs);
@@ -603,7 +618,7 @@ public class ColoredTriangleDemo {
         long verticesMem = pMemory.get(0);
         memFree(pMemory);
         if (err != VK_SUCCESS) {
-            throw new AssertionError("Failed to allocate vertex memory: " + VKUtil.translateVulkanResult(err));
+            throw new AssertionError("Failed to allocate vertex memory: " + translateVulkanResult(err));
         }
 
         PointerBuffer pData = memAllocPointer(1);
@@ -612,7 +627,7 @@ public class ColoredTriangleDemo {
         long data = pData.get(0);
         memFree(pData);
         if (err != VK_SUCCESS) {
-            throw new AssertionError("Failed to map vertex memory: " + VKUtil.translateVulkanResult(err));
+            throw new AssertionError("Failed to map vertex memory: " + translateVulkanResult(err));
         }
 
         memCopy(memAddress(vertexBuffer), data, vertexBuffer.remaining());
@@ -620,7 +635,7 @@ public class ColoredTriangleDemo {
         vkUnmapMemory(device, verticesMem);
         err = vkBindBufferMemory(device, verticesBuf, verticesMem, 0);
         if (err != VK_SUCCESS) {
-            throw new AssertionError("Failed to bind memory to vertex buffer: " + VKUtil.translateVulkanResult(err));
+            throw new AssertionError("Failed to bind memory to vertex buffer: " + translateVulkanResult(err));
         }
 
         // Binding description
@@ -711,8 +726,8 @@ public class ColoredTriangleDemo {
 
         // Load shaders
         VkPipelineShaderStageCreateInfo.Buffer shaderStages = VkPipelineShaderStageCreateInfo.calloc(2);
-        shaderStages.get(0).set(loadShader(device, "shaders/coloredTriangle.vert", VK_SHADER_STAGE_VERTEX_BIT));
-        shaderStages.get(1).set(loadShader(device, "shaders/coloredTriangle.frag", VK_SHADER_STAGE_FRAGMENT_BIT));
+        shaderStages.get(0).set(loadShader(device, "org/lwjgl/demo/vulkan/coloredTriangle.vert", VK_SHADER_STAGE_VERTEX_BIT));
+        shaderStages.get(1).set(loadShader(device, "org/lwjgl/demo/vulkan/coloredTriangle.frag", VK_SHADER_STAGE_FRAGMENT_BIT));
 
         // Create the pipeline layout that is used to generate the rendering pipelines that
         // are based on this descriptor set layout
@@ -725,7 +740,7 @@ public class ColoredTriangleDemo {
         memFree(pPipelineLayout);
         pPipelineLayoutCreateInfo.free();
         if (err != VK_SUCCESS) {
-            throw new AssertionError("Failed to create pipeline layout: " + VKUtil.translateVulkanResult(err));
+            throw new AssertionError("Failed to create pipeline layout: " + translateVulkanResult(err));
         }
 
         // Assign states
@@ -758,7 +773,7 @@ public class ColoredTriangleDemo {
         rasterizationState.free();
         inputAssemblyState.free();
         if (err != VK_SUCCESS) {
-            throw new AssertionError("Failed to create pipeline: " + VKUtil.translateVulkanResult(err));
+            throw new AssertionError("Failed to create pipeline: " + translateVulkanResult(err));
         }
         return pipeline;
     }
@@ -774,7 +789,7 @@ public class ColoredTriangleDemo {
         PointerBuffer pCommandBuffer = memAllocPointer(framebuffers.length);
         int err = vkAllocateCommandBuffers(device, cmdBufAllocateInfo, pCommandBuffer);
         if (err != VK_SUCCESS) {
-            throw new AssertionError("Failed to allocate render command buffer: " + VKUtil.translateVulkanResult(err));
+            throw new AssertionError("Failed to allocate render command buffer: " + translateVulkanResult(err));
         }
         VkCommandBuffer[] renderCommandBuffers = new VkCommandBuffer[framebuffers.length];
         for (int i = 0; i < framebuffers.length; i++) {
@@ -810,7 +825,7 @@ public class ColoredTriangleDemo {
 
             err = vkBeginCommandBuffer(renderCommandBuffers[i], cmdBufInfo);
             if (err != VK_SUCCESS) {
-                throw new AssertionError("Failed to begin render command buffer: " + VKUtil.translateVulkanResult(err));
+                throw new AssertionError("Failed to begin render command buffer: " + translateVulkanResult(err));
             }
 
             vkCmdBeginRenderPass(renderCommandBuffers[i], renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
@@ -850,7 +865,7 @@ public class ColoredTriangleDemo {
 
             err = vkEndCommandBuffer(renderCommandBuffers[i]);
             if (err != VK_SUCCESS) {
-                throw new AssertionError("Failed to begin render command buffer: " + VKUtil.translateVulkanResult(err));
+                throw new AssertionError("Failed to begin render command buffer: " + translateVulkanResult(err));
             }
         }
         renderPassBeginInfo.free();
@@ -858,6 +873,14 @@ public class ColoredTriangleDemo {
         cmdBufInfo.free();
         return renderCommandBuffers;
     }
+
+    /*
+     * All resources that must be reallocated on window resize.
+     */
+    private static Swapchain swapchain;
+    private static long[] framebuffers;
+    private static int width, height;
+    private static VkCommandBuffer[] renderCommandBuffers;
 
     public static void main(String[] args) throws IOException {
         if (!glfwInit()) {
@@ -875,45 +898,12 @@ public class ColoredTriangleDemo {
 
         // Create the Vulkan instance
         final VkInstance instance = createInstance(requiredExtensions);
-        final VkDebugReportCallbackEXT debugCallback = new final class SwapchainRecreator {
-            boolean mustRecreate = true;
-
-            void recreate() {
-                // Begin the setup command buffer (the one we will use for swapchain/framebuffer creation)
-                VkCommandBufferBeginInfo cmdBufInfo = VkCommandBufferBeginInfo.calloc()
-                        .sType$Default();
-                int err = vkBeginCommandBuffer(setupCommandBuffer, cmdBufInfo);
-                cmdBufInfo.free();
-                if (err != VK_SUCCESS) {
-                    throw new AssertionError("Failed to begin setup command buffer: " + VKUtil.translateVulkanResult(err));
-                }
-                long oldChain = swapchain != null ? swapchain.swapchainHandle : VK_NULL_HANDLE;
-                // Create the swapchain (this will also add a memory barrier to initialize the framebuffer images)
-                swapchain = createSwapChain(device, physicalDevice, surface, oldChain, setupCommandBuffer,
-                        width, height, colorFormatAndSpace.colorFormat, colorFormatAndSpace.colorSpace);
-                err = vkEndCommandBuffer(setupCommandBuffer);
-                if (err != VK_SUCCESS) {
-                    throw new AssertionError("Failed to end setup command buffer: " + VKUtil.translateVulkanResult(err));
-                }
-                submitCommandBuffer(queue, setupCommandBuffer);
-                vkQueueWaitIdle(queue);
-
-                if (framebuffers != null) {
-                    for (int i = 0; i < framebuffers.length; i++)
-                        vkDestroyFramebuffer(device, framebuffers[i], null);
-                }
-                framebuffers = createFramebuffers(device, swapchain, renderPass, width, height);
-                // Create render command buffers
-                if (renderCommandBuffers != null) {
-                    vkResetCommandPool(device, renderCommandPool, VKUtil.VK_FLAGS_NONE);
-                }
-                renderCommandBuffers = createRenderCommandBuffers(device, renderCommandPool, framebuffers, renderPass, width, height, pipeline,
-                        vertices.verticesBuf);
-
-                mustRecreate = false;
+        final VkDebugReportCallbackEXT debugCallback = new VkDebugReportCallbackEXT() {
+            public int invoke(int flags, int objectType, long object, long location, int messageCode, long pLayerPrefix, long pMessage, long pUserData) {
+                System.err.println("ERROR OCCURED: " + VkDebugReportCallbackEXT.getString(pMessage));
+                return 0;
             }
-        }
-        ;
+        };
         final long debugCallbackHandle = setupDebugging(instance, VK_DEBUG_REPORT_ERROR_BIT_EXT | VK_DEBUG_REPORT_WARNING_BIT_EXT, debugCallback);
         final VkPhysicalDevice physicalDevice = getFirstPhysicalDevice(instance);
         final DeviceAndGraphicsQueueFamily deviceAndGraphicsQueueFamily = createDeviceAndGetGraphicsQueueFamily(physicalDevice);
@@ -927,17 +917,19 @@ public class ColoredTriangleDemo {
         glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
         long window = glfwCreateWindow(800, 600, "GLFW Vulkan Demo", NULL, NULL);
         GLFWKeyCallback keyCallback;
-        glfwSetKeyCallback(window, keyCallback = new VkDebugReportCallbackEXT() {
-            public int invoke(int flags, int objectType, long object, long location, int messageCode, long pLayerPrefix, long pMessage, long pUserData) {
-                System.err.println("ERROR OCCURED: " + VkDebugReportCallbackEXT.getString(pMessage));
-                return 0;
+        glfwSetKeyCallback(window, keyCallback = new GLFWKeyCallback() {
+            public void invoke(long window, int key, int scancode, int action, int mods) {
+                if (action != GLFW_RELEASE)
+                    return;
+                if (key == GLFW_KEY_ESCAPE)
+                    glfwSetWindowShouldClose(window, true);
             }
         });
         LongBuffer pSurface = memAllocLong(1);
         int err = glfwCreateWindowSurface(instance, window, null, pSurface);
         final long surface = pSurface.get(0);
         if (err != VK_SUCCESS) {
-            throw new AssertionError("Failed to create surface: " + VKUtil.translateVulkanResult(err));
+            throw new AssertionError("Failed to create surface: " + translateVulkanResult(err));
         }
 
         // Create static Vulkan resources
@@ -950,12 +942,42 @@ public class ColoredTriangleDemo {
         final Vertices vertices = createVertices(memoryProperties, device);
         final long pipeline = createPipeline(device, renderPass, vertices.createInfo);
 
-        GLFWKeyCallback() {
-            public void invoke ( long window, int key, int scancode, int action, int mods){
-                if (action != GLFW_RELEASE)
-                    return;
-                if (key == GLFW_KEY_ESCAPE)
-                    glfwSetWindowShouldClose(window, true);
+        final class SwapchainRecreator {
+            boolean mustRecreate = true;
+
+            void recreate() {
+                // Begin the setup command buffer (the one we will use for swapchain/framebuffer creation)
+                VkCommandBufferBeginInfo cmdBufInfo = VkCommandBufferBeginInfo.calloc()
+                        .sType$Default();
+                int err = vkBeginCommandBuffer(setupCommandBuffer, cmdBufInfo);
+                cmdBufInfo.free();
+                if (err != VK_SUCCESS) {
+                    throw new AssertionError("Failed to begin setup command buffer: " + translateVulkanResult(err));
+                }
+                long oldChain = swapchain != null ? swapchain.swapchainHandle : VK_NULL_HANDLE;
+                // Create the swapchain (this will also add a memory barrier to initialize the framebuffer images)
+                swapchain = createSwapChain(device, physicalDevice, surface, oldChain, setupCommandBuffer,
+                        width, height, colorFormatAndSpace.colorFormat, colorFormatAndSpace.colorSpace);
+                err = vkEndCommandBuffer(setupCommandBuffer);
+                if (err != VK_SUCCESS) {
+                    throw new AssertionError("Failed to end setup command buffer: " + translateVulkanResult(err));
+                }
+                submitCommandBuffer(queue, setupCommandBuffer);
+                vkQueueWaitIdle(queue);
+
+                if (framebuffers != null) {
+                    for (int i = 0; i < framebuffers.length; i++)
+                        vkDestroyFramebuffer(device, framebuffers[i], null);
+                }
+                framebuffers = createFramebuffers(device, swapchain, renderPass, width, height);
+                // Create render command buffers
+                if (renderCommandBuffers != null) {
+                    vkResetCommandPool(device, renderCommandPool, VK_FLAGS_NONE);
+                }
+                renderCommandBuffers = createRenderCommandBuffers(device, renderCommandPool, framebuffers, renderPass, width, height, pipeline,
+                        vertices.verticesBuf);
+
+                mustRecreate = false;
             }
         }
         final SwapchainRecreator swapchainRecreator = new SwapchainRecreator();
@@ -1016,13 +1038,13 @@ public class ColoredTriangleDemo {
             // Create a semaphore to wait for the swapchain to acquire the next image
             err = vkCreateSemaphore(device, semaphoreCreateInfo, null, pImageAcquiredSemaphore);
             if (err != VK_SUCCESS) {
-                throw new AssertionError("Failed to create image acquired semaphore: " + VKUtil.translateVulkanResult(err));
+                throw new AssertionError("Failed to create image acquired semaphore: " + translateVulkanResult(err));
             }
 
             // Create a semaphore to wait for the render to complete, before presenting
             err = vkCreateSemaphore(device, semaphoreCreateInfo, null, pRenderCompleteSemaphore);
             if (err != VK_SUCCESS) {
-                throw new AssertionError("Failed to create render complete semaphore: " + VKUtil.translateVulkanResult(err));
+                throw new AssertionError("Failed to create render complete semaphore: " + translateVulkanResult(err));
             }
 
             // Get next image from the swap chain (back/front buffer).
@@ -1030,7 +1052,7 @@ public class ColoredTriangleDemo {
             err = vkAcquireNextImageKHR(device, swapchain.swapchainHandle, UINT64_MAX, pImageAcquiredSemaphore.get(0), VK_NULL_HANDLE, pImageIndex);
             currentBuffer = pImageIndex.get(0);
             if (err != VK_SUCCESS) {
-                throw new AssertionError("Failed to acquire next swapchain image: " + VKUtil.translateVulkanResult(err));
+                throw new AssertionError("Failed to acquire next swapchain image: " + translateVulkanResult(err));
             }
 
             // Select the command buffer for the current framebuffer image/attachment
@@ -1039,7 +1061,7 @@ public class ColoredTriangleDemo {
             // Submit to the graphics queue
             err = vkQueueSubmit(queue, submitInfo, VK_NULL_HANDLE);
             if (err != VK_SUCCESS) {
-                throw new AssertionError("Failed to submit render queue: " + VKUtil.translateVulkanResult(err));
+                throw new AssertionError("Failed to submit render queue: " + translateVulkanResult(err));
             }
 
             // Present the current buffer to the swap chain
@@ -1047,7 +1069,7 @@ public class ColoredTriangleDemo {
             pSwapchains.put(0, swapchain.swapchainHandle);
             err = vkQueuePresentKHR(queue, presentInfo);
             if (err != VK_SUCCESS) {
-                throw new AssertionError("Failed to present the swapchain image: " + VKUtil.translateVulkanResult(err));
+                throw new AssertionError("Failed to present the swapchain image: " + translateVulkanResult(err));
             }
             // Create and submit post present barrier
             vkQueueWaitIdle(queue);
@@ -1074,28 +1096,6 @@ public class ColoredTriangleDemo {
 
         // We don't bother disposing of all Vulkan resources.
         // Let the OS process manager take care of it.
-    }
-
-    private static class DeviceAndGraphicsQueueFamily {
-        VkDevice device;
-        int queueFamilyIndex;
-        VkPhysicalDeviceMemoryProperties memoryProperties;
-    }
-
-    private static class ColorFormatAndSpace {
-        int colorFormat;
-        int colorSpace;
-    }
-
-    private static class Swapchain {
-        long swapchainHandle;
-        long[] images;
-        long[] imageViews;
-    }
-
-    private static class Vertices {
-        long verticesBuf;
-        VkPipelineVertexInputStateCreateInfo createInfo;
     }
 
 }
