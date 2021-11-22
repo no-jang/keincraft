@@ -75,14 +75,14 @@ public class VoxelGameGL {
     private static final int CHUNK_SIZE_SHIFT = 5;
     private static final int CHUNK_SIZE = 1 << CHUNK_SIZE_SHIFT;
     /**
-     * Distance to the far plane.
-     */
-    private static final float FAR = MAX_RENDER_DISTANCE_CHUNKS * CHUNK_SIZE * 2.0f;
-    /**
      * The number of chunks, starting from the player's position, that should be visible in any given
      * direction.
      */
     private static final int MAX_RENDER_DISTANCE_CHUNKS = 40;
+    /**
+     * Distance to the far plane.
+     */
+    private static final float FAR = MAX_RENDER_DISTANCE_CHUNKS * CHUNK_SIZE * 2.0f;
     /**
      * The height of a chunk (in number of voxels).
      */
