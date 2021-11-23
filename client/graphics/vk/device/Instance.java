@@ -19,13 +19,14 @@ import java.util.List;
  * Wrapper around a vulkan instance. Because there is no global state in vulkan this information needs to be stored in an
  * instance. In addition, the vulkan library initializes the vulkan library and allows the application to pass information
  * about itself to the graphics driver.
+ * @see VkInstance
  */
 public class Instance {
     /**
      * List of validation layers that will be enabled if debug is set to true. These help to find error in vulkan calls
      * which usually aren't validated
      */
-    private static final String[] requiredValidationLayers = new String[]{
+    private static final String[] REQUIRED_VALIDATION_LAYERS = new String[]{
             "VK_LAYER_KHRONOS_validation"
     };
 
@@ -169,10 +170,10 @@ public class Instance {
         }
         Logger.debug("Found {} validation layers", availableLayerCount);
 
-        PointerBuffer requiredLayers = stack.mallocPointer(requiredValidationLayers.length);
+        PointerBuffer requiredLayers = stack.mallocPointer(REQUIRED_VALIDATION_LAYERS.length);
 
         // Check if all required validation layers are available
-        for (String requiredLayer : requiredValidationLayers) {
+        for (String requiredLayer : REQUIRED_VALIDATION_LAYERS) {
             boolean found = false;
 
             for (int i = 0; i < availableLayerCount; i++) {
@@ -265,7 +266,9 @@ public class Instance {
     }
 
     /**
+     * internal vulkan device handle
      * @return vulkans internal handle of the instance
+     * @see VkInstance
      */
     public VkInstance getHandle() {
         return handle;

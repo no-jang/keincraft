@@ -1,6 +1,7 @@
 package client.graphics;
 
 import client.graphics.vk.device.Instance;
+import client.graphics.vk.device.PhysicalDevice;
 import org.lwjgl.system.MemoryStack;
 
 /**
@@ -9,6 +10,7 @@ import org.lwjgl.system.MemoryStack;
 public class Graphics {
     private final Window window;
     private final Instance instance;
+    private final PhysicalDevice physicalDevice;
 
     /**
      * Creates new graphics module for window
@@ -18,8 +20,10 @@ public class Graphics {
     public Graphics(Window window) {
         this.window = window;
 
+        // Initialization memory stack
         try (MemoryStack stack = MemoryStack.stackPush()) {
             instance = new Instance(stack);
+            physicalDevice = PhysicalDevice.getBestPhysicalDevice(stack, instance);
         }
     }
 
