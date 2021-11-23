@@ -39,7 +39,7 @@ public class Instance {
 
     static {
         // If debug mode is enabled activate validation layer debug output
-        if (ClientConstants.isDebug) {
+        if (ClientConstants.IS_DEBUG) {
             requiredExtensions.add(EXTDebugReport.VK_EXT_DEBUG_REPORT_EXTENSION_NAME);
         }
     }
@@ -105,7 +105,7 @@ public class Instance {
      */
     private static VkDebugReportCallbackCreateInfoEXT createDebugCallback(MemoryStack stack, VkInstanceCreateInfo instanceCreateInfo) {
         // Only if debug mode is enabled
-        if (!ClientConstants.isDebug) {
+        if (!ClientConstants.IS_DEBUG) {
             return null;
         }
 
@@ -151,7 +151,7 @@ public class Instance {
      */
     private static PointerBuffer checkValidationLayers(MemoryStack stack) {
         // Don't use validation layers if no debug mode
-        if (!ClientConstants.isDebug) {
+        if (!ClientConstants.IS_DEBUG) {
             Logger.debug("Debug mode is disable. No validation layers");
             return null;
         }
@@ -260,7 +260,7 @@ public class Instance {
      */
     public void destroy() {
         // If debug mode destroy debug callback
-        if (ClientConstants.isDebug) {
+        if (ClientConstants.IS_DEBUG) {
             vkDestroyDebugReportCallbackEXT(handle, debugCallback, null);
         }
 

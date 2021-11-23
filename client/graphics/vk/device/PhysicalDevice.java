@@ -52,7 +52,7 @@ public class PhysicalDevice {
         availableFeatures = VkPhysicalDeviceFeatures.malloc(stack);
         VK10.vkGetPhysicalDeviceFeatures(handle, availableFeatures);
 
-        enabledFeatures = VkPhysicalDeviceFeatures.malloc(stack);
+        enabledFeatures = VkPhysicalDeviceFeatures.calloc(stack);
 
         // Gather extensions
         IntBuffer pExtensionCount = stack.mallocInt(1);

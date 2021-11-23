@@ -1,5 +1,6 @@
 package client.graphics;
 
+import client.graphics.vk.device.Device;
 import client.graphics.vk.device.Instance;
 import client.graphics.vk.device.PhysicalDevice;
 import client.graphics.vk.device.Surface;
@@ -13,6 +14,7 @@ public class Graphics {
     private final Instance instance;
     private final PhysicalDevice physicalDevice;
     private final Surface surface;
+    private final Device device;
 
     /**
      * Creates new graphics module for window
@@ -27,6 +29,7 @@ public class Graphics {
             instance = new Instance(stack);
             physicalDevice = PhysicalDevice.getBestPhysicalDevice(stack, instance);
             surface = new Surface(stack, instance, physicalDevice, window);
+            device = new Device(stack, physicalDevice, surface);
         }
     }
 
@@ -48,6 +51,7 @@ public class Graphics {
      * Destroys every graphics component
      */
     public void destroy() {
+        device.destroy();
         surface.destroy(instance);
         instance.destroy();
     }

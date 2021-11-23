@@ -6,7 +6,16 @@ import org.lwjgl.PointerBuffer;
 import org.lwjgl.glfw.GLFWVulkan;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.MemoryUtil;
-import org.lwjgl.vulkan.*;
+import org.lwjgl.vulkan.EXTDebugReport;
+import org.lwjgl.vulkan.VK;
+import org.lwjgl.vulkan.VK10;
+import org.lwjgl.vulkan.VkApplicationInfo;
+import org.lwjgl.vulkan.VkDebugReportCallbackCreateInfoEXT;
+import org.lwjgl.vulkan.VkDebugReportCallbackEXT;
+import org.lwjgl.vulkan.VkExtensionProperties;
+import org.lwjgl.vulkan.VkInstance;
+import org.lwjgl.vulkan.VkInstanceCreateInfo;
+import org.lwjgl.vulkan.VkLayerProperties;
 import org.tinylog.Logger;
 
 import java.nio.ByteBuffer;
@@ -38,7 +47,7 @@ public class Instance {
 
     static {
         // If debug mode is enabled activate validation layer debug output
-        if (ClientConstants.isDebug) {
+        if (ClientConstants.IS_DEBUG) {
             requiredExtensions.add(EXTDebugReport.VK_EXT_DEBUG_REPORT_EXTENSION_NAME);
         }
     }
@@ -104,7 +113,7 @@ public class Instance {
      */
     private static VkDebugReportCallbackCreateInfoEXT createDebugCallback(MemoryStack stack, VkInstanceCreateInfo instanceCreateInfo) {
         // Only if debug mode is enabled
-        if (!ClientConstants.isDebug) {
+        if (!ClientConstants.IS_DEBUG) {
             return null;
         }
 
@@ -130,10 +139,23 @@ public class Instance {
                     return VK10.VK_FALSE;
                 });
 
+        int debugFlags;
+        if (ClientConstants.IS_VERBOSE) {
+            debugFlags = EXTDebugReport.VK_DEBUG_REPORT_ERROR_BIT_EXT |
+                    EXTDebugReport.VK_DEBUG_REPORT_WARNING_BIT_EXT |
+                    EXTDebugReport.VK_DEBUG_REPORT_PERFORMANCE_WARNING_BIT_EXT |
+                    EXTDebugReport.VK_DEBUG_REPORT_INFORMATION_BIT_EXT |
+                    EXTDebugReport.VK_DEBUG_REPORT_DEBUG_BIT_EXT;
+        } else {
+            debugFlags = EXTDebugReport.VK_DEBUG_REPORT_ERROR_BIT_EXT |
+                    EXTDebugReport.VK_DEBUG_REPORT_WARNING_BIT_EXT |
+                    EXTDebugReport.VK_DEBUG_REPORT_PERFORMANCE_WARNING_BIT_EXT;
+        }
+
         VkDebugReportCallbackCreateInfoEXT createInfo = VkDebugReportCallbackCreateInfoEXT.malloc(stack)
                 .sType$Default()
                 .pNext(0)
-                .flags(EXTDebugReport.VK_DEBUG_REPORT_ERROR_BIT_EXT | EXTDebugReport.VK_DEBUG_REPORT_WARNING_BIT_EXT | EXTDebugReport.VK_DEBUG_REPORT_PERFORMANCE_WARNING_BIT_EXT)
+                .flags(debugFlags)
                 .pfnCallback(debugCallbackFunction)
                 .pUserData(0);
 
@@ -150,7 +172,7 @@ public class Instance {
      */
     private static PointerBuffer checkValidationLayers(MemoryStack stack) {
         // Don't use validation layers if no debug mode
-        if (!ClientConstants.isDebug) {
+        if (!ClientConstants.IS_DEBUG) {
             Logger.debug("Debug mode is disable. No validation layers");
             return null;
         }
@@ -259,7 +281,7 @@ public class Instance {
      */
     public void destroy() {
         // If debug mode destroy debug callback
-        if (ClientConstants.isDebug) {
+        if (ClientConstants.IS_DEBUG) {
             EXTDebugReport.vkDestroyDebugReportCallbackEXT(handle, debugCallback, null);
         }
 
