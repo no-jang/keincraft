@@ -90,7 +90,6 @@ public class Device {
         for(int i = 0; i < enabledExtensions.size(); i++) {
             pEnabledExtensions.put(i, stack.ASCII(enabledExtensions.get(i)));
         }
-        pEnabledExtensions.flip();
 
         // Create device
         VkDeviceCreateInfo createInfo = VkDeviceCreateInfo.malloc(stack)

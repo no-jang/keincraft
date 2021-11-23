@@ -77,7 +77,11 @@ public class Surface {
             }
         }
 
-        presentMode = Objects.requireNonNullElse(foundPresentMode, KHRSurface.VK_PRESENT_MODE_FIFO_KHR);
+        if(foundPresentMode == -1) {
+            presentMode = KHRSurface.VK_PRESENT_MODE_FIFO_KHR;
+        } else {
+            presentMode = foundPresentMode;
+        }
     }
 
     /**
