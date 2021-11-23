@@ -19,6 +19,7 @@ import java.util.List;
  * Wrapper around a vulkan instance. Because there is no global state in vulkan this information needs to be stored in an
  * instance. In addition, the vulkan library initializes the vulkan library and allows the application to pass information
  * about itself to the graphics driver.
+ *
  * @see VkInstance
  */
 public class Instance {
@@ -267,6 +268,7 @@ public class Instance {
 
     /**
      * internal vulkan device handle
+     *
      * @return vulkans internal handle of the instance
      * @see VkInstance
      */

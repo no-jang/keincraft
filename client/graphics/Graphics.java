@@ -2,6 +2,7 @@ package client.graphics;
 
 import client.graphics.vk.device.Instance;
 import client.graphics.vk.device.PhysicalDevice;
+import client.graphics.vk.device.Surface;
 import org.lwjgl.system.MemoryStack;
 
 /**
@@ -11,6 +12,7 @@ public class Graphics {
     private final Window window;
     private final Instance instance;
     private final PhysicalDevice physicalDevice;
+    private final Surface surface;
 
     /**
      * Creates new graphics module for window
@@ -24,6 +26,7 @@ public class Graphics {
         try (MemoryStack stack = MemoryStack.stackPush()) {
             instance = new Instance(stack);
             physicalDevice = PhysicalDevice.getBestPhysicalDevice(stack, instance);
+            surface = new Surface(stack, instance, physicalDevice, window);
         }
     }
 
@@ -45,6 +48,7 @@ public class Graphics {
      * Destroys every graphics component
      */
     public void destroy() {
+        surface.destroy(instance);
         instance.destroy();
     }
 }
