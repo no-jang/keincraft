@@ -77,7 +77,7 @@ public class Surface {
             }
         }
 
-        if(foundPresentMode == -1) {
+        if (foundPresentMode == -1) {
             presentMode = KHRSurface.VK_PRESENT_MODE_FIFO_KHR;
         } else {
             presentMode = foundPresentMode;

@@ -9,7 +9,10 @@ import org.lwjgl.vulkan.VkImageViewCreateInfo;
 
 import java.nio.LongBuffer;
 
-import static org.lwjgl.vulkan.VK10.*;
+import static org.lwjgl.vulkan.VK10.VK_COMPONENT_SWIZZLE_IDENTITY;
+import static org.lwjgl.vulkan.VK10.VK_IMAGE_ASPECT_COLOR_BIT;
+import static org.lwjgl.vulkan.VK10.vkCreateImageView;
+import static org.lwjgl.vulkan.VK10.vkDestroyImageView;
 
 /**
  * ImageViews represent how an image is presented

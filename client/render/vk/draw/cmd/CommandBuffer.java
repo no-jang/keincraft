@@ -6,7 +6,15 @@ import client.graphics2.vk.renderpass.Renderpass;
 import client.graphics2.vk.renderpass.Swapchain;
 import client.render.vk.Global;
 import org.lwjgl.system.MemoryStack;
-import org.lwjgl.vulkan.*;
+import org.lwjgl.vulkan.VK10;
+import org.lwjgl.vulkan.VkClearColorValue;
+import org.lwjgl.vulkan.VkClearValue;
+import org.lwjgl.vulkan.VkCommandBuffer;
+import org.lwjgl.vulkan.VkCommandBufferBeginInfo;
+import org.lwjgl.vulkan.VkOffset2D;
+import org.lwjgl.vulkan.VkRect2D;
+import org.lwjgl.vulkan.VkRenderPassBeginInfo;
+import org.lwjgl.vulkan.VkViewport;
 
 public class CommandBuffer {
     private final MemoryStack stack;

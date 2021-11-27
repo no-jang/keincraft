@@ -5,13 +5,34 @@ import client.graphics2.vk.renderpass.Renderpass;
 import client.graphics2.vk.renderpass.Swapchain;
 import client.graphics2.vk.util.Check;
 import org.lwjgl.system.MemoryStack;
-import org.lwjgl.vulkan.*;
+import org.lwjgl.vulkan.VK10;
+import org.lwjgl.vulkan.VkGraphicsPipelineCreateInfo;
+import org.lwjgl.vulkan.VkOffset2D;
+import org.lwjgl.vulkan.VkPipelineColorBlendAttachmentState;
+import org.lwjgl.vulkan.VkPipelineColorBlendStateCreateInfo;
+import org.lwjgl.vulkan.VkPipelineDynamicStateCreateInfo;
+import org.lwjgl.vulkan.VkPipelineInputAssemblyStateCreateInfo;
+import org.lwjgl.vulkan.VkPipelineLayoutCreateInfo;
+import org.lwjgl.vulkan.VkPipelineMultisampleStateCreateInfo;
+import org.lwjgl.vulkan.VkPipelineRasterizationStateCreateInfo;
+import org.lwjgl.vulkan.VkPipelineShaderStageCreateInfo;
+import org.lwjgl.vulkan.VkPipelineVertexInputStateCreateInfo;
+import org.lwjgl.vulkan.VkPipelineViewportStateCreateInfo;
+import org.lwjgl.vulkan.VkRect2D;
+import org.lwjgl.vulkan.VkViewport;
 
 import java.nio.LongBuffer;
 import java.util.List;
 
 import static client.render.vk.Global.vkCheck;
-import static org.lwjgl.vulkan.VK10.*;
+import static org.lwjgl.vulkan.VK10.VK_BLEND_FACTOR_ONE;
+import static org.lwjgl.vulkan.VK10.VK_BLEND_FACTOR_SRC_ALPHA;
+import static org.lwjgl.vulkan.VK10.VK_LOGIC_OP_COPY;
+import static org.lwjgl.vulkan.VK10.VK_NULL_HANDLE;
+import static org.lwjgl.vulkan.VK10.vkCreateGraphicsPipelines;
+import static org.lwjgl.vulkan.VK10.vkCreatePipelineLayout;
+import static org.lwjgl.vulkan.VK10.vkDestroyPipeline;
+import static org.lwjgl.vulkan.VK10.vkDestroyPipelineLayout;
 
 public class Pipeline {
     private final long pipelineHandle;

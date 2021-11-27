@@ -3,7 +3,13 @@ package client.graphics.vk.device;
 import client.graphics.vk.util.Check;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.system.MemoryStack;
-import org.lwjgl.vulkan.*;
+import org.lwjgl.vulkan.KHRSwapchain;
+import org.lwjgl.vulkan.VK10;
+import org.lwjgl.vulkan.VkExtensionProperties;
+import org.lwjgl.vulkan.VkPhysicalDevice;
+import org.lwjgl.vulkan.VkPhysicalDeviceFeatures;
+import org.lwjgl.vulkan.VkPhysicalDeviceMemoryProperties;
+import org.lwjgl.vulkan.VkPhysicalDeviceProperties;
 import org.tinylog.Logger;
 
 import java.nio.IntBuffer;

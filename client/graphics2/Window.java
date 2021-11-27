@@ -1,6 +1,10 @@
 package client.graphics2;
 
-import org.lwjgl.glfw.*;
+import org.lwjgl.glfw.Callbacks;
+import org.lwjgl.glfw.GLFW;
+import org.lwjgl.glfw.GLFWErrorCallback;
+import org.lwjgl.glfw.GLFWVidMode;
+import org.lwjgl.glfw.GLFWVulkan;
 import org.lwjgl.system.MemoryUtil;
 
 /**

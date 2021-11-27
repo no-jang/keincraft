@@ -100,6 +100,22 @@ public class Swapchain {
         fencesInFlight = new HashMap<>(imageCount);
     }
 
+    private static VkExtent2D chooseExtent(MemoryStack stack, Window window, VkSurfaceCapabilitiesKHR capabilities) {
+        if (capabilities.currentExtent().width() != 0xFFFFFFFF) {
+            return capabilities.currentExtent();
+        }
+
+        VkExtent2D actualExtent = VkExtent2D.malloc(stack).set(window.getWidth(), window.getHeight());
+
+        VkExtent2D minExtent = capabilities.minImageExtent();
+        VkExtent2D maxExtent = capabilities.maxImageExtent();
+
+        actualExtent.width(MathUtil.clamp(minExtent.width(), maxExtent.width(), actualExtent.width()));
+        actualExtent.height(MathUtil.clamp(minExtent.height(), maxExtent.height(), actualExtent.height()));
+
+        return actualExtent;
+    }
+
     /**
      * Destroy swapchain
      *
@@ -124,7 +140,7 @@ public class Swapchain {
         int imageIndex = pImageIndex.get(0);
 
         // Wait for image fences in flight
-        if(fencesInFlight.containsKey(imageIndex)) {
+        if (fencesInFlight.containsKey(imageIndex)) {
             Check.vkCheck(VK10.vkWaitForFences(device.getHandle(), fencesInFlight.get(imageIndex).getHandle(), true, ~0L),
                     "Failed to wait for image in flight fence");
         }
@@ -135,8 +151,9 @@ public class Swapchain {
 
     /**
      * Gathers all swapchain images as image view list
-     * @param stack memory stack
-     * @param device device
+     *
+     * @param stack   memory stack
+     * @param device  device
      * @param surface surface
      * @return swapchain images as image view list
      */
@@ -149,7 +166,7 @@ public class Swapchain {
         Check.vkCheck(KHRSwapchain.vkGetSwapchainImagesKHR(device.getHandle(), handle, pImageCount, pImages), "Failed to get swapchain images");
 
         List<ImageView> images = new ArrayList<>(imageCount);
-        for(int i = 0; i < imageCount; i++) {
+        for (int i = 0; i < imageCount; i++) {
             ImageView image = new ImageView(stack, device, surface, new Image(pImages.get(i)));
             images.add(image);
         }
@@ -157,24 +174,9 @@ public class Swapchain {
         return images;
     }
 
-    private static VkExtent2D chooseExtent(MemoryStack stack, Window window, VkSurfaceCapabilitiesKHR capabilities) {
-        if (capabilities.currentExtent().width() != 0xFFFFFFFF) {
-            return capabilities.currentExtent();
-        }
-
-        VkExtent2D actualExtent = VkExtent2D.malloc(stack).set(window.getWidth(), window.getHeight());
-
-        VkExtent2D minExtent = capabilities.minImageExtent();
-        VkExtent2D maxExtent = capabilities.maxImageExtent();
-
-        actualExtent.width(MathUtil.clamp(minExtent.width(), maxExtent.width(), actualExtent.width()));
-        actualExtent.height(MathUtil.clamp(minExtent.height(), maxExtent.height(), actualExtent.height()));
-
-        return actualExtent;
-    }
-
     /**
      * Gets internal swapchain vulkan handle
+     *
      * @return internal swapchain vulkan handle
      */
     public long getHandle() {
@@ -183,6 +185,7 @@ public class Swapchain {
 
     /**
      * Gets swapchain image count
+     *
      * @return count of images the swapchain uses
      */
     public int getImageCount() {
@@ -191,6 +194,7 @@ public class Swapchain {
 
     /**
      * Gets current swapchain image extent (size)
+     *
      * @return swapchain image extent
      */
     public VkExtent2D getExtent() {

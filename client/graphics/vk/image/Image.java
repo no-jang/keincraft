@@ -17,6 +17,7 @@ public class Image {
 
     /**
      * Gets internal vulkan image handle
+     *
      * @return internal vulkan image handle
      */
     public long getHandle() {

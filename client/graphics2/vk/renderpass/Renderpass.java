@@ -3,7 +3,13 @@ package client.graphics2.vk.renderpass;
 import client.graphics2.vk.device.Device;
 import client.graphics2.vk.util.Check;
 import org.lwjgl.system.MemoryStack;
-import org.lwjgl.vulkan.*;
+import org.lwjgl.vulkan.KHRSwapchain;
+import org.lwjgl.vulkan.VK10;
+import org.lwjgl.vulkan.VkAttachmentDescription;
+import org.lwjgl.vulkan.VkAttachmentReference;
+import org.lwjgl.vulkan.VkRenderPassCreateInfo;
+import org.lwjgl.vulkan.VkSubpassDependency;
+import org.lwjgl.vulkan.VkSubpassDescription;
 
 import java.nio.LongBuffer;
 import java.util.ArrayList;

@@ -6,7 +6,16 @@ import org.lwjgl.PointerBuffer;
 import org.lwjgl.glfw.GLFWVulkan;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.MemoryUtil;
-import org.lwjgl.vulkan.*;
+import org.lwjgl.vulkan.EXTDebugReport;
+import org.lwjgl.vulkan.VK;
+import org.lwjgl.vulkan.VK10;
+import org.lwjgl.vulkan.VkApplicationInfo;
+import org.lwjgl.vulkan.VkDebugReportCallbackCreateInfoEXT;
+import org.lwjgl.vulkan.VkDebugReportCallbackEXT;
+import org.lwjgl.vulkan.VkExtensionProperties;
+import org.lwjgl.vulkan.VkInstance;
+import org.lwjgl.vulkan.VkInstanceCreateInfo;
+import org.lwjgl.vulkan.VkLayerProperties;
 import org.tinylog.Logger;
 
 import java.nio.ByteBuffer;
@@ -15,8 +24,16 @@ import java.nio.LongBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.lwjgl.vulkan.EXTDebugReport.*;
-import static org.lwjgl.vulkan.VK10.*;
+import static org.lwjgl.vulkan.EXTDebugReport.VK_DEBUG_REPORT_DEBUG_BIT_EXT;
+import static org.lwjgl.vulkan.EXTDebugReport.VK_DEBUG_REPORT_ERROR_BIT_EXT;
+import static org.lwjgl.vulkan.EXTDebugReport.VK_DEBUG_REPORT_INFORMATION_BIT_EXT;
+import static org.lwjgl.vulkan.EXTDebugReport.VK_DEBUG_REPORT_PERFORMANCE_WARNING_BIT_EXT;
+import static org.lwjgl.vulkan.EXTDebugReport.VK_DEBUG_REPORT_WARNING_BIT_EXT;
+import static org.lwjgl.vulkan.EXTDebugReport.vkCreateDebugReportCallbackEXT;
+import static org.lwjgl.vulkan.EXTDebugReport.vkDestroyDebugReportCallbackEXT;
+import static org.lwjgl.vulkan.VK10.VK_FALSE;
+import static org.lwjgl.vulkan.VK10.vkCreateInstance;
+import static org.lwjgl.vulkan.VK10.vkDestroyInstance;
 
 /**
  * Wrapper around a vulkan instance. Because there is no global state in vulkan this information needs to be stored in an

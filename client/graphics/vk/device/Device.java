@@ -11,7 +11,6 @@ import org.lwjgl.vulkan.VkDeviceQueueCreateInfo;
 import org.lwjgl.vulkan.VkQueue;
 import org.lwjgl.vulkan.VkQueueFamilyProperties;
 
-import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.util.List;
 import java.util.stream.IntStream;
@@ -87,7 +86,7 @@ public class Device {
 
         List<String> enabledExtensions = physicalDevice.getEnabledExtensions();
         PointerBuffer pEnabledExtensions = stack.mallocPointer(enabledExtensions.size());
-        for(int i = 0; i < enabledExtensions.size(); i++) {
+        for (int i = 0; i < enabledExtensions.size(); i++) {
             pEnabledExtensions.put(i, stack.ASCII(enabledExtensions.get(i)));
         }
 
@@ -132,6 +131,7 @@ public class Device {
 
     /**
      * Gets internal vulkan device handle
+     *
      * @return internal vulkan device handle
      */
     public VkDevice getHandle() {
@@ -140,6 +140,7 @@ public class Device {
 
     /**
      * Gets graphics queue where all render tasks are submitted to
+     *
      * @return graphics queue
      */
     public VkQueue getGraphicsQueue() {
@@ -148,6 +149,7 @@ public class Device {
 
     /**
      * Gets present queue where all presentation tasks are submitted to
+     *
      * @return present queue
      */
     public VkQueue getPresentQueue() {
@@ -156,6 +158,7 @@ public class Device {
 
     /**
      * Gets family index for graphics queue
+     *
      * @return family index for graphics queue
      */
     public int getGraphicsQueueFamilyIndex() {
@@ -164,6 +167,7 @@ public class Device {
 
     /**
      * Gets family index for present queue
+     *
      * @return family index for present queue
      */
     public int getPresentQueueFamilyIndex() {

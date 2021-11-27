@@ -10,7 +10,12 @@ import client.graphics2.vk.sync.Frame;
 import client.graphics2.vk.util.Check;
 import common.util.math.MathUtil;
 import org.lwjgl.system.MemoryStack;
-import org.lwjgl.vulkan.*;
+import org.lwjgl.vulkan.KHRSurface;
+import org.lwjgl.vulkan.KHRSwapchain;
+import org.lwjgl.vulkan.VK10;
+import org.lwjgl.vulkan.VkExtent2D;
+import org.lwjgl.vulkan.VkSurfaceCapabilitiesKHR;
+import org.lwjgl.vulkan.VkSwapchainCreateInfoKHR;
 
 import java.nio.IntBuffer;
 import java.nio.LongBuffer;

@@ -3,7 +3,19 @@ package client.graphics.vk.util;
 import org.lwjgl.vulkan.KHRSurface;
 import org.lwjgl.vulkan.KHRSwapchain;
 
-import static org.lwjgl.vulkan.VK10.*;
+import static org.lwjgl.vulkan.VK10.VK_ERROR_DEVICE_LOST;
+import static org.lwjgl.vulkan.VK10.VK_ERROR_EXTENSION_NOT_PRESENT;
+import static org.lwjgl.vulkan.VK10.VK_ERROR_FEATURE_NOT_PRESENT;
+import static org.lwjgl.vulkan.VK10.VK_ERROR_FORMAT_NOT_SUPPORTED;
+import static org.lwjgl.vulkan.VK10.VK_ERROR_FRAGMENTED_POOL;
+import static org.lwjgl.vulkan.VK10.VK_ERROR_INCOMPATIBLE_DRIVER;
+import static org.lwjgl.vulkan.VK10.VK_ERROR_INITIALIZATION_FAILED;
+import static org.lwjgl.vulkan.VK10.VK_ERROR_LAYER_NOT_PRESENT;
+import static org.lwjgl.vulkan.VK10.VK_ERROR_MEMORY_MAP_FAILED;
+import static org.lwjgl.vulkan.VK10.VK_ERROR_OUT_OF_DEVICE_MEMORY;
+import static org.lwjgl.vulkan.VK10.VK_ERROR_OUT_OF_HOST_MEMORY;
+import static org.lwjgl.vulkan.VK10.VK_ERROR_TOO_MANY_OBJECTS;
+import static org.lwjgl.vulkan.VK10.VK_SUCCESS;
 
 /**
  * Everything regarded to check if a vulkan function returned a failure

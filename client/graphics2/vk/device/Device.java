@@ -3,7 +3,13 @@ package client.graphics2.vk.device;
 import client.graphics2.vk.util.Check;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.system.MemoryStack;
-import org.lwjgl.vulkan.*;
+import org.lwjgl.vulkan.KHRSurface;
+import org.lwjgl.vulkan.VK10;
+import org.lwjgl.vulkan.VkDevice;
+import org.lwjgl.vulkan.VkDeviceCreateInfo;
+import org.lwjgl.vulkan.VkDeviceQueueCreateInfo;
+import org.lwjgl.vulkan.VkQueue;
+import org.lwjgl.vulkan.VkQueueFamilyProperties;
 
 import java.nio.IntBuffer;
 import java.util.stream.IntStream;
