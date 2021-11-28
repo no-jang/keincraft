@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Supplier;
 
 public class TaskGraph {
     private final Map<Task, Node> nodes;
@@ -16,21 +17,32 @@ public class TaskGraph {
 
     public void task(String name, Task task) {
         Node node = new Node(name, task);
-        nodes.put(task, node);
-        standaloneNodes.add(node);
+
+        synchronized (nodes) {
+            nodes.put(task, node);
+            standaloneNodes.add(node);
+        }
     }
 
     public void link(Task task, Task predecessor) {
-        Node predecessorNode = nodes.get(predecessor);
-        standaloneNodes.remove(predecessorNode);
-        nodes.get(task).getPredecessors().add(predecessorNode);
+        synchronized (nodes) {
+            Node predecessorNode = nodes.get(predecessor);
+            standaloneNodes.remove(predecessorNode);
+            nodes.get(task).getPredecessors().add(predecessorNode);
+        }
     }
 
-    public Map<Task, Node> getNodes() {
-        return nodes;
+    public void condition(Task task, Supplier<Boolean> condition) {
+        synchronized (nodes) {
+            nodes.get(task).setCondition(condition);
+        }
     }
 
-    public List<Node> getStandaloneNodes() {
+    public synchronized List<Node> getStandaloneNodes() {
         return standaloneNodes;
+    }
+
+    public synchronized Map<Task, Node> getNodes() {
+        return nodes;
     }
 }

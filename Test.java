@@ -46,6 +46,9 @@ public class Test {
         graph.link(task5, task3);
         graph.link(task2, task4);
 
+        graph.condition(task1, () -> false);
+        graph.condition(task4, () -> false);
+
         TaskExecutor executor = new TaskExecutor(graph);
         executor.executeAndWait();
         executor.stop();

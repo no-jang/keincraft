@@ -6,14 +6,13 @@ import java.util.Deque;
 import java.util.List;
 
 public class TaskExecutor {
-    private final TaskGraph graph;
     private final List<TaskThread> threads;
     private final Deque<Node> queue;
 
     public TaskExecutor(TaskGraph graph, int threadCount) {
-        this.graph = graph;
-
         this.queue = new ArrayDeque<>(graph.getNodes().size());
+
+        addFromGraph(graph);
 
         this.threads = new ArrayList<>(threadCount);
         for (int i = 0; i < threadCount; i++) {
@@ -26,8 +25,6 @@ public class TaskExecutor {
     }
 
     public void execute() {
-        addFromGraph(graph);
-
         for (TaskThread thread : threads) {
             thread.start();
         }
@@ -39,12 +36,24 @@ public class TaskExecutor {
         }
     }
 
-    private void addNode(Node node) {
+    private boolean addNode(Node node) {
+        boolean allPredecessors = true;
         for(Node predecessor : node.getPredecessors()) {
-            addNode(predecessor);
+            if(!addNode(predecessor)) {
+                allPredecessors = false;
+            }
+        }
+
+        if(!allPredecessors) {
+            return false;
+        }
+
+        if(!node.isCondition()) {
+            return false;
         }
 
         queue.addLast(node);
+        return true;
     }
 
     public void executeAndWait() {
