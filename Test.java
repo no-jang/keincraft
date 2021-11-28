@@ -35,19 +35,13 @@ public class Test {
             }
         };
 
-        graph.task(task1);
-        graph.task(task2);
-        graph.task(task3);
-        graph.task(task4);
-        graph.task(task5);
+        graph.task("1", task1);
+        graph.task("2", task2);
+        graph.task("3", task3);
+        graph.task("4", task4);
+        graph.task("5", task5);
 
-        graph.name(task1, "1");
-        graph.name(task2, "2");
-        graph.name(task3, "3");
-        graph.name(task4, "4");
-        graph.name(task5, "5");
-
-        // 5, 2, 3, 4
+        // 4, 2, 3, 5
         graph.link(task5, task2);
         graph.link(task5, task3);
         graph.link(task2, task4);

@@ -18,8 +18,13 @@ public class TaskThread extends Thread {
     public void run() {
         running = true;
         while (running) {
-            node = executor.popNode();
+            node = executor.pollNode();
             if (node == null) {
+                try {
+                    Thread.sleep(1L);
+                }catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
                 continue;
             }
 

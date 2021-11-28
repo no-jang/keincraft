@@ -3,23 +3,17 @@ package client.tasks;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Queue;
 
 public class TaskExecutor {
     private final TaskGraph graph;
     private final List<TaskThread> threads;
-    //private final Map<Task, Node> nodes;
     private final Deque<Node> queue;
 
     public TaskExecutor(TaskGraph graph, int threadCount) {
         this.graph = graph;
 
-        int graphSize = graph.getTasks().size();
-        //this.nodes = new HashMap<>();
-        this.queue = new ArrayDeque<>(graphSize);
+        this.queue = new ArrayDeque<>(graph.getNodes().size());
 
         this.threads = new ArrayList<>(threadCount);
         for (int i = 0; i < threadCount; i++) {
@@ -40,24 +34,17 @@ public class TaskExecutor {
     }
 
     private void addFromGraph(TaskGraph graph) {
-        for(Task task : graph.getStandaloneTasks()) {
-            addTask(graph, task);
+        for(Node node : graph.getStandaloneNodes()) {
+            addNode(node);
         }
     }
 
-    private void addTask(TaskGraph graph, Task task) {
-        String name = graph.getNames().get(task);
-
-        queue.addLast(new Node(name, task));
-
-        List<Task> successors = graph.getSuccessors().get(task);
-        if(successors == null) {
-            return;
+    private void addNode(Node node) {
+        for(Node predecessor : node.getPredecessors()) {
+            addNode(predecessor);
         }
 
-        for(Task successor : successors) {
-            addTask(graph, successor);
-        }
+        queue.addLast(node);
     }
 
     public void executeAndWait() {
@@ -88,7 +75,7 @@ public class TaskExecutor {
         }
     }
 
-    Node popNode() {
+    Node pollNode() {
         synchronized (queue) {
             Node node;
             do {
@@ -96,8 +83,8 @@ public class TaskExecutor {
                     return null;
                 }
 
-                node = queue.pop();
-                if(!node.allSuccessorsFinished()) {
+                node = queue.poll();
+                if(!node.allPredecessorsFinished()) {
                     queue.addLast(node);
                     node = null;
                 }
