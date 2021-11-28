@@ -6,7 +6,7 @@ public class TaskThread extends Thread {
     private final TaskExecutor executor;
 
     private boolean running;
-    private Task task;
+    private Node node;
 
     public TaskThread(int index, TaskExecutor executor) {
         super(tasksGroup, "tasks" + index);
@@ -18,12 +18,13 @@ public class TaskThread extends Thread {
     public void run() {
         running = true;
         while (running) {
-            task = executor.popTask();
-            if (task == null) {
+            node = executor.popNode();
+            if (node == null) {
                 continue;
             }
 
-            task.run();
+            node.getTask().run();
+            node.finish();
         }
     }
 
@@ -35,7 +36,7 @@ public class TaskThread extends Thread {
         return running;
     }
 
-    public Task getTask() {
-        return task;
+    public Node getNode() {
+        return node;
     }
 }
