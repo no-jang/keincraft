@@ -1,63 +1,39 @@
 package client.tasks;
 
-import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
 import java.util.List;
 
+// TODO Use wait and notify
 public class TaskExecutor {
     private final List<TaskThread> threads;
-    private final Deque<Node> queue;
+    private final Object queueGuard = new Object();
+    private Deque<Node> queue;
 
-    public TaskExecutor(TaskGraph graph, int threadCount) {
-        this.queue = new ArrayDeque<>(graph.getNodes().size());
-
-        addFromGraph(graph);
-
+    public TaskExecutor(int threadCount) {
         this.threads = new ArrayList<>(threadCount);
+
         for (int i = 0; i < threadCount; i++) {
             threads.add(new TaskThread(i, this));
         }
     }
 
-    public TaskExecutor(TaskGraph graph) {
-        this(graph, Runtime.getRuntime().availableProcessors() - 2);
+    public TaskExecutor() {
+        this(Runtime.getRuntime().availableProcessors() - 2);
     }
 
-    public void execute() {
-        for (TaskThread thread : threads) {
-            thread.start();
-        }
-    }
-
-    private void addFromGraph(TaskGraph graph) {
-        for(Node node : graph.getStandaloneNodes()) {
-            addNode(node);
-        }
-    }
-
-    private boolean addNode(Node node) {
-        boolean allPredecessors = true;
-        for(Node predecessor : node.getPredecessors()) {
-            if(!addNode(predecessor)) {
-                allPredecessors = false;
+    public void execute(Deque<Node> queue) {
+        synchronized (queueGuard) {
+            if (this.queue != null) {
+                throw new IllegalStateException("Task executor already executes a queue");
             }
-        }
 
-        if(!allPredecessors) {
-            return false;
+            this.queue = queue;
         }
-
-        if(!node.isCondition()) {
-            return false;
-        }
-
-        queue.addLast(node);
-        return true;
     }
 
-    public void executeAndWait() {
-        execute();
+    public void executeWait(Deque<Node> queue) {
+        execute(queue);
 
         boolean finished;
         do {
@@ -69,13 +45,17 @@ public class TaskExecutor {
 
             finished = true;
             for (TaskThread thread : threads) {
-                if (thread.getNode() != null) {
+                if (!thread.isFinished()) {
                     finished = false;
-                    break;
                 }
             }
-
         } while (!finished);
+    }
+
+    public void start() {
+        for (TaskThread thread : threads) {
+            thread.start();
+        }
     }
 
     public void stop() {
@@ -85,20 +65,21 @@ public class TaskExecutor {
     }
 
     Node pollNode() {
-        synchronized (queue) {
-            Node node;
-            do {
-                if(queue.size() == 0) {
+        Node node;
+        do {
+            synchronized (queueGuard) {
+                if (queue.size() == 0) {
+                    queue = null;
                     return null;
                 }
 
                 node = queue.poll();
-                if(!node.allPredecessorsFinished()) {
+                if (!node.allPredecessorsFinished()) {
                     queue.addLast(node);
                     node = null;
                 }
-            } while (node == null);
-            return node;
-        }
+            }
+        } while (node == null);
+        return node;
     }
 }

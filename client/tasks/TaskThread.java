@@ -22,7 +22,7 @@ public class TaskThread extends Thread {
             if (node == null) {
                 try {
                     Thread.sleep(1L);
-                }catch (InterruptedException e) {
+                } catch (InterruptedException e) {
                     throw new RuntimeException(e);
                 }
                 continue;
@@ -39,6 +39,10 @@ public class TaskThread extends Thread {
 
     public boolean isRunning() {
         return running;
+    }
+
+    public boolean isFinished() {
+        return node == null;
     }
 
     public Node getNode() {

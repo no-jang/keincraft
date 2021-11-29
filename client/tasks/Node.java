@@ -18,10 +18,6 @@ public class Node {
         this.task = task;
     }
 
-    public void setCondition(Supplier<Boolean> condition) {
-        this.condition = condition;
-    }
-
     public String getName() {
         return name;
     }
@@ -31,7 +27,7 @@ public class Node {
     }
 
     public List<Node> getPredecessors() {
-        if(predecessors == null) predecessors = new ArrayList<>();
+        if (predecessors == null) predecessors = new ArrayList<>();
         return predecessors;
     }
 
@@ -40,18 +36,22 @@ public class Node {
     }
 
     public boolean isCondition() {
-        if(condition == null) {
+        if (condition == null) {
             return true;
         }
 
         return condition.get();
     }
 
+    public void setCondition(Supplier<Boolean> condition) {
+        this.condition = condition;
+    }
+
     public boolean allPredecessorsFinished() {
         boolean finished = true;
 
-        for(Node node : predecessors) {
-            if(!node.finished) {
+        for (Node node : predecessors) {
+            if (!node.finished) {
                 finished = false;
                 break;
             }

@@ -1,6 +1,7 @@
 import client.tasks.Task;
 import client.tasks.TaskExecutor;
 import client.tasks.TaskGraph;
+import client.tasks.TaskGraphResolver;
 
 public class Test {
     public static void main(String[] args) throws InterruptedException {
@@ -49,8 +50,9 @@ public class Test {
         graph.condition(task1, () -> false);
         graph.condition(task4, () -> false);
 
-        TaskExecutor executor = new TaskExecutor(graph);
-        executor.executeAndWait();
+        TaskExecutor executor = new TaskExecutor();
+        TaskGraphResolver resolver = new TaskGraphResolver(graph);
+        executor.executeWait(resolver.resolve());
         executor.stop();
     }
 }
