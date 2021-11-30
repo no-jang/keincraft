@@ -3,9 +3,44 @@ import client.tasks.TaskExecutor;
 import client.tasks.TaskGraph;
 import client.tasks.TaskGraphResolver;
 
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
+
 public class Test {
     public static void main(String[] args) throws InterruptedException {
-        TaskGraph graph = new TaskGraph();
+/*        Lock lock = new ReentrantLock();
+        Condition condition = lock.newCondition();
+        Condition condition2 = lock.newCondition();
+
+        Thread thread = new Thread(() -> {
+            synchronized (lock) {
+                condition.awaitUninterruptibly();
+            }
+            System.out.println("Notified 1");
+        });
+
+        Thread thread2 = new Thread(() -> {
+            synchronized (lock) {
+                condition2.awaitUninterruptibly();
+            }
+            System.out.println("Notified 2");
+        });
+
+        thread.start();
+        thread2.start();
+
+        Thread.sleep(2000L);
+        synchronized (lock) {
+            condition.signalAll();
+        }
+
+        Thread.sleep(2000L);
+        synchronized (lock) {
+            condition2.signalAll();
+        }*/
+
+        /*TaskGraph graph = new TaskGraph();
         Task task1 = () -> {
             for(int i = 0; i < 10; i++) {
                 System.out.println("1 " + i);
@@ -54,5 +89,6 @@ public class Test {
         TaskGraphResolver resolver = new TaskGraphResolver(graph);
         executor.executeWait(resolver.resolve());
         executor.stop();
+        */
     }
 }

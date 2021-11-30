@@ -8,7 +8,7 @@ public class TaskThread extends Thread {
     private boolean running;
     private Node node;
 
-    public TaskThread(int index, TaskExecutor executor) {
+    public TaskThread(TaskExecutor executor, int index) {
         super(tasksGroup, "tasks" + index);
 
         this.executor = executor;
@@ -33,7 +33,7 @@ public class TaskThread extends Thread {
         }
     }
 
-    public void stopLoop() {
+    public void exit() {
         running = false;
     }
 

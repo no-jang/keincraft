@@ -3,18 +3,24 @@ package client.tasks;
 import java.util.ArrayList;
 import java.util.Deque;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingDeque;
 
 // TODO Use wait and notify
 public class TaskExecutor {
-    private final List<TaskThread> threads;
-    private final Object queueGuard = new Object();
-    private Deque<Node> queue;
+    private final TaskThread[] threads;
+    private final LinkedBlockingDeque<Node> queue;
+    private final ExecutorService executor;
 
-    public TaskExecutor(int threadCount) {
-        this.threads = new ArrayList<>(threadCount);
+    public TaskExecutor(int poolSize) {
+        executor = Executors.newFixedThreadPool(poolSize);
 
-        for (int i = 0; i < threadCount; i++) {
-            threads.add(new TaskThread(i, this));
+        queue = new LinkedBlockingDeque<>();
+
+        threads = new TaskThread[poolSize];
+        for(int i = 0; i < poolSize; i++) {
+            threads[i] = new TaskThread(this, i);
         }
     }
 
@@ -22,16 +28,55 @@ public class TaskExecutor {
         this(Runtime.getRuntime().availableProcessors() - 2);
     }
 
-    public void execute(Deque<Node> queue) {
-        synchronized (queueGuard) {
-            if (this.queue != null) {
-                throw new IllegalStateException("Task executor already executes a queue");
-            }
-
-            this.queue = queue;
+    public void start() {
+        for(TaskThread thread : threads) {
+            thread.start();
         }
     }
 
+    public void stop() {
+        for(TaskThread thread : threads) {
+            thread.exit();
+        }
+    }
+
+    public void execute(List<Node> nodes) {
+        synchronized (queue) {
+            queue.addAll(nodes);
+            queue.notify();
+        }
+    }
+
+    public void executeWait(List<Node> nodes) {
+        execute(nodes);
+
+        synchronized (queue) {
+            while (!queue.isEmpty() ) {
+                try {
+                    queue.wait();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+
+                for(TaskThread thread : threads) {
+                    if(!thread.isFinished()) {
+                        continue;
+                    }
+                }
+            }
+        }
+    }
+
+    Node pollNode() throws InterruptedException {
+            synchronized (queue) {
+                while (queue.isEmpty()) {
+                    queue.wait();
+                }
+
+                return queue.poll();
+            }
+    }
+/*
     public void executeWait(Deque<Node> queue) {
         execute(queue);
 
@@ -52,27 +97,10 @@ public class TaskExecutor {
         } while (!finished);
     }
 
-    public void start() {
-        for (TaskThread thread : threads) {
-            thread.start();
-        }
-    }
-
-    public void stop() {
-        for (TaskThread thread : threads) {
-            thread.stopLoop();
-        }
-    }
-
     Node pollNode() {
         Node node;
         do {
             synchronized (queueGuard) {
-                if (queue.size() == 0) {
-                    queue = null;
-                    return null;
-                }
-
                 node = queue.poll();
                 if (!node.allPredecessorsFinished()) {
                     queue.addLast(node);
@@ -81,5 +109,5 @@ public class TaskExecutor {
             }
         } while (node == null);
         return node;
-    }
+    }*/
 }
