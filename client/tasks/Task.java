@@ -1,5 +1,6 @@
 package client.tasks;
 
-public interface Task {
-    void run();
+import java.util.concurrent.Callable;
+
+public interface Task extends Runnable {
 }

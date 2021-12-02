@@ -1,72 +1,37 @@
 import client.tasks.Task;
 import client.tasks.TaskExecutor;
 import client.tasks.TaskGraph;
-import client.tasks.TaskGraphResolver;
-
-import java.util.concurrent.locks.Condition;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
+import client.tasks.TaskQueue;
 
 public class Test {
     public static void main(String[] args) throws InterruptedException {
-/*        Lock lock = new ReentrantLock();
-        Condition condition = lock.newCondition();
-        Condition condition2 = lock.newCondition();
-
-        Thread thread = new Thread(() -> {
-            synchronized (lock) {
-                condition.awaitUninterruptibly();
-            }
-            System.out.println("Notified 1");
-        });
-
-        Thread thread2 = new Thread(() -> {
-            synchronized (lock) {
-                condition2.awaitUninterruptibly();
-            }
-            System.out.println("Notified 2");
-        });
-
-        thread.start();
-        thread2.start();
-
-        Thread.sleep(2000L);
-        synchronized (lock) {
-            condition.signalAll();
-        }
-
-        Thread.sleep(2000L);
-        synchronized (lock) {
-            condition2.signalAll();
-        }*/
-
-        /*TaskGraph graph = new TaskGraph();
+        TaskGraph graph = new TaskGraph();
         Task task1 = () -> {
-            for(int i = 0; i < 10; i++) {
+            for(int i = 0; i < 1; i++) {
                 System.out.println("1 " + i);
             }
         };
 
         Task task2 = () -> {
-            for(int i = 0; i < 10; i++) {
+            for(int i = 0; i < 1; i++) {
                 System.out.println("2 " + i);
             }
         };
 
         Task task3 = () -> {
-            for(int i = 0; i < 10; i++) {
+            for(int i = 0; i < 1; i++) {
                 System.out.println("3 " + i);
             }
         };
 
         Task task4 = () -> {
-            for(int i = 0; i < 10; i++) {
+            for(int i = 0; i < 1; i++) {
                 System.out.println("4 " + i);
             }
         };
 
         Task task5 = () -> {
-            for(int i = 0; i < 10; i++) {
+            for(int i = 0; i < 1; i++) {
                 System.out.println("5 " + i);
             }
         };
@@ -82,13 +47,11 @@ public class Test {
         graph.link(task5, task3);
         graph.link(task2, task4);
 
-        graph.condition(task1, () -> false);
-        graph.condition(task4, () -> false);
+        graph.condition(task1, () -> true);
+        graph.condition(task4, () -> true);
 
         TaskExecutor executor = new TaskExecutor();
-        TaskGraphResolver resolver = new TaskGraphResolver(graph);
-        executor.executeWait(resolver.resolve());
-        executor.stop();
-        */
+        TaskQueue resolver = new TaskQueue(graph);
+        executor.execute(resolver.resolve());
     }
 }

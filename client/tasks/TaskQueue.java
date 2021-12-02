@@ -3,10 +3,10 @@ package client.tasks;
 import java.util.ArrayDeque;
 import java.util.Deque;
 
-public class TaskGraphResolver {
+public class TaskQueue {
     private final TaskGraph graph;
 
-    public TaskGraphResolver(TaskGraph graph) {
+    public TaskQueue(TaskGraph graph) {
         this.graph = graph;
     }
 
@@ -37,7 +37,7 @@ public class TaskGraphResolver {
             return false;
         }
 
-        queue.addLast(node);
+        queue.addFirst(node);
         return true;
     }
 }
