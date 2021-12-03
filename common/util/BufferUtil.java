@@ -4,6 +4,10 @@ import org.lwjgl.PointerBuffer;
 import org.lwjgl.system.MemoryUtil;
 
 public final class BufferUtil {
+    /**
+     * Prints an PointerBuffer with a char*
+     * @param pBuffer PointerBuffer with a char*
+     */
     public static void printString(PointerBuffer pBuffer) {
         int oldPosition = pBuffer.position();
         pBuffer.position(0);
