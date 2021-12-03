@@ -1,29 +1,29 @@
 package client.tasks;
 
-import java.util.ArrayDeque;
-import java.util.Deque;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 
 public class TaskQueue {
     private final TaskGraph graph;
+    private final BlockingQueue<Node> queue;
 
     public TaskQueue(TaskGraph graph) {
         this.graph = graph;
+        this.queue = new LinkedBlockingQueue<>();
     }
 
-    public Deque<Node> resolve() {
-        Deque<Node> queue = new ArrayDeque<>(graph.getStandaloneNodes().size());
+    public void resolve() {
+        queue.clear();
 
         for (Node node : graph.getStandaloneNodes()) {
-            addNode(node, queue);
+            addNode(node);
         }
-
-        return queue;
     }
 
-    private boolean addNode(Node node, Deque<Node> queue) {
+    private boolean addNode(Node node) {
         boolean allPredecessors = true;
         for (Node predecessor : node.getPredecessors()) {
-            if (!addNode(predecessor, queue)) {
+            if (!addNode(predecessor)) {
                 allPredecessors = false;
                 break;
             }
@@ -37,7 +37,12 @@ public class TaskQueue {
             return false;
         }
 
-        queue.addFirst(node);
+        node.setFinished(false);
+        queue.add(node);
         return true;
+    }
+
+    public BlockingQueue<Node> getQueue() {
+        return queue;
     }
 }

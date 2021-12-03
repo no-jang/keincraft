@@ -60,7 +60,7 @@ public class Node {
         return finished;
     }
 
-    void finish() {
-        finished = true;
+    void setFinished(boolean finished) {
+        this.finished = finished;
     }
 }

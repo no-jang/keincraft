@@ -50,8 +50,10 @@ public class Test {
         graph.condition(task1, () -> true);
         graph.condition(task4, () -> true);
 
-        TaskExecutor executor = new TaskExecutor();
-        TaskQueue resolver = new TaskQueue(graph);
-        executor.execute(resolver.resolve());
+        TaskQueue queue = new TaskQueue(graph);
+        TaskExecutor executor = new TaskExecutor(queue);
+        executor.start();
+        executor.execute();
+        executor.stop();
     }
 }
