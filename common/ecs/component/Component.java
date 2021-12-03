@@ -1,4 +1,4 @@
-package client.ecs.component;
+package common.ecs.component;
 
 public interface Component {
 }

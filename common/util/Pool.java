@@ -1,4 +1,4 @@
-package client.util;
+package common.util;
 
 import java.util.ArrayDeque;
 import java.util.Deque;

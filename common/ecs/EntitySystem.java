@@ -1,4 +1,4 @@
-package client.ecs;
+package common.ecs;
 
 public class EntitySystem {
     public void addedToEngine(Engine engine) {

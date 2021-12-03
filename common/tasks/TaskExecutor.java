@@ -1,4 +1,4 @@
-package client.tasks;
+package common.tasks;
 
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.locks.Condition;

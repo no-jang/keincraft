@@ -1,6 +1,6 @@
-package client.ecs.component;
+package common.ecs.component;
 
-import client.util.Bits;
+import common.util.Bits;
 
 import java.util.HashMap;
 import java.util.Map;

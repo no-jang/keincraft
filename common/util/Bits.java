@@ -1,4 +1,4 @@
-package client.util;
+package common.util;
 
 // Copied from https://github.com/libgdx/libgdx/blob/master/gdx/src/com/badlogic/gdx/utils/Bits.java
 

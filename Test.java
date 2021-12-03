@@ -1,7 +1,7 @@
-import client.tasks.Task;
-import client.tasks.TaskExecutor;
-import client.tasks.TaskGraph;
-import client.tasks.TaskQueue;
+import common.tasks.Task;
+import common.tasks.TaskExecutor;
+import common.tasks.TaskGraph;
+import common.tasks.TaskQueue;
 
 public class Test {
     public static void main(String[] args) throws InterruptedException {

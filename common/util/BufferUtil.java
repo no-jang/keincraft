@@ -1,4 +1,4 @@
-package client.util;
+package common.util;
 
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.system.MemoryUtil;

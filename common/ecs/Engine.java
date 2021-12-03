@@ -1,4 +1,4 @@
-package client.ecs;
+package common.ecs;
 
 import java.util.ArrayList;
 import java.util.HashMap;
