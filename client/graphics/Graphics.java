@@ -5,11 +5,14 @@ import client.graphics.vk.device.Instance;
 import client.graphics.vk.device.PhysicalDevice;
 import client.graphics.vk.device.Surface;
 import client.graphics.vk.image.ImageView;
+import client.graphics.vk.pipeline.Pipeline;
+import client.graphics.vk.pipeline.Shader;
 import client.graphics.vk.renderpass.Framebuffer;
 import client.graphics.vk.renderpass.Renderpass;
 import client.graphics.vk.renderpass.Swapchain;
 import org.lwjgl.system.MemoryStack;
 
+import java.nio.file.Path;
 import java.util.List;
 
 /**
@@ -25,6 +28,7 @@ public class Graphics {
     private final Swapchain swapchain;
     private final Renderpass renderpass;
     private final List<Framebuffer> framebuffers;
+    private final Pipeline pipeline;
 
     /**
      * Creates new graphics module for window
@@ -43,6 +47,17 @@ public class Graphics {
             swapchain = new Swapchain(stack, device, surface, window, null);
             renderpass = new Renderpass(stack, device, swapchain);
             framebuffers = swapchain.getFramebuffers(stack, device, renderpass);
+
+            Shader[] shaders = new Shader[] {
+                    new Shader(stack, device, Path.of("shaders/base.vert.spv")),
+                    new Shader(stack, device, Path.of("shaders/base.frag.spv"))
+            };
+
+            pipeline = new Pipeline(stack, device, swapchain, renderpass, shaders);
+
+            for(Shader shader : shaders) {
+                shader.destroy(device);
+            }
         }
     }
 
@@ -64,6 +79,8 @@ public class Graphics {
      * Destroys every graphics component
      */
     public void destroy() {
+        pipeline.destroy(device);
+
         for(Framebuffer framebuffer : framebuffers) {
             framebuffer.getImageView().destroy(device);
             framebuffer.destroy(device);
