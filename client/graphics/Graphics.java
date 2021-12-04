@@ -4,6 +4,7 @@ import client.graphics.vk.device.Device;
 import client.graphics.vk.device.Instance;
 import client.graphics.vk.device.PhysicalDevice;
 import client.graphics.vk.device.Surface;
+import client.graphics.vk.renderpass.Renderpass;
 import client.graphics.vk.renderpass.Swapchain;
 import org.lwjgl.system.MemoryStack;
 
@@ -18,6 +19,7 @@ public class Graphics {
     private final Surface surface;
     private final Device device;
     private final Swapchain swapchain;
+    private final Renderpass renderpass;
 
     /**
      * Creates new graphics module for window
@@ -34,6 +36,7 @@ public class Graphics {
             surface = new Surface(stack, instance, physicalDevice, window);
             device = new Device(stack, physicalDevice, surface);
             swapchain = new Swapchain(stack, device, surface, window, null);
+            renderpass = new Renderpass(stack, device, swapchain);
         }
     }
 
@@ -55,6 +58,7 @@ public class Graphics {
      * Destroys every graphics component
      */
     public void destroy() {
+        renderpass.destroy(device);
         swapchain.destroy(device);
         device.destroy();
         surface.destroy(instance);

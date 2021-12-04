@@ -1,7 +1,6 @@
 package client.graphics.vk.image;
 
 import client.graphics.vk.device.Device;
-import client.graphics.vk.device.Surface;
 import client.graphics2.vk.util.Check;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.VK10;
@@ -14,23 +13,25 @@ import java.nio.LongBuffer;
  */
 public class ImageView {
     private final long handle;
+    private final Image image;
 
     /**
      * Creates new image view for corresponding image
      *
      * @param stack   memory stack
      * @param device  device
-     * @param surface surface
      * @param image   corresponding image
      */
-    public ImageView(MemoryStack stack, Device device, Surface surface, Image image) {
+    public ImageView(MemoryStack stack, Device device, Image image) {
+        this.image = image;
+
         VkImageViewCreateInfo createInfo = VkImageViewCreateInfo.malloc(stack)
                 .sType$Default()
                 .flags(0)
                 .pNext(0)
                 .image(image.getHandle())
                 .viewType(VK10.VK_IMAGE_TYPE_2D)
-                .format(surface.getFormat().format());
+                .format(image.getFormat());
 
         createInfo.components().r(VK10.VK_COMPONENT_SWIZZLE_IDENTITY);
         createInfo.components().g(VK10.VK_COMPONENT_SWIZZLE_IDENTITY);
@@ -64,5 +65,14 @@ public class ImageView {
      */
     public long getHandle() {
         return handle;
+    }
+
+    /**
+     * Gets the image this view is referencing to
+     *
+     * @return image of the view
+     */
+    public Image getImage() {
+        return image;
     }
 }

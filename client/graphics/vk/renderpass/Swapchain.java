@@ -29,6 +29,7 @@ import java.util.Map;
  */
 public class Swapchain {
     private final long handle;
+    private final int format;
     private final int imageCount;
     private final VkExtent2D extent;
 
@@ -49,6 +50,7 @@ public class Swapchain {
         int presentMode = surface.getPresentMode();
 
         extent = chooseExtent(stack, window, capabilities);
+        format = surface.getFormat().format();
 
         if (capabilities.maxImageCount() > 0 && capabilities.minImageCount() + 1 > capabilities.maxImageCount()) {
             imageCount = capabilities.maxImageCount();
@@ -62,7 +64,7 @@ public class Swapchain {
                 .pNext(0)
                 .surface(surface.getHandle())
                 .minImageCount(imageCount)
-                .imageFormat(surface.getFormat().format())
+                .imageFormat(format)
                 .imageColorSpace(surface.getFormat().colorSpace())
                 .imageExtent(extent)
                 .imageArrayLayers(1)
@@ -130,7 +132,8 @@ public class Swapchain {
      *
      * @param stack  memory stack
      * @param device vulkan device
-     * @param frame  current frame
+     * @param imageAvailableSemaphore semaphore for waiting for an available image
+     * @param imageFence fence to wait for an image
      */
     public int acquireNextImage(MemoryStack stack, Device device, Semaphore imageAvailableSemaphore, Fence imageFence) {
         // Acquire next image
@@ -167,7 +170,7 @@ public class Swapchain {
 
         List<ImageView> images = new ArrayList<>(imageCount);
         for (int i = 0; i < imageCount; i++) {
-            ImageView image = new ImageView(stack, device, surface, new Image(pImages.get(i)));
+            ImageView image = new ImageView(stack, device, new Image(pImages.get(i), format));
             images.add(image);
         }
 
@@ -199,5 +202,14 @@ public class Swapchain {
      */
     public VkExtent2D getExtent() {
         return extent;
+    }
+
+    /**
+     * Gets swapchain image format
+     *
+     * @return swapchain format
+     */
+    public int getFormat() {
+        return format;
     }
 }

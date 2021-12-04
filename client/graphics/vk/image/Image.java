@@ -1,18 +1,21 @@
 package client.graphics.vk.image;
 
 /**
- * Represent one image. This is currently only a simple wrapper
+ * Represent an image
  */
 public class Image {
     private final long handle;
+    private final int format;
 
     /**
-     * Creates new image wrapper object with internal vulkan handle
+     * Creates new image wrapper from existing vulkan image
      *
-     * @param handle internal vulkan handle
+     * @param handle internal vulkan image handle
+     * @param format image format
      */
-    public Image(long handle) {
+    public Image(long handle, int format) {
         this.handle = handle;
+        this.format = format;
     }
 
     /**
@@ -22,5 +25,14 @@ public class Image {
      */
     public long getHandle() {
         return handle;
+    }
+
+    /**
+     * Gets format of the image
+     *
+     * @return image format
+     */
+    public int getFormat() {
+        return format;
     }
 }
