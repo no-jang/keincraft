@@ -1,10 +1,11 @@
 package client.graphics;
 
+import client.graphics.vk.cmd.CommandBuffer;
+import client.graphics.vk.cmd.CommandPool;
 import client.graphics.vk.device.Device;
 import client.graphics.vk.device.Instance;
 import client.graphics.vk.device.PhysicalDevice;
 import client.graphics.vk.device.Surface;
-import client.graphics.vk.image.ImageView;
 import client.graphics.vk.pipeline.Pipeline;
 import client.graphics.vk.pipeline.Shader;
 import client.graphics.vk.renderpass.Framebuffer;
@@ -29,6 +30,8 @@ public class Graphics {
     private final Renderpass renderpass;
     private final List<Framebuffer> framebuffers;
     private final Pipeline pipeline;
+    private final CommandPool commandPool;
+    private final List<CommandBuffer> commandBuffers;
 
     /**
      * Creates new graphics module for window
@@ -58,6 +61,19 @@ public class Graphics {
             for(Shader shader : shaders) {
                 shader.destroy(device);
             }
+
+            commandPool = new CommandPool(stack, device);
+            commandBuffers = commandPool.requestBuffers(stack, device, swapchain.getImageCount());
+
+            for(int i = 0; i < swapchain.getImageCount(); i++) {
+                CommandBuffer buffer = commandBuffers.get(i);
+                buffer.begin(stack);
+                buffer.beginRenderpass(stack, swapchain, renderpass, framebuffers.get(i));
+                buffer.bindPipeline(pipeline);
+                buffer.draw(3, 1, 0, 0);
+                buffer.endRenderpass();
+                buffer.end();
+            }
         }
     }
 
@@ -79,6 +95,7 @@ public class Graphics {
      * Destroys every graphics component
      */
     public void destroy() {
+        commandPool.destroy(device);
         pipeline.destroy(device);
 
         for(Framebuffer framebuffer : framebuffers) {
