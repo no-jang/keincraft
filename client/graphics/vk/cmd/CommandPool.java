@@ -31,7 +31,7 @@ public class CommandPool {
     }
 
     public List<CommandBuffer> requestBuffers(MemoryStack stack, Device device, int count) {
-        if(count > buffers.size()) {
+        if (count > buffers.size()) {
             int requestBufferCount = count - buffers.size();
             VkCommandBufferAllocateInfo allocateInfo = VkCommandBufferAllocateInfo.malloc(stack)
                     .sType$Default()
@@ -43,13 +43,13 @@ public class CommandPool {
             PointerBuffer pBuffers = stack.mallocPointer(requestBufferCount);
             Check.vkCheck(VK10.vkAllocateCommandBuffers(device.getHandle(), allocateInfo, pBuffers), "Failed to allocate command buffers");
 
-            for(int i = 0; i < requestBufferCount; i++) {
+            for (int i = 0; i < requestBufferCount; i++) {
                 CommandBuffer buffer = new CommandBuffer(device, pBuffers.get(i));
                 buffers.add(buffer);
             }
         }
 
-        if(count < buffers.size()) {
+        if (count < buffers.size()) {
             return buffers.subList(0, count);
         }
 

@@ -1,59 +1,42 @@
+import client.graphics.vk.instance.VulkanInstance;
+import client.graphics.vk.instance.models.ApplicationInfo;
+import client.graphics.vk.instance.models.DebugInfo;
+import client.graphics.vk.instance.models.InstanceInfo;
+import client.graphics.vk.instance.models.MessageSeverity;
+import client.graphics.vk.instance.models.Version;
 import common.tasks.Task;
 import common.tasks.TaskExecutor;
 import common.tasks.TaskGraph;
 import common.tasks.TaskQueue;
+import org.lwjgl.vulkan.EXTDebugReport;
+import org.lwjgl.vulkan.KHRSwapchain;
+import org.lwjgl.vulkan.VK;
+
+import java.util.Arrays;
 
 public class Test {
     public static void main(String[] args) throws InterruptedException {
-        TaskGraph graph = new TaskGraph();
-        Task task1 = () -> {
-            for(int i = 0; i < 1; i++) {
-                System.out.println("1 " + i);
-            }
-        };
+        ApplicationInfo applicationInfo = new ApplicationInfo(
+                "test",
+                "engine",
+                new Version(1, 0, 0),
+                new Version(1, 0, 0),
+                new Version(1, 0, 0)
+        );
 
-        Task task2 = () -> {
-            for(int i = 0; i < 1; i++) {
-                System.out.println("2 " + i);
-            }
-        };
+        InstanceInfo instanceInfo = new InstanceInfo();
+        instanceInfo.requiredExtension(EXTDebugReport.VK_EXT_DEBUG_REPORT_EXTENSION_NAME);
+        instanceInfo.requiredLayer("VK_LAYER_KHRONOS_validation");
 
-        Task task3 = () -> {
-            for(int i = 0; i < 1; i++) {
-                System.out.println("3 " + i);
-            }
-        };
+        DebugInfo debugInfo = new DebugInfo(Arrays.asList(
+                MessageSeverity.ERROR,
+                MessageSeverity.WARNING,
+                MessageSeverity.PERFORMANCE_WARNING,
+                MessageSeverity.INFO,
+                MessageSeverity.VERBOSE
+        ));
 
-        Task task4 = () -> {
-            for(int i = 0; i < 1; i++) {
-                System.out.println("4 " + i);
-            }
-        };
-
-        Task task5 = () -> {
-            for(int i = 0; i < 1; i++) {
-                System.out.println("5 " + i);
-            }
-        };
-
-        graph.task("1", task1);
-        graph.task("2", task2);
-        graph.task("3", task3);
-        graph.task("4", task4);
-        graph.task("5", task5);
-
-        // 4, 2, 3, 5
-        graph.link(task5, task2);
-        graph.link(task5, task3);
-        graph.link(task2, task4);
-
-        graph.condition(task1, () -> true);
-        graph.condition(task4, () -> true);
-
-        TaskQueue queue = new TaskQueue(graph);
-        TaskExecutor executor = new TaskExecutor(queue);
-        executor.start();
-        executor.execute();
-        executor.stop();
+        VulkanInstance instance = new VulkanInstance(applicationInfo, instanceInfo, debugInfo);
+        instance.destroy();
     }
 }

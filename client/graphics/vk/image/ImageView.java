@@ -18,9 +18,9 @@ public class ImageView {
     /**
      * Creates new image view for corresponding image
      *
-     * @param stack   memory stack
-     * @param device  device
-     * @param image   corresponding image
+     * @param stack  memory stack
+     * @param device device
+     * @param image  corresponding image
      */
     public ImageView(MemoryStack stack, Device device, Image image) {
         this.image = image;

@@ -4,7 +4,6 @@ import client.graphics.vk.device.Device;
 import client.graphics.vk.util.Check;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.VK10;
-import org.lwjgl.vulkan.VkPipelineShaderStageCreateInfo;
 import org.lwjgl.vulkan.VkShaderModuleCreateInfo;
 
 import java.io.IOException;
@@ -37,18 +36,6 @@ public class Shader {
         stage = getShaderStage(file);
     }
 
-    public void destroy(Device device) {
-        VK10.vkDestroyShaderModule(device.getHandle(), handle, null);
-    }
-
-    public long getHandle() {
-        return handle;
-    }
-
-    public int getStage() {
-        return stage;
-    }
-
     private static int getShaderStage(Path path) {
         String fileName = path.getFileName()
                 .toString()
@@ -63,5 +50,17 @@ public class Shader {
             default:
                 throw new RuntimeException("Unknown shader stage " + fileExtension + " for " + path);
         }
+    }
+
+    public void destroy(Device device) {
+        VK10.vkDestroyShaderModule(device.getHandle(), handle, null);
+    }
+
+    public long getHandle() {
+        return handle;
+    }
+
+    public int getStage() {
+        return stage;
     }
 }

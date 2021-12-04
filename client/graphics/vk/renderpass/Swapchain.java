@@ -130,10 +130,10 @@ public class Swapchain {
     /**
      * Acquires the next image for rendering from swapchain. Waits until the next image has acquired
      *
-     * @param stack  memory stack
-     * @param device vulkan device
+     * @param stack                   memory stack
+     * @param device                  vulkan device
      * @param imageAvailableSemaphore semaphore for waiting for an available image
-     * @param imageFence fence to wait for an image
+     * @param imageFence              fence to wait for an image
      */
     public int acquireNextImage(MemoryStack stack, Device device, Semaphore imageAvailableSemaphore, Fence imageFence) {
         // Acquire next image
@@ -155,8 +155,8 @@ public class Swapchain {
     /**
      * Gathers all swapchain images as image view list
      *
-     * @param stack   memory stack
-     * @param device  device
+     * @param stack  memory stack
+     * @param device device
      * @return swapchain images as image view list
      */
     public List<Framebuffer> getFramebuffers(MemoryStack stack, Device device, Renderpass renderpass) {

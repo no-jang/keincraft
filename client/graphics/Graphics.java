@@ -51,21 +51,21 @@ public class Graphics {
             renderpass = new Renderpass(stack, device, swapchain);
             framebuffers = swapchain.getFramebuffers(stack, device, renderpass);
 
-            Shader[] shaders = new Shader[] {
+            Shader[] shaders = new Shader[]{
                     new Shader(stack, device, Path.of("shaders/base.vert.spv")),
                     new Shader(stack, device, Path.of("shaders/base.frag.spv"))
             };
 
             pipeline = new Pipeline(stack, device, swapchain, renderpass, shaders);
 
-            for(Shader shader : shaders) {
+            for (Shader shader : shaders) {
                 shader.destroy(device);
             }
 
             commandPool = new CommandPool(stack, device);
             commandBuffers = commandPool.requestBuffers(stack, device, swapchain.getImageCount());
 
-            for(int i = 0; i < swapchain.getImageCount(); i++) {
+            for (int i = 0; i < swapchain.getImageCount(); i++) {
                 CommandBuffer buffer = commandBuffers.get(i);
                 buffer.begin(stack);
                 buffer.beginRenderpass(stack, swapchain, renderpass, framebuffers.get(i));
@@ -98,7 +98,7 @@ public class Graphics {
         commandPool.destroy(device);
         pipeline.destroy(device);
 
-        for(Framebuffer framebuffer : framebuffers) {
+        for (Framebuffer framebuffer : framebuffers) {
             framebuffer.getImageView().destroy(device);
             framebuffer.destroy(device);
         }
