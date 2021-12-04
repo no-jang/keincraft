@@ -157,10 +157,9 @@ public class Swapchain {
      *
      * @param stack   memory stack
      * @param device  device
-     * @param surface surface
      * @return swapchain images as image view list
      */
-    public List<ImageView> gatherImages(MemoryStack stack, Device device, Surface surface) {
+    public List<Framebuffer> getFramebuffers(MemoryStack stack, Device device, Renderpass renderpass) {
         IntBuffer pImageCount = stack.mallocInt(1);
         Check.vkCheck(KHRSwapchain.vkGetSwapchainImagesKHR(device.getHandle(), handle, pImageCount, null), "Failed to get swapchain image count");
         int imageCount = pImageCount.get(0);
@@ -168,13 +167,15 @@ public class Swapchain {
         LongBuffer pImages = stack.mallocLong(imageCount);
         Check.vkCheck(KHRSwapchain.vkGetSwapchainImagesKHR(device.getHandle(), handle, pImageCount, pImages), "Failed to get swapchain images");
 
-        List<ImageView> images = new ArrayList<>(imageCount);
+        List<Framebuffer> framebuffers = new ArrayList<>(imageCount);
         for (int i = 0; i < imageCount; i++) {
-            ImageView image = new ImageView(stack, device, new Image(pImages.get(i), format));
-            images.add(image);
+            Image image = new Image(pImages.get(i), format);
+            ImageView imageView = new ImageView(stack, device, image);
+            Framebuffer framebuffer = new Framebuffer(stack, device, this, renderpass, imageView);
+            framebuffers.add(framebuffer);
         }
 
-        return images;
+        return framebuffers;
     }
 
     /**

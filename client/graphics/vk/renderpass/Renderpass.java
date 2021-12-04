@@ -69,4 +69,8 @@ public class Renderpass {
     public void destroy(Device device) {
         VK10.vkDestroyRenderPass(device.getHandle(), handle, null);
     }
+
+    public long getHandle() {
+        return handle;
+    }
 }
