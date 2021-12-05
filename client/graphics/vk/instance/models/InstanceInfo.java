@@ -4,14 +4,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class InstanceInfo {
-    private final List<String> requiredExtensions;
-    private final List<String> optionalExtensions;
-    private final List<String> enabledExtensions;
-    private final List<String> requiredLayers;
-    private final List<String> optionalLayers;
-    private final List<String> enabledLayers;
+    private final List<InstanceExtension> requiredExtensions;
+    private final List<InstanceExtension> optionalExtensions;
+    private final List<InstanceExtension> enabledExtensions;
+    private final List<InstanceLayer> requiredLayers;
+    private final List<InstanceLayer> optionalLayers;
+    private final List<InstanceLayer> enabledLayers;
 
-    public InstanceInfo(List<String> requiredExtensions, List<String> optionalExtensions, List<String> requiredLayers, List<String> optionalLayers) {
+    public InstanceInfo(List<InstanceExtension> requiredExtensions, List<InstanceExtension> optionalExtensions, List<InstanceLayer> requiredLayers, List<InstanceLayer> optionalLayers) {
         this.requiredExtensions = requiredExtensions;
         this.optionalExtensions = optionalExtensions;
         this.requiredLayers = requiredLayers;
@@ -21,7 +21,7 @@ public class InstanceInfo {
         this.enabledLayers = new ArrayList<>();
     }
 
-    public InstanceInfo(List<String> requiredExtensions, List<String> requiredLayers) {
+    public InstanceInfo(List<InstanceExtension> requiredExtensions, List<InstanceLayer> requiredLayers) {
         this(requiredExtensions, new ArrayList<>(), requiredLayers, new ArrayList<>());
     }
 
@@ -29,43 +29,43 @@ public class InstanceInfo {
         this(new ArrayList<>(), new ArrayList<>());
     }
 
-    public void requiredExtension(String extension) {
+    public void requiredExtension(InstanceExtension extension) {
         requiredExtensions.add(extension);
     }
 
-    public void optionalExtension(String extension) {
+    public void optionalExtension(InstanceExtension extension) {
         optionalExtensions.add(extension);
     }
 
-    public void requiredLayer(String layer) {
+    public void requiredLayer(InstanceLayer layer) {
         requiredLayers.add(layer);
     }
 
-    public void optionalLayer(String layer) {
+    public void optionalLayer(InstanceLayer layer) {
         optionalLayers.add(layer);
     }
 
-    public List<String> getRequiredExtensions() {
+    public List<InstanceExtension> getRequiredExtensions() {
         return requiredExtensions;
     }
 
-    public List<String> getOptionalExtensions() {
+    public List<InstanceExtension> getOptionalExtensions() {
         return optionalExtensions;
     }
 
-    public List<String> getEnabledExtensions() {
+    public List<InstanceExtension> getEnabledExtensions() {
         return enabledExtensions;
     }
 
-    public List<String> getRequiredLayers() {
+    public List<InstanceLayer> getRequiredLayers() {
         return requiredLayers;
     }
 
-    public List<String> getOptionalLayers() {
+    public List<InstanceLayer> getOptionalLayers() {
         return optionalLayers;
     }
 
-    public List<String> getEnabledLayers() {
+    public List<InstanceLayer> getEnabledLayers() {
         return enabledLayers;
     }
 }

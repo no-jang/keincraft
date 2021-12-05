@@ -1,274 +1,149 @@
 package client.graphics.vk.device;
 
-import client.graphics.vk.util.Check;
-import org.lwjgl.PointerBuffer;
+import client.graphics.vk.device.models.DeviceExtension;
+import client.graphics.vk.device.models.DeviceFeature;
+import client.graphics.vk.device.models.format.FormatProperties;
+import client.graphics.vk.device.models.memory.MemoryHeap;
+import client.graphics.vk.device.models.memory.MemoryType;
+import client.graphics.vk.device.models.properties.DeviceLimits;
+import client.graphics.vk.device.models.properties.DeviceProperties;
+import client.graphics.vk.device.models.properties.DeviceSpareProperties;
+import client.graphics.vk.image.models.Format;
+import client.graphics.vk.memory.MemoryContext;
+import client.graphics.vk.models.function.EnumerateFunction;
+import client.graphics.vk.models.pointers.ReferencePointer;
 import org.lwjgl.system.MemoryStack;
-import org.lwjgl.vulkan.KHRSwapchain;
 import org.lwjgl.vulkan.VK10;
 import org.lwjgl.vulkan.VkExtensionProperties;
+import org.lwjgl.vulkan.VkFormatProperties;
+import org.lwjgl.vulkan.VkMemoryHeap;
+import org.lwjgl.vulkan.VkMemoryType;
 import org.lwjgl.vulkan.VkPhysicalDevice;
 import org.lwjgl.vulkan.VkPhysicalDeviceFeatures;
 import org.lwjgl.vulkan.VkPhysicalDeviceMemoryProperties;
 import org.lwjgl.vulkan.VkPhysicalDeviceProperties;
 import org.tinylog.Logger;
 
-import java.nio.IntBuffer;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
-import java.util.SortedMap;
-import java.util.TreeMap;
+import java.util.Map;
 
-/**
- * Physical graphics device that supports vulkan
- *
- * @see VkPhysicalDevice
- */
-public class PhysicalDevice {
-    private static final String[] REQUIRED_EXTENSIONS = new String[]{
-            KHRSwapchain.VK_KHR_SWAPCHAIN_EXTENSION_NAME
-    };
-
+public class PhysicalDevice extends ReferencePointer<VkPhysicalDevice> {
     private final VkPhysicalDevice handle;
-    private final VkPhysicalDeviceProperties properties;
-    private final VkPhysicalDeviceMemoryProperties memoryProperties;
-    private final VkPhysicalDeviceFeatures availableFeatures;
-    private final List<String> availableExtensions;
+    private final DeviceProperties properties;
+    private final DeviceLimits limits;
+    private final List<DeviceSpareProperties> spareProperties;
+    private final List<DeviceFeature> features;
+    private final List<DeviceExtension> extensions;
+    private final List<MemoryType> memoryTypes;
+    private final Map<Format, FormatProperties> formatProperties;
 
-    private final VkPhysicalDeviceFeatures enabledFeatures;
-    private final List<String> enabledExtensions;
+    public PhysicalDevice(VkPhysicalDevice handle) {
+        this.handle = handle;
 
-    /**
-     * Creates new wrapper, fetch device properties and extensions.
-     * {@link #getBestPhysicalDevice(MemoryStack, Instance)} should be used to get the best suitable physical device
-     *
-     * @param stack          memory stack
-     * @param instance       vulkan instance
-     * @param internalHandle internal handle of VkPhysicalDevice enumerated by vkEnumeratePhysicalDevices
-     */
-    public PhysicalDevice(MemoryStack stack, Instance instance, long internalHandle) {
-        handle = new VkPhysicalDevice(internalHandle, instance.getHandle());
+        MemoryStack stack = MemoryContext.getStack();
 
-        // Gather device properties
-        properties = VkPhysicalDeviceProperties.malloc(stack);
-        memoryProperties = VkPhysicalDeviceMemoryProperties.malloc(stack);
-        VK10.vkGetPhysicalDeviceProperties(handle, properties);
+        VkPhysicalDeviceProperties vkProperties = VkPhysicalDeviceProperties.malloc(stack);
+        VK10.vkGetPhysicalDeviceProperties(handle, vkProperties);
+        properties = new DeviceProperties(vkProperties);
+
+        limits = new DeviceLimits(vkProperties.limits());
+        spareProperties = DeviceSpareProperties.fromVulkanSpareProperties(vkProperties.sparseProperties());
+
+        VkPhysicalDeviceFeatures vkFeatures = VkPhysicalDeviceFeatures.malloc(stack);
+        VK10.vkGetPhysicalDeviceFeatures(handle, vkFeatures);
+        features = DeviceFeature.fromVulkanFeatures(vkFeatures);
+
+        VkExtensionProperties.Buffer extensionProperties = EnumerateFunction.execute(stack.mallocInt(1),
+                (pCount, pBuffer) -> VK10.vkEnumerateDeviceExtensionProperties(handle, (String) null, pCount, pBuffer),
+                count -> VkExtensionProperties.malloc(count, stack));
+        extensions = DeviceExtension.fromVulkanExtensions(extensionProperties);
+
+        VkPhysicalDeviceMemoryProperties memoryProperties = VkPhysicalDeviceMemoryProperties.malloc(stack);
         VK10.vkGetPhysicalDeviceMemoryProperties(handle, memoryProperties);
 
-        // Gather device features
-        availableFeatures = VkPhysicalDeviceFeatures.malloc(stack);
-        VK10.vkGetPhysicalDeviceFeatures(handle, availableFeatures);
-
-        enabledFeatures = VkPhysicalDeviceFeatures.calloc(stack);
-
-        // Gather extensions
-        IntBuffer pExtensionCount = stack.mallocInt(1);
-        Check.vkCheck(VK10.vkEnumerateDeviceExtensionProperties(handle, (String) null, pExtensionCount, null), "Failed to get device extension count");
-        int extensionCount = pExtensionCount.get(0);
-
-        VkExtensionProperties.Buffer pExtensions = VkExtensionProperties.malloc(extensionCount, stack);
-        Check.vkCheck(VK10.vkEnumerateDeviceExtensionProperties(handle, (String) null, pExtensionCount, pExtensions), "Failed to get device extensions");
-
-        availableExtensions = new ArrayList<>(extensionCount);
-        for (int i = 0; i < extensionCount; i++) {
-            availableExtensions.add(pExtensions.get(i).extensionNameString());
+        int heapCount = memoryProperties.memoryHeapCount();
+        VkMemoryHeap.Buffer pHeaps = memoryProperties.memoryHeaps();
+        List<MemoryHeap> heaps = new ArrayList<>(heapCount);
+        for (int i = 0; i < heapCount; i++) {
+            heaps.add(new MemoryHeap(pHeaps.get(i)));
         }
 
-        enabledExtensions = new ArrayList<>(extensionCount);
-
-        // Log device details
-        if (Logger.isDebugEnabled()) {
-            Logger.debug("Found physical device type: {} vendor: {} api: {}", getDeviceType(properties), getVendor(properties), getApiVersion(properties));
-            Logger.debug("Found {} device extensions", extensionCount);
-
-            if (Logger.isTraceEnabled()) {
-                StringBuilder builder = new StringBuilder();
-                for (String extension : availableExtensions) {
-                    builder.append(extension);
-                    builder.append(System.lineSeparator());
-                }
-                Logger.trace(builder.toString());
-            }
+        int typeCount = memoryProperties.memoryTypeCount();
+        VkMemoryType.Buffer pTypes = memoryProperties.memoryTypes();
+        memoryTypes = new ArrayList<>(typeCount);
+        for (int i = 0; i < typeCount; i++) {
+            VkMemoryType vkMemoryType = pTypes.get(i);
+            memoryTypes.add(new MemoryType(vkMemoryType, heaps.get(vkMemoryType.heapIndex())));
         }
+
+        formatProperties = new HashMap<>();
     }
 
-    /**
-     * Gathers all physical devices with properties
-     *
-     * @param stack    memory stack
-     * @param instance instance
-     * @return list of all physical devices
-     */
-    public static List<PhysicalDevice> getPhysicalDevices(MemoryStack stack, Instance instance) {
-        // Get available physical devices
-        IntBuffer pDeviceCount = stack.mallocInt(1);
-        Check.vkCheck(VK10.vkEnumeratePhysicalDevices(instance.getHandle(), pDeviceCount, null), "Failed to get physical device count");
-        int deviceCount = pDeviceCount.get(0);
-
-        PointerBuffer pDevices = stack.mallocPointer(deviceCount);
-        Check.vkCheck(VK10.vkEnumeratePhysicalDevices(instance.getHandle(), pDeviceCount, pDevices), "Failed to get physical devices");
-
-        // Create physical device wrappers and gather device properties
-        List<PhysicalDevice> devices = new ArrayList<>(deviceCount);
-        for (int i = 0; i < deviceCount; i++) {
-            devices.add(new PhysicalDevice(stack, instance, pDevices.get(i)));
+    public FormatProperties getFormatProperties(Format format) {
+        FormatProperties properties = formatProperties.get(format);
+        if (properties == null) {
+            MemoryStack stack = MemoryContext.getStack();
+            VkFormatProperties vkFormatProperties = VkFormatProperties.malloc(stack);
+            VK10.vkGetPhysicalDeviceFormatProperties(handle, format.getValue(), vkFormatProperties);
+            properties = new FormatProperties(vkFormatProperties);
+            formatProperties.put(format, properties);
         }
 
-        return devices;
-    }
-
-    /**
-     * Gathers all physical devices and rates them. The device with the best score gets returned and is considered the most suitable device.
-     * Devices with a score of -1 do not meet the requirements of features or extensions
-     *
-     * @param stack    memory stack
-     * @param instance vulkan instance
-     * @return most suitable device
-     */
-    public static PhysicalDevice getBestPhysicalDevice(MemoryStack stack, Instance instance) {
-        List<PhysicalDevice> physicalDevices = getPhysicalDevices(stack, instance);
-        SortedMap<Integer, PhysicalDevice> ratedPhysicalDevices = new TreeMap<>();
-
-        // Rate all found physical devices
-        for (PhysicalDevice physicalDevice : physicalDevices) {
-            ratedPhysicalDevices.put(ratePhysicalDevice(physicalDevice), physicalDevice);
-        }
-
-        // If all score are lower than 0, no device was found with all required properties
-        int firstKey = ratedPhysicalDevices.firstKey();
-        if (firstKey < 0) {
-            throw new RuntimeException("Failed to find a suitable and vulkan capable graphic device");
-        }
-
-        return ratedPhysicalDevices.get(firstKey);
-    }
-
-    /**
-     * Rates a physical device. -1 means the device is for this application unsuited
-     *
-     * @param device vulkan device
-     * @return score of the device
-     */
-    private static int ratePhysicalDevice(PhysicalDevice device) {
-        int score = 0;
-
-        // Dedicated gpus have usually a much higher performance
-        if (device.properties.deviceType() == VK10.VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU) {
-            score += 1000;
-        }
-
-        // Check if all required extensions are available
-        for (String requiredExtension : REQUIRED_EXTENSIONS) {
-            if (!device.getAvailableExtensions().contains(requiredExtension)) {
-                Logger.debug("Failed to find required extension {} for device", requiredExtension);
-                return -1;
-            }
-
-            // Add extension to the required to be enabled ones
-            device.getEnabledExtensions().add(requiredExtension);
-        }
-
-        return score;
-    }
-
-    private static String getDeviceType(VkPhysicalDeviceProperties properties) {
-        switch (properties.deviceType()) {
-            case VK10.VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU:
-                return "integrated";
-            case VK10.VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU:
-                return "discrete";
-            case VK10.VK_PHYSICAL_DEVICE_TYPE_VIRTUAL_GPU:
-                return "virtual";
-            case VK10.VK_PHYSICAL_DEVICE_TYPE_CPU:
-                return "cpu";
-            default:
-                return "other " + properties.deviceType();
-        }
-    }
-
-    private static String getVendor(VkPhysicalDeviceProperties properties) {
-        switch (properties.vendorID()) {
-            case 0x8086:
-                return "intel";
-            case 0x10DE:
-                return "nvidia";
-            case 0x1002:
-                return "amd";
-            default:
-                return "other " + properties.vendorID();
-        }
-    }
-
-    private static String getApiVersion(VkPhysicalDeviceProperties properties) {
-        return VK10.VK_VERSION_MAJOR(properties.apiVersion()) + "." + VK10.VK_VERSION_MINOR(properties.apiVersion()) + "." + VK10.VK_VERSION_PATCH(properties.apiVersion());
-    }
-
-    /**
-     * Gets internal vulkan handle
-     *
-     * @return internal vulkan handle
-     * @see VkPhysicalDevice
-     */
-    public VkPhysicalDevice getHandle() {
-        return handle;
-    }
-
-    /**
-     * Gets device properties such a vendor, type, api version, ...
-     *
-     * @return device properties
-     * @see VkPhysicalDeviceProperties
-     */
-    public VkPhysicalDeviceProperties getProperties() {
         return properties;
     }
 
-    /**
-     * Gets memory properties of device
-     *
-     * @return memory properties of device
-     * @see VkPhysicalDeviceMemoryProperties
-     */
-    public VkPhysicalDeviceMemoryProperties getMemoryProperties() {
-        return memoryProperties;
+    public void printDevice() {
+        if (!Logger.isDebugEnabled()) {
+            return;
+        }
+
+        StringBuilder builder = new StringBuilder();
+
+        builder.append("device -> \n");
+        builder.append(properties).append("\n");
+        builder.append(limits).append("\n");
+        builder.append("spare properties: ").append(spareProperties).append("\n");
+        builder.append("features: ").append(spareProperties).append("\n");
+        builder.append("extensions: ").append(extensions).append("\n");
+        builder.append("memory types: ").append(memoryTypes).append("\n");
+        builder.append("format properties: ").append(formatProperties).append("\n");
+
+        Logger.debug(builder);
     }
 
-    /**
-     * Gets all available features of this device
-     *
-     * @return available device features
-     * @see VkPhysicalDeviceFeatures
-     */
-    public VkPhysicalDeviceFeatures getAvailableFeatures() {
-        return availableFeatures;
+    @Override
+    protected long getInternalHandle() {
+        return handle.address();
     }
 
-    /**
-     * Gets all available extension names of device
-     *
-     * @return list of available device extension names
-     */
-    public List<String> getAvailableExtensions() {
-        return availableExtensions;
+    @Override
+    protected VkPhysicalDevice getInternalReference() {
+        return handle;
     }
 
-    /**
-     * Gets a VkPhysicalDeviceFeatures object where enable device features can be selected.
-     * <p>
-     * It is allocated with the MemoryStack provided in the constructor!
-     *
-     * @return VkPhysicalDeviceFeatures object
-     * @see VkPhysicalDeviceFeatures
-     */
-    public VkPhysicalDeviceFeatures getEnabledFeatures() {
-        return enabledFeatures;
+    public DeviceProperties getProperties() {
+        return properties;
     }
 
-    /**
-     * Gets a List with enabled device extension names where you can enable extensions
-     *
-     * @return list with enable device extension names
-     */
-    public List<String> getEnabledExtensions() {
-        return enabledExtensions;
+    public DeviceLimits getLimits() {
+        return limits;
+    }
+
+    public List<DeviceSpareProperties> getSpareProperties() {
+        return spareProperties;
+    }
+
+    public List<MemoryType> getMemoryTypes() {
+        return memoryTypes;
+    }
+
+    public List<DeviceFeature> getFeatures() {
+        return features;
+    }
+
+    public List<DeviceExtension> getExtensions() {
+        return extensions;
     }
 }

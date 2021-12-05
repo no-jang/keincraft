@@ -1,13 +1,15 @@
 package client.graphics.vk.instance;
 
+import client.graphics.vk.device.PhysicalDevice;
 import client.graphics.vk.instance.models.ApplicationInfo;
 import client.graphics.vk.instance.models.DebugInfo;
+import client.graphics.vk.instance.models.InstanceExtension;
 import client.graphics.vk.instance.models.InstanceInfo;
+import client.graphics.vk.instance.models.InstanceLayer;
 import client.graphics.vk.instance.models.Version;
+import client.graphics.vk.memory.MemoryContext;
 import client.graphics.vk.models.Maskable;
-import client.graphics.vk.models.function.CheckIntFunction;
-import client.graphics.vk.models.function.CheckLongFunction;
-import client.graphics.vk.models.function.CheckPointerFunction;
+import client.graphics.vk.models.function.CheckFunction;
 import client.graphics.vk.models.function.EnumerateFunction;
 import client.graphics.vk.models.pointers.DestroyableReferencePointer;
 import org.lwjgl.PointerBuffer;
@@ -22,152 +24,176 @@ import org.lwjgl.vulkan.VkExtensionProperties;
 import org.lwjgl.vulkan.VkInstance;
 import org.lwjgl.vulkan.VkInstanceCreateInfo;
 import org.lwjgl.vulkan.VkLayerProperties;
+import org.lwjgl.vulkan.VkPhysicalDevice;
 import org.tinylog.Logger;
 
 import java.nio.ByteBuffer;
+import java.nio.IntBuffer;
+import java.nio.LongBuffer;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class VulkanInstance extends DestroyableReferencePointer<VkInstance> {
     private final VkInstance handle;
     private final long debugHandle;
 
     public VulkanInstance(ApplicationInfo applicationInfo, InstanceInfo instanceInfo, DebugInfo debugInfo) {
-        try (MemoryStack stack = MemoryStack.stackPush()) {
-            Version availableApiVersion = Version.fromVulkanVersion(CheckIntFunction.execute(stack.mallocInt(1),
-                    VK11::vkEnumerateInstanceVersion));
+        MemoryStack stack = MemoryContext.getStack();
+        IntBuffer pAvailableApiVersion = stack.mallocInt(1);
+        CheckFunction.execute(() -> VK11.vkEnumerateInstanceVersion(pAvailableApiVersion));
+        Version availableApiVersion = Version.fromVulkanVersion(pAvailableApiVersion.get(0));
 
-            if (availableApiVersion.compareTo(applicationInfo.getApiVersion()) < 0) {
-                throw new RuntimeException("Available api version " + availableApiVersion + " is lower than required api version " + applicationInfo.getApiVersion());
+        if (availableApiVersion.compareTo(applicationInfo.getApiVersion()) < 0) {
+            throw new RuntimeException("Available api version " + availableApiVersion + " is lower than required api version " + applicationInfo.getApiVersion());
+        }
+
+        Logger.debug("API Version: {}", availableApiVersion);
+
+        VkExtensionProperties.Buffer pAvailableExtensions = EnumerateFunction.execute(stack.mallocInt(1),
+                (pCount, pBuffer) -> VK10.vkEnumerateInstanceExtensionProperties((String) null, pCount, pBuffer),
+                (count) -> VkExtensionProperties.malloc(count, stack));
+
+        List<InstanceExtension> requiredExtensions = new ArrayList<>(instanceInfo.getRequiredExtensions());
+        List<InstanceExtension> optionalExtensions = new ArrayList<>(instanceInfo.getOptionalExtensions());
+        List<InstanceExtension> availableExtensions = InstanceExtension.fromVulkanExtensions(pAvailableExtensions);
+        List<InstanceExtension> enabledExtensions = instanceInfo.getEnabledExtensions();
+
+        Logger.debug("Found {} extensions", availableExtensions.size());
+
+        for (InstanceExtension extension : availableExtensions) {
+            Logger.trace(extension.getValue());
+
+            int requiredIndex = requiredExtensions.indexOf(extension);
+            if (requiredIndex != -1) {
+                requiredExtensions.remove(requiredIndex);
+                enabledExtensions.add(extension);
+                continue;
             }
 
-            Logger.debug("API Version: {}", availableApiVersion);
+            int optionalIndex = optionalExtensions.indexOf(extension);
+            if (optionalIndex != -1) {
+                optionalExtensions.remove(optionalIndex);
+                enabledExtensions.add(extension);
+            }
+        }
 
-            VkExtensionProperties.Buffer pAvailableExtensions = EnumerateFunction.execute(stack.mallocInt(1),
-                    (pCount, pBuffer) -> VK10.vkEnumerateInstanceExtensionProperties((String) null, pCount, pBuffer),
-                    (count) -> VkExtensionProperties.malloc(count, stack));
+        if (!requiredExtensions.isEmpty()) {
+            throw new RuntimeException("Failed to find required vulkan instance extensions: " + requiredExtensions
+                    .stream()
+                    .map(Enum::name)
+                    .collect(Collectors.joining(", ")));
+        }
 
-            List<String> requiredExtensions = new ArrayList<>(instanceInfo.getRequiredExtensions());
-            List<String> optionalExtensions = new ArrayList<>(instanceInfo.getOptionalExtensions());
-            int requiredExtensionCount = requiredExtensions.size() + optionalExtensions.size();
+        if (!optionalExtensions.isEmpty()) {
+            Logger.debug("Could not find optional vulkan instance extensions: {}", optionalExtensions);
+        }
 
-            Logger.debug("Found {} extensions", pAvailableExtensions.capacity());
+        PointerBuffer pExtensions = InstanceExtension.toVulkanBuffer(enabledExtensions);
 
-            PointerBuffer pExtensions = stack.mallocPointer(requiredExtensionCount);
-            for (int i = 0; i < pAvailableExtensions.capacity(); i++) {
-                VkExtensionProperties extension = pAvailableExtensions.get(i);
-                String extensionName = extension.extensionNameString();
+        VkLayerProperties.Buffer pAvailableLayers = EnumerateFunction.execute(stack.mallocInt(1),
+                VK10::vkEnumerateInstanceLayerProperties,
+                count -> VkLayerProperties.malloc(count, stack));
 
-                Logger.trace(extensionName);
+        List<InstanceLayer> requiredLayers = new ArrayList<>(instanceInfo.getRequiredLayers());
+        List<InstanceLayer> optionalLayers = new ArrayList<>(instanceInfo.getOptionalLayers());
+        List<InstanceLayer> availableLayers = InstanceLayer.fromVulkanExtensions(pAvailableLayers);
+        List<InstanceLayer> enabledLayers = instanceInfo.getEnabledLayers();
 
-                int requiredIndex = requiredExtensions.indexOf(extensionName);
-                if (requiredIndex != -1) {
-                    pExtensions.put(extension.extensionName());
-                    instanceInfo.getEnabledExtensions().add(extensionName);
-                    requiredExtensions.remove(requiredIndex);
-                    continue;
-                }
+        Logger.debug("Found {} layers", availableLayers.size());
 
-                int optionalIndex = optionalExtensions.indexOf(extensionName);
-                if (optionalIndex != -1) {
-                    pExtensions.put(extension.extensionName());
-                    instanceInfo.getEnabledExtensions().add(extensionName);
-                    optionalExtensions.remove(optionalIndex);
-                }
+        for (InstanceLayer layer : availableLayers) {
+            Logger.trace(layer.getValue());
+
+            int requiredIndex = requiredLayers.indexOf(layer);
+            if (requiredIndex != -1) {
+                requiredLayers.remove(requiredIndex);
+                enabledLayers.add(layer);
+                continue;
             }
 
-            if (!requiredExtensions.isEmpty()) {
-                throw new RuntimeException("Failed to find required vulkan instance extensions: " + String.join(", ", requiredExtensions));
+            int optionalIndex = optionalLayers.indexOf(layer);
+            if (optionalIndex != -1) {
+                optionalLayers.remove(optionalIndex);
+                enabledLayers.add(layer);
             }
+        }
 
-            if (!optionalExtensions.isEmpty()) {
-                Logger.debug("Could not find optional vulkan instance extensions: {}", optionalExtensions);
-            }
+        if (!requiredExtensions.isEmpty()) {
+            throw new RuntimeException("Failed to find required vulkan instance layers: " + requiredLayers
+                    .stream()
+                    .map(Enum::name)
+                    .collect(Collectors.joining(", ")));
+        }
 
-            pExtensions.flip();
+        if (!optionalExtensions.isEmpty()) {
+            Logger.debug("Could not find optional vulkan instance extension: {}", optionalLayers);
+        }
 
-            VkLayerProperties.Buffer pAvailableLayers = EnumerateFunction.execute(stack.mallocInt(1),
-                    VK10::vkEnumerateInstanceLayerProperties,
-                    count -> VkLayerProperties.malloc(count, stack));
+        PointerBuffer pLayers = InstanceLayer.toVulkanBuffer(enabledLayers);
 
-            List<String> requiredLayers = new ArrayList<>(instanceInfo.getRequiredLayers());
-            List<String> optionalLayers = new ArrayList<>(instanceInfo.getOptionalLayers());
-            int requiredLayerCount = requiredLayers.size() + optionalLayers.size();
+        ByteBuffer pApplicationName = stack.ASCII(applicationInfo.getApplicationName());
+        ByteBuffer pEngineName = stack.ASCII(applicationInfo.getEngineName());
 
-            Logger.debug("Found {} layers", pAvailableLayers.capacity());
+        VkApplicationInfo appInfo = VkApplicationInfo.malloc(stack)
+                .sType$Default()
+                .pNext(0)
+                .pApplicationName(pApplicationName)
+                .pEngineName(pEngineName)
+                .applicationVersion(applicationInfo.getApplicationVersion().toVulkanVersion())
+                .engineVersion(applicationInfo.getEngineVersion().toVulkanVersion())
+                .apiVersion(applicationInfo.getApiVersion().toVulkanVersion());
 
-            PointerBuffer pLayers = stack.mallocPointer(requiredLayerCount);
-            for (int i = 0; i < pAvailableLayers.capacity(); i++) {
-                VkLayerProperties layer = pAvailableLayers.get(i);
-                String layerName = layer.layerNameString();
+        VkInstanceCreateInfo createInfo = VkInstanceCreateInfo.malloc(stack)
+                .sType$Default()
+                .flags(0)
+                .pNext(0)
+                .pApplicationInfo(appInfo)
+                .ppEnabledExtensionNames(pExtensions)
+                .ppEnabledLayerNames(pLayers);
 
-                Logger.trace(layerName);
-
-                int requiredIndex = requiredLayers.indexOf(layerName);
-                if (requiredIndex != -1) {
-                    pLayers.put(layer.layerName());
-                    instanceInfo.getEnabledLayers().add(layerName);
-                    requiredLayers.remove(requiredIndex);
-                    continue;
-                }
-
-                int optionalIndex = optionalLayers.indexOf(layerName);
-                if (optionalIndex != -1) {
-                    pLayers.put(layer.layerName());
-                    instanceInfo.getEnabledLayers().add(layerName);
-                    optionalLayers.remove(optionalIndex);
-                }
-            }
-
-            ByteBuffer pApplicationName = stack.ASCII(applicationInfo.getApplicationName());
-            ByteBuffer pEngineName = stack.ASCII(applicationInfo.getEngineName());
-
-            VkApplicationInfo appInfo = VkApplicationInfo.malloc(stack)
-                    .sType$Default()
-                    .pNext(0)
-                    .pApplicationName(pApplicationName)
-                    .pEngineName(pEngineName)
-                    .applicationVersion(applicationInfo.getApplicationVersion().toVulkanVersion())
-                    .engineVersion(applicationInfo.getEngineVersion().toVulkanVersion())
-                    .apiVersion(applicationInfo.getApiVersion().toVulkanVersion());
-
-            VkInstanceCreateInfo createInfo = VkInstanceCreateInfo.malloc(stack)
+        final VkDebugReportCallbackCreateInfoEXT debugCreateInfo;
+        if (!debugInfo.getSeverities().isEmpty()) {
+            debugCreateInfo = VkDebugReportCallbackCreateInfoEXT.malloc(stack)
                     .sType$Default()
                     .flags(0)
                     .pNext(0)
-                    .pApplicationInfo(appInfo)
-                    .ppEnabledExtensionNames(pExtensions)
-                    .ppEnabledLayerNames(pLayers);
+                    .flags(Maskable.toBitMask(debugInfo.getSeverities()))
+                    .pfnCallback(VkDebugReportCallbackEXT.create(new DebugLogger()))
+                    .pUserData(0);
 
-            final VkDebugReportCallbackCreateInfoEXT debugCreateInfo;
-            if (!debugInfo.getSeverities().isEmpty()) {
-                debugCreateInfo = VkDebugReportCallbackCreateInfoEXT.malloc(stack)
-                        .sType$Default()
-                        .flags(0)
-                        .pNext(0)
-                        .flags(Maskable.toBitMask(debugInfo.getSeverities()))
-                        .pfnCallback(VkDebugReportCallbackEXT.create(new DebugLogger()))
-                        .pUserData(0);
-
-                createInfo.pNext(debugCreateInfo);
-            } else {
-                debugCreateInfo = null;
-            }
-
-            handle = new VkInstance(
-                    CheckPointerFunction.execute(
-                            stack.mallocPointer(1),
-                            pHandle -> VK10.vkCreateInstance(createInfo, null, pHandle)),
-                    createInfo);
-
-            if (debugCreateInfo != null) {
-                debugHandle = CheckLongFunction.execute(
-                        stack.mallocLong(1),
-                        pHandle -> EXTDebugReport.vkCreateDebugReportCallbackEXT(handle, debugCreateInfo, null, pHandle));
-            } else {
-                debugHandle = -1L;
-            }
+            createInfo.pNext(debugCreateInfo);
+        } else {
+            debugCreateInfo = null;
         }
+
+        PointerBuffer pHandle = stack.mallocPointer(1);
+        CheckFunction.execute(() -> VK10.vkCreateInstance(createInfo, null, pHandle));
+        handle = new VkInstance(pHandle.get(0), createInfo);
+
+        if (debugCreateInfo != null) {
+            LongBuffer pDebugHandle = stack.mallocLong(1);
+            CheckFunction.execute(() -> EXTDebugReport.vkCreateDebugReportCallbackEXT(handle, debugCreateInfo, null, pDebugHandle));
+            debugHandle = pDebugHandle.get(0);
+        } else {
+            debugHandle = -1L;
+        }
+    }
+
+    public List<PhysicalDevice> getPhysicalDevices() {
+        MemoryStack stack = MemoryContext.getStack();
+        PointerBuffer pPhysicalDevices = EnumerateFunction.execute(stack.mallocInt(1),
+                (pCount, pBuffer) -> VK10.vkEnumeratePhysicalDevices(handle, pCount, pBuffer),
+                stack::mallocPointer);
+
+        int physicalDeviceCount = pPhysicalDevices.capacity();
+        List<PhysicalDevice> physicalDevices = new ArrayList<>(physicalDeviceCount);
+
+        for (int i = 0; i < physicalDeviceCount; i++) {
+            physicalDevices.add(new PhysicalDevice(new VkPhysicalDevice(pPhysicalDevices.get(i), handle)));
+        }
+
+        return physicalDevices;
     }
 
     @Override
