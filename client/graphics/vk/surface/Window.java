@@ -1,11 +1,16 @@
-package client.graphics;
+package client.graphics.vk.surface;
 
+import client.graphics.vk.device.models.DeviceExtension;
+import client.graphics.vk.instance.models.InstanceExtension;
 import org.lwjgl.glfw.Callbacks;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.glfw.GLFWVidMode;
 import org.lwjgl.glfw.GLFWVulkan;
 import org.lwjgl.system.MemoryUtil;
+
+import java.util.List;
+import java.util.Objects;
 
 /**
  * Represents a window and glfw context
@@ -89,6 +94,10 @@ public class Window {
         Callbacks.glfwFreeCallbacks(handle);
         GLFW.glfwDestroyWindow(handle);
         GLFW.glfwTerminate();
+    }
+
+    public List<InstanceExtension> getRequiredExtensions() {
+        return InstanceExtension.fromNames(Objects.requireNonNull(GLFWVulkan.glfwGetRequiredInstanceExtensions()));
     }
 
     /**

@@ -1,6 +1,7 @@
 package client.graphics.vk.instance.models;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 public class InstanceInfo {
@@ -29,16 +30,32 @@ public class InstanceInfo {
         this(new ArrayList<>(), new ArrayList<>());
     }
 
+    public void requiredExtensions(Collection<InstanceExtension> extensions) {
+        requiredExtensions.addAll(extensions);
+    }
+
     public void requiredExtension(InstanceExtension extension) {
         requiredExtensions.add(extension);
+    }
+
+    public void optionalExtensions(Collection<InstanceExtension> extensions) {
+        optionalExtensions.addAll(extensions);
     }
 
     public void optionalExtension(InstanceExtension extension) {
         optionalExtensions.add(extension);
     }
 
+    public void requiredLayers(Collection<InstanceLayer> layers) {
+        requiredLayers.addAll(layers);
+    }
+
     public void requiredLayer(InstanceLayer layer) {
         requiredLayers.add(layer);
+    }
+
+    public void optionalLayers(Collection<InstanceLayer> layers) {
+        optionalLayers.addAll(layers);
     }
 
     public void optionalLayer(InstanceLayer layer) {

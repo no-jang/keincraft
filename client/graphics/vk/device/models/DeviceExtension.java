@@ -4,6 +4,7 @@ import client.graphics.vk.memory.MemoryContext;
 import client.graphics.vk.models.HasValue;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.system.MemoryStack;
+import org.lwjgl.system.MemoryUtil;
 import org.lwjgl.vulkan.KHRSwapchain;
 import org.lwjgl.vulkan.VkExtensionProperties;
 

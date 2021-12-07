@@ -7,6 +7,8 @@ import client.graphics.vk.instance.models.InstanceInfo;
 import client.graphics.vk.instance.models.InstanceLayer;
 import client.graphics.vk.instance.models.MessageSeverity;
 import client.graphics.vk.instance.models.Version;
+import client.graphics.vk.surface.Surface;
+import client.graphics.vk.surface.Window;
 import common.tasks.Task;
 import common.tasks.TaskExecutor;
 import common.tasks.TaskGraph;
@@ -20,6 +22,8 @@ import java.util.List;
 
 public class Test {
     public static void main(String[] args) throws InterruptedException {
+        Window window = new Window("test", 900, 900);
+
         ApplicationInfo applicationInfo = new ApplicationInfo(
                 "test",
                 "engine",
@@ -29,6 +33,7 @@ public class Test {
         );
 
         InstanceInfo instanceInfo = new InstanceInfo();
+        instanceInfo.requiredExtensions(window.getRequiredExtensions());
         instanceInfo.requiredExtension(InstanceExtension.DEBUG_REPORT);
         instanceInfo.requiredLayer(InstanceLayer.KHRONOS_VALIDATION);
 
@@ -42,7 +47,12 @@ public class Test {
 
         VulkanInstance instance = new VulkanInstance(applicationInfo, instanceInfo, debugInfo);
         List<PhysicalDevice> physicalDevices = instance.getPhysicalDevices();
-        physicalDevices.get(0).printDevice();
+        PhysicalDevice device = physicalDevices.get(0);
+        device.printDevice();
+
+        Surface surface = new Surface(instance, window, device);
+
+        surface.destroy();
         instance.destroy();
     }
 }

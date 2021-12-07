@@ -1,7 +1,7 @@
 package client;
 
 import client.graphics.Graphics;
-import client.graphics.Window;
+import client.graphics.vk.surface.Window;
 
 /**
  * Core class for keincraft
