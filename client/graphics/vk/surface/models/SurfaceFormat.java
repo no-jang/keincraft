@@ -1,7 +1,7 @@
 package client.graphics.vk.surface.models;
 
-import client.graphics.vk.image.models.ColorSpace;
-import client.graphics.vk.image.models.Format;
+import client.graphics.vk.image.properties.ColorSpace;
+import client.graphics.vk.image.properties.Format;
 import client.graphics.vk.models.HasValue;
 import org.lwjgl.vulkan.VkSurfaceFormatKHR;
 

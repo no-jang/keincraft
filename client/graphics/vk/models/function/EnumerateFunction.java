@@ -1,7 +1,7 @@
 package client.graphics.vk.models.function;
 
-import client.graphics.vk.instance.models.VulkanException;
-import client.graphics.vk.instance.models.VulkanResult;
+import client.graphics.vk.instance.properties.VulkanException;
+import client.graphics.vk.instance.properties.VulkanResult;
 import client.graphics.vk.models.HasValue;
 
 import java.nio.IntBuffer;

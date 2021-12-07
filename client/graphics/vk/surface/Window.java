@@ -1,7 +1,6 @@
 package client.graphics.vk.surface;
 
-import client.graphics.vk.device.models.DeviceExtension;
-import client.graphics.vk.instance.models.InstanceExtension;
+import client.graphics.vk.instance.properties.InstanceExtension;
 import org.lwjgl.glfw.Callbacks;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWErrorCallback;

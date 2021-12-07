@@ -1,6 +1,6 @@
 package client.graphics.vk.surface.models;
 
-import client.graphics.vk.image.models.ImageUsage;
+import client.graphics.vk.image.properties.ImageUsage;
 import client.graphics.vk.models.Extent2D;
 import client.graphics.vk.models.Maskable;
 import org.lwjgl.vulkan.VkSurfaceCapabilitiesKHR;

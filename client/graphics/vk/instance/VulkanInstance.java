@@ -1,12 +1,12 @@
 package client.graphics.vk.instance;
 
 import client.graphics.vk.device.PhysicalDevice;
-import client.graphics.vk.instance.models.ApplicationInfo;
-import client.graphics.vk.instance.models.DebugInfo;
-import client.graphics.vk.instance.models.InstanceExtension;
-import client.graphics.vk.instance.models.InstanceInfo;
-import client.graphics.vk.instance.models.InstanceLayer;
-import client.graphics.vk.instance.models.Version;
+import client.graphics.vk.instance.properties.ApplicationInfo;
+import client.graphics.vk.instance.properties.DebugInfo;
+import client.graphics.vk.instance.properties.InstanceExtension;
+import client.graphics.vk.instance.properties.InstanceInfo;
+import client.graphics.vk.instance.properties.InstanceLayer;
+import client.graphics.vk.instance.properties.Version;
 import client.graphics.vk.memory.MemoryContext;
 import client.graphics.vk.models.Maskable;
 import client.graphics.vk.models.function.CheckFunction;

@@ -1,6 +1,6 @@
 package client.graphics.vk.instance;
 
-import client.graphics.vk.instance.models.MessageSeverity;
+import client.graphics.vk.instance.properties.MessageSeverity;
 import client.graphics.vk.models.Maskable;
 import org.lwjgl.system.MemoryUtil;
 import org.lwjgl.vulkan.VK10;

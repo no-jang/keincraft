@@ -1,14 +1,14 @@
 package client.graphics.vk.device;
 
-import client.graphics.vk.device.models.DeviceExtension;
-import client.graphics.vk.device.models.DeviceFeature;
-import client.graphics.vk.device.models.format.FormatProperties;
-import client.graphics.vk.device.models.memory.MemoryHeap;
-import client.graphics.vk.device.models.memory.MemoryType;
-import client.graphics.vk.device.models.properties.DeviceLimits;
-import client.graphics.vk.device.models.properties.DeviceProperties;
-import client.graphics.vk.device.models.properties.DeviceSpareProperties;
-import client.graphics.vk.image.models.Format;
+import client.graphics.vk.device.properties.DeviceExtension;
+import client.graphics.vk.device.properties.DeviceFeature;
+import client.graphics.vk.device.properties.FormatProperties;
+import client.graphics.vk.device.memory.MemoryHeap;
+import client.graphics.vk.device.memory.MemoryType;
+import client.graphics.vk.device.properties.DeviceLimits;
+import client.graphics.vk.device.properties.DeviceProperties;
+import client.graphics.vk.device.properties.DeviceSpareProperties;
+import client.graphics.vk.image.properties.Format;
 import client.graphics.vk.memory.MemoryContext;
 import client.graphics.vk.models.function.EnumerateFunction;
 import client.graphics.vk.models.pointers.ReferencePointer;
