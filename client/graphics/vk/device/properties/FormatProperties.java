@@ -30,7 +30,7 @@ public class FormatProperties {
 
     @Override
     public String toString() {
-        return "[" +
+        return "FormatProperties[" +
                 "linearTilingFeatures=" + linearTilingFeatures +
                 ", optimalTilingFeatures=" + optimalTilingFeatures +
                 ", bufferFeatures=" + bufferFeatures +

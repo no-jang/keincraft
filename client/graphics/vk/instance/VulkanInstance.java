@@ -36,10 +36,14 @@ import java.util.stream.Collectors;
 
 public class VulkanInstance extends DestroyableReferencePointer<VkInstance> {
     private final VkInstance handle;
+    private final InstanceInfo info;
     private final long debugHandle;
 
-    public VulkanInstance(ApplicationInfo applicationInfo, InstanceInfo instanceInfo, DebugInfo debugInfo) {
+    public VulkanInstance(ApplicationInfo applicationInfo, InstanceInfo info, DebugInfo debugInfo) {
+        this.info = info;
+
         MemoryStack stack = MemoryContext.getStack();
+
         IntBuffer pAvailableApiVersion = stack.mallocInt(1);
         CheckFunction.execute(() -> VK11.vkEnumerateInstanceVersion(pAvailableApiVersion));
         Version availableApiVersion = Version.fromVulkanVersion(pAvailableApiVersion.get(0));
@@ -54,10 +58,10 @@ public class VulkanInstance extends DestroyableReferencePointer<VkInstance> {
                 (pCount, pBuffer) -> VK10.vkEnumerateInstanceExtensionProperties((String) null, pCount, pBuffer),
                 (count) -> VkExtensionProperties.malloc(count, stack));
 
-        List<InstanceExtension> requiredExtensions = new ArrayList<>(instanceInfo.getRequiredExtensions());
-        List<InstanceExtension> optionalExtensions = new ArrayList<>(instanceInfo.getOptionalExtensions());
+        List<InstanceExtension> requiredExtensions = new ArrayList<>(info.getRequiredExtensions());
+        List<InstanceExtension> optionalExtensions = new ArrayList<>(info.getOptionalExtensions());
         List<InstanceExtension> availableExtensions = InstanceExtension.fromVulkanExtensions(pAvailableExtensions);
-        List<InstanceExtension> enabledExtensions = instanceInfo.getEnabledExtensions();
+        List<InstanceExtension> enabledExtensions = info.getEnabledExtensions();
 
         Logger.debug("Found {} extensions", availableExtensions.size());
 
@@ -95,10 +99,10 @@ public class VulkanInstance extends DestroyableReferencePointer<VkInstance> {
                 VK10::vkEnumerateInstanceLayerProperties,
                 count -> VkLayerProperties.malloc(count, stack));
 
-        List<InstanceLayer> requiredLayers = new ArrayList<>(instanceInfo.getRequiredLayers());
-        List<InstanceLayer> optionalLayers = new ArrayList<>(instanceInfo.getOptionalLayers());
+        List<InstanceLayer> requiredLayers = new ArrayList<>(info.getRequiredLayers());
+        List<InstanceLayer> optionalLayers = new ArrayList<>(info.getOptionalLayers());
         List<InstanceLayer> availableLayers = InstanceLayer.fromVulkanExtensions(pAvailableLayers);
-        List<InstanceLayer> enabledLayers = instanceInfo.getEnabledLayers();
+        List<InstanceLayer> enabledLayers = info.getEnabledLayers();
 
         Logger.debug("Found {} layers", availableLayers.size());
 
@@ -213,5 +217,9 @@ public class VulkanInstance extends DestroyableReferencePointer<VkInstance> {
     @Override
     protected VkInstance getInternalReference() {
         return handle;
+    }
+
+    public InstanceInfo getInfo() {
+        return info;
     }
 }

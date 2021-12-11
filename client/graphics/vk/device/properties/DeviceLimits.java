@@ -15,7 +15,8 @@ public class DeviceLimits {
 
     @Override
     public String toString() {
-        return "limits: \n" +
-                "- maxColorAttachments: " + maxColorAttachments;
+        return "DeviceLimits[" +
+                "maxColorAttachments=" + maxColorAttachments +
+                ']';
     }
 }

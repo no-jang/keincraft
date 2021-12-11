@@ -55,13 +55,14 @@ public class DeviceProperties {
 
     @Override
     public String toString() {
-        return "properties: \n" +
-                "- name: " + name + ":\n" +
-                "- id: " + id + "\n" +
-                "- vendor: " + vendor + "\n" +
-                "- type: " + type + "\n" +
-                "- api-ver: " + apiVersion + "\n" +
-                "- driver-ver: " + driverVersion + "\n" +
-                "- pipeline-cache: " + pipelineCacheUUUID;
+        return "DeviceProperties[" +
+                "apiVersion=" + apiVersion +
+                ", driverVersion=" + driverVersion +
+                ", id=" + id +
+                ", type=" + type +
+                ", vendor=" + vendor +
+                ", name='" + name + '\'' +
+                ", pipelineCacheUUUID=" + pipelineCacheUUUID +
+                ']';
     }
 }

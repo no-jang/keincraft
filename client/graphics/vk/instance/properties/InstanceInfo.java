@@ -30,11 +30,11 @@ public class InstanceInfo {
         this(new ArrayList<>(), new ArrayList<>());
     }
 
-    public void requiredExtensions(Collection<InstanceExtension> extensions) {
+    public void addRequiredExtensions(Collection<InstanceExtension> extensions) {
         requiredExtensions.addAll(extensions);
     }
 
-    public void requiredExtension(InstanceExtension extension) {
+    public void addRequiredExtension(InstanceExtension extension) {
         requiredExtensions.add(extension);
     }
 
@@ -42,23 +42,23 @@ public class InstanceInfo {
         optionalExtensions.addAll(extensions);
     }
 
-    public void optionalExtension(InstanceExtension extension) {
+    public void addOptionalExtension(InstanceExtension extension) {
         optionalExtensions.add(extension);
     }
 
-    public void requiredLayers(Collection<InstanceLayer> layers) {
+    public void addRequiredLayers(Collection<InstanceLayer> layers) {
         requiredLayers.addAll(layers);
     }
 
-    public void requiredLayer(InstanceLayer layer) {
+    public void addRequiredLayer(InstanceLayer layer) {
         requiredLayers.add(layer);
     }
 
-    public void optionalLayers(Collection<InstanceLayer> layers) {
+    public void addOptionalLayers(Collection<InstanceLayer> layers) {
         optionalLayers.addAll(layers);
     }
 
-    public void optionalLayer(InstanceLayer layer) {
+    public void addOptionalLayer(InstanceLayer layer) {
         optionalLayers.add(layer);
     }
 

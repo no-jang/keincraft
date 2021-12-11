@@ -10,8 +10,11 @@ import client.graphics.vk.device.properties.DeviceProperties;
 import client.graphics.vk.device.properties.DeviceSpareProperties;
 import client.graphics.vk.image.properties.Format;
 import client.graphics.vk.memory.MemoryContext;
+import client.graphics.vk.models.Maskable;
 import client.graphics.vk.models.function.EnumerateFunction;
 import client.graphics.vk.models.pointers.ReferencePointer;
+import client.graphics.vk.queue.QueueCapability;
+import client.graphics.vk.queue.QueueFamily;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.VK10;
 import org.lwjgl.vulkan.VkExtensionProperties;
@@ -22,12 +25,14 @@ import org.lwjgl.vulkan.VkPhysicalDevice;
 import org.lwjgl.vulkan.VkPhysicalDeviceFeatures;
 import org.lwjgl.vulkan.VkPhysicalDeviceMemoryProperties;
 import org.lwjgl.vulkan.VkPhysicalDeviceProperties;
+import org.lwjgl.vulkan.VkQueueFamilyProperties;
 import org.tinylog.Logger;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class PhysicalDevice extends ReferencePointer<VkPhysicalDevice> {
     private final VkPhysicalDevice handle;
@@ -38,6 +43,7 @@ public class PhysicalDevice extends ReferencePointer<VkPhysicalDevice> {
     private final List<DeviceExtension> extensions;
     private final List<MemoryType> memoryTypes;
     private final Map<Format, FormatProperties> formatProperties;
+    private final List<QueueFamily> queueFamilies;
 
     public PhysicalDevice(VkPhysicalDevice handle) {
         this.handle = handle;
@@ -78,6 +84,19 @@ public class PhysicalDevice extends ReferencePointer<VkPhysicalDevice> {
             memoryTypes.add(new MemoryType(vkMemoryType, heaps.get(vkMemoryType.heapIndex())));
         }
 
+        VkQueueFamilyProperties.Buffer pQueueFamilies = EnumerateFunction.execute(stack.mallocInt(1), (pCount, pBuffer) -> {
+            VK10.vkGetPhysicalDeviceQueueFamilyProperties(handle, pCount, pBuffer);
+                    return VK10.VK_SUCCESS;
+                },
+                count -> VkQueueFamilyProperties.malloc(count, stack));
+
+        queueFamilies = new ArrayList<>(pQueueFamilies.capacity());
+        for(int i = 0; i < pQueueFamilies.capacity(); i++) {
+            VkQueueFamilyProperties queueFamily = pQueueFamilies.get(i);
+            Set<QueueCapability> capabilities = Maskable.fromBitMask(queueFamily.queueFlags(), QueueCapability.class);
+            queueFamilies.add(new QueueFamily(this, i, queueFamily.queueCount(), capabilities));
+        }
+
         formatProperties = new HashMap<>();
     }
 
@@ -95,22 +114,7 @@ public class PhysicalDevice extends ReferencePointer<VkPhysicalDevice> {
     }
 
     public void printDevice() {
-        if (!Logger.isDebugEnabled()) {
-            return;
-        }
-
-        StringBuilder builder = new StringBuilder();
-
-        builder.append("device -> \n");
-        builder.append(properties).append("\n");
-        builder.append(limits).append("\n");
-        builder.append("spare properties: ").append(spareProperties).append("\n");
-        builder.append("features: ").append(spareProperties).append("\n");
-        builder.append("extensions: ").append(extensions).append("\n");
-        builder.append("memory types: ").append(memoryTypes).append("\n");
-        builder.append("format properties: ").append(formatProperties).append("\n");
-
-        Logger.debug(builder);
+        Logger.debug(this::toPropertyString);
     }
 
     @Override
@@ -145,5 +149,27 @@ public class PhysicalDevice extends ReferencePointer<VkPhysicalDevice> {
 
     public List<DeviceExtension> getExtensions() {
         return extensions;
+    }
+
+    public List<QueueFamily> getQueueFamilies() {
+        return queueFamilies;
+    }
+
+    @Override
+    public String toString() {
+        return "PhysicalDevice[id=" + properties.getId() + ", name=" + properties.getName() + "]";
+    }
+
+    public String toPropertyString() {
+        return "PhysicalDevice[" +
+                "\n properties=" + properties +
+                ",\n limits=" + limits +
+                ",\n spareProperties=" + spareProperties +
+                ",\n features=" + features +
+                ",\n extensions=" + extensions +
+                ",\n memoryTypes=" + memoryTypes +
+                ",\n formatProperties=" + formatProperties +
+                ",\n queueFamilies=" + queueFamilies +
+                "\n]";
     }
 }

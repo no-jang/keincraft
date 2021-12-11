@@ -51,4 +51,14 @@ public class QueueFamily {
     public Set<QueueCapability> getCapabilities() {
         return capabilities;
     }
+
+    @Override
+    public String toString() {
+        return "QueueFamily[" +
+                ", index=" + index +
+                ", queueCount=" + queueCount +
+                ", capabilities=" + capabilities +
+                ", supportsPresentation=" + supportsPresentation +
+                ']';
+    }
 }
