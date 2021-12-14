@@ -2,7 +2,7 @@ package client.graphics.vk.surface.models;
 
 import client.graphics.vk.image.properties.ColorSpace;
 import client.graphics.vk.image.properties.Format;
-import client.graphics.vk.models.HasValue;
+import common.util.enums.HasValue;
 import org.lwjgl.vulkan.VkSurfaceFormatKHR;
 
 public class SurfaceFormat {

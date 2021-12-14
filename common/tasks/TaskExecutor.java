@@ -17,7 +17,7 @@ public class TaskExecutor {
         this.queue = queue;
 
         threads = new TaskThread[poolSize];
-        for(int i = 0; i < poolSize; i++) {
+        for (int i = 0; i < poolSize; i++) {
             threads[i] = new TaskThread();
         }
 
@@ -31,13 +31,13 @@ public class TaskExecutor {
     }
 
     public void start() {
-        for(TaskThread thread : threads) {
+        for (TaskThread thread : threads) {
             thread.start();
         }
     }
 
     public void stop() {
-        for(TaskThread thread : threads) {
+        for (TaskThread thread : threads) {
             thread.exit();
         }
 
@@ -47,7 +47,7 @@ public class TaskExecutor {
     }
 
     public void execute() {
-        if(!queue.getQueue().isEmpty()) {
+        if (!queue.getQueue().isEmpty()) {
             throw new IllegalStateException("Queue is not empty");
         }
 
@@ -63,14 +63,14 @@ public class TaskExecutor {
             lock.unlock();
 
             boolean finished = true;
-            for(TaskThread thread : threads) {
+            for (TaskThread thread : threads) {
                 if (thread.isExecuting()) {
                     finished = false;
                     break;
                 }
             }
 
-            if(finished) {
+            if (finished) {
                 return;
             }
         }
@@ -87,7 +87,7 @@ public class TaskExecutor {
                 BlockingQueue<Node> queue = TaskExecutor.this.queue.getQueue();
                 node = queue.poll();
 
-                if(node == null) {
+                if (node == null) {
                     lock.lock();
                     finishCondition.signalAll();
                     queueCondition.awaitUninterruptibly();
@@ -95,7 +95,7 @@ public class TaskExecutor {
                     continue;
                 }
 
-                if(!node.allPredecessorsFinished()) {
+                if (!node.allPredecessorsFinished()) {
                     queue.add(node);
                     continue;
                 }

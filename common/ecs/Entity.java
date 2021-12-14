@@ -75,7 +75,7 @@ public class Entity {
      * Gets one component by type
      *
      * @param type type of the component
-     * @param <T> type of the component
+     * @param <T>  type of the component
      * @return component by type
      */
     public <T extends Component> T get(Class<T> type) {
@@ -86,7 +86,7 @@ public class Entity {
      * Gets one component by ComponentType
      *
      * @param type component type of component
-     * @param <T> type of component
+     * @param <T>  type of component
      * @return component by component type
      */
     public <T extends Component> T get(ComponentType type) {

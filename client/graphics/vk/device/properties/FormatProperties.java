@@ -1,6 +1,6 @@
 package client.graphics.vk.device.properties;
 
-import client.graphics.vk.models.Maskable;
+import common.util.enums.Maskable;
 import org.lwjgl.vulkan.VkFormatProperties;
 
 import java.util.Set;

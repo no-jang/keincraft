@@ -1,20 +1,20 @@
 package client.graphics.vk.device;
 
-import client.graphics.vk.device.properties.DeviceExtension;
-import client.graphics.vk.device.properties.DeviceFeature;
-import client.graphics.vk.device.properties.FormatProperties;
 import client.graphics.vk.device.memory.MemoryHeap;
 import client.graphics.vk.device.memory.MemoryType;
+import client.graphics.vk.device.properties.DeviceExtension;
+import client.graphics.vk.device.properties.DeviceFeature;
 import client.graphics.vk.device.properties.DeviceLimits;
 import client.graphics.vk.device.properties.DeviceProperties;
 import client.graphics.vk.device.properties.DeviceSpareProperties;
+import client.graphics.vk.device.properties.FormatProperties;
 import client.graphics.vk.image.properties.Format;
 import client.graphics.vk.memory.MemoryContext;
-import client.graphics.vk.models.Maskable;
 import client.graphics.vk.models.function.EnumerateFunction;
 import client.graphics.vk.models.pointers.ReferencePointer;
 import client.graphics.vk.queue.QueueCapability;
 import client.graphics.vk.queue.QueueFamily;
+import common.util.enums.Maskable;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.VK10;
 import org.lwjgl.vulkan.VkExtensionProperties;
@@ -85,13 +85,13 @@ public class PhysicalDevice extends ReferencePointer<VkPhysicalDevice> {
         }
 
         VkQueueFamilyProperties.Buffer pQueueFamilies = EnumerateFunction.execute(stack.mallocInt(1), (pCount, pBuffer) -> {
-            VK10.vkGetPhysicalDeviceQueueFamilyProperties(handle, pCount, pBuffer);
+                    VK10.vkGetPhysicalDeviceQueueFamilyProperties(handle, pCount, pBuffer);
                     return VK10.VK_SUCCESS;
                 },
                 count -> VkQueueFamilyProperties.malloc(count, stack));
 
         queueFamilies = new ArrayList<>(pQueueFamilies.capacity());
-        for(int i = 0; i < pQueueFamilies.capacity(); i++) {
+        for (int i = 0; i < pQueueFamilies.capacity(); i++) {
             VkQueueFamilyProperties queueFamily = pQueueFamilies.get(i);
             Set<QueueCapability> capabilities = Maskable.fromBitMask(queueFamily.queueFlags(), QueueCapability.class);
             queueFamilies.add(new QueueFamily(this, i, queueFamily.queueCount(), capabilities));

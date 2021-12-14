@@ -33,8 +33,8 @@ public class LogicalDevice extends DestroyableReferencePointer<VkDevice> {
 
         MemoryStack stack = MemoryContext.getStack();
 
-        for(QueueFamily family : info.getQueuePriorities().keySet()) {
-            if(!physicalDevice.getQueueFamilies().contains(family)) {
+        for (QueueFamily family : info.getQueuePriorities().keySet()) {
+            if (!physicalDevice.getQueueFamilies().contains(family)) {
                 throw new IllegalArgumentException(physicalDevice + " does not have a family queue " + family);
             }
         }
@@ -44,29 +44,29 @@ public class LogicalDevice extends DestroyableReferencePointer<VkDevice> {
         List<DeviceExtension> availableExtensions = physicalDevice.getExtensions();
         List<DeviceExtension> enabledExtensions = info.getEnabledExtensions();
 
-        for(DeviceExtension extension : availableExtensions) {
+        for (DeviceExtension extension : availableExtensions) {
             int requiredIndex = requiredExtensions.indexOf(extension);
-            if(requiredIndex != -1) {
+            if (requiredIndex != -1) {
                 requiredExtensions.remove(requiredIndex);
                 enabledExtensions.add(extension);
                 continue;
             }
 
             int optionalIndex = optionalExtensions.indexOf(extension);
-            if(optionalIndex != -1) {
+            if (optionalIndex != -1) {
                 requiredExtensions.remove(optionalIndex);
                 enabledExtensions.add(extension);
             }
         }
 
-        if(!requiredExtensions.isEmpty()) {
+        if (!requiredExtensions.isEmpty()) {
             throw new IllegalArgumentException(physicalDevice + "does not have required extensions: " +
                     requiredExtensions.stream()
                             .map(Enum::name)
                             .collect(Collectors.joining(", ")));
         }
 
-        if(!optionalExtensions.isEmpty()) {
+        if (!optionalExtensions.isEmpty()) {
             Logger.debug("{} does not have optional extensions: {}", physicalDevice, optionalExtensions);
         }
 
@@ -77,29 +77,29 @@ public class LogicalDevice extends DestroyableReferencePointer<VkDevice> {
         List<DeviceFeature> availableFeatures = physicalDevice.getFeatures();
         List<DeviceFeature> enabledFeatures = info.getEnabledFeatures();
 
-        for(DeviceFeature feature : availableFeatures) {
+        for (DeviceFeature feature : availableFeatures) {
             int requiredIndex = requiredFeatures.indexOf(feature);
-            if(requiredIndex != -1) {
+            if (requiredIndex != -1) {
                 requiredFeatures.remove(requiredIndex);
                 enabledFeatures.add(feature);
                 continue;
             }
 
             int optionalIndex = optionalFeatures.indexOf(feature);
-            if(optionalIndex != -1) {
+            if (optionalIndex != -1) {
                 optionalFeatures.remove(optionalIndex);
                 enabledFeatures.add(feature);
             }
         }
 
-        if(!requiredFeatures.isEmpty()) {
+        if (!requiredFeatures.isEmpty()) {
             throw new IllegalArgumentException(physicalDevice + " does not have required features: " +
                     requiredFeatures.stream()
-                    .map(Enum::name)
-                    .collect(Collectors.joining(", ")));
+                            .map(Enum::name)
+                            .collect(Collectors.joining(", ")));
         }
 
-        if(!optionalFeatures.isEmpty()) {
+        if (!optionalFeatures.isEmpty()) {
             Logger.debug("{} does not have optional features: {}", physicalDevice, optionalFeatures);
         }
 
@@ -118,12 +118,12 @@ public class LogicalDevice extends DestroyableReferencePointer<VkDevice> {
                 .ppEnabledExtensionNames(pExtensions)
                 .pEnabledFeatures(features);
 
-        for(Map.Entry<QueueFamily, List<Float>> queueEntry : info.getQueuePriorities().entrySet()) {
+        for (Map.Entry<QueueFamily, List<Float>> queueEntry : info.getQueuePriorities().entrySet()) {
             QueueFamily family = queueEntry.getKey();
             List<Float> priorities = queueEntry.getValue();
 
             FloatBuffer pPriorities = stack.mallocFloat(priorities.size());
-            for(int j = 0; j < priorities.size(); j++) {
+            for (int j = 0; j < priorities.size(); j++) {
                 pPriorities.put(j, priorities.get(j));
             }
 

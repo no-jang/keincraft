@@ -92,7 +92,7 @@ public class Family {
 
     /**
      * Returns family hash from all, one and exclude bitsets
-     *
+     * <p>
      * Used to have a unique identifier of the family
      *
      * @return family hash

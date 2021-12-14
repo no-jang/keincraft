@@ -1,6 +1,6 @@
 package client.graphics.vk.image.properties;
 
-import client.graphics.vk.models.HasValue;
+import common.util.enums.HasValue;
 import org.lwjgl.vulkan.EXTSwapchainColorspace;
 import org.lwjgl.vulkan.KHRSurface;
 

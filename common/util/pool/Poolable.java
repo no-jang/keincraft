@@ -1,4 +1,4 @@
-package common.util;
+package common.util.pool;
 
 /**
  * Object which is resettable and so on can be used better by a pool

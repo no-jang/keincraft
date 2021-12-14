@@ -1,4 +1,4 @@
-package client.graphics.vk.models;
+package common.util.enums;
 
 public interface HasValue<T> {
     static <T, E extends Enum<E> & HasValue<T>> T getValue(E enumValue) {

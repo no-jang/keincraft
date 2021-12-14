@@ -1,6 +1,6 @@
 package client.graphics.vk.device.properties;
 
-import client.graphics.vk.models.HasValue;
+import common.util.enums.HasValue;
 
 public enum DeviceVendor implements HasValue<Integer> {
     NVIDIA(0x10DE),

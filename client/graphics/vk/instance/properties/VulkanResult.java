@@ -1,11 +1,14 @@
 package client.graphics.vk.instance.properties;
 
-import client.graphics.vk.models.HasValue;
+import common.util.enums.HasValue;
 import org.lwjgl.vulkan.KHRDisplaySwapchain;
 import org.lwjgl.vulkan.KHRSurface;
 import org.lwjgl.vulkan.KHRSwapchain;
 import org.lwjgl.vulkan.VK10;
 
+/**
+ * Wrapper enum for vulkan result codes. Codes not equal to {@link VulkanResult#SUCCESS} are errors
+ */
 public enum VulkanResult implements HasValue<Integer> {
     SUCCESS(VK10.VK_SUCCESS),
     NOT_READY(VK10.VK_NOT_READY),

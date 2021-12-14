@@ -1,6 +1,6 @@
 package client.graphics.vk.device.memory;
 
-import client.graphics.vk.models.Maskable;
+import common.util.enums.Maskable;
 import org.lwjgl.vulkan.VK10;
 import org.lwjgl.vulkan.VK11;
 

@@ -27,7 +27,7 @@ public class Bits {
     /**
      * @param index the index of the bit
      * @return whether the bit is set
-     * @throws ArrayIndexOutOfBoundsException if index < 0
+     * @throws ArrayIndexOutOfBoundsException if index smaller than 0
      */
     public boolean get(int index) {
         final int word = index >>> 6;
@@ -40,7 +40,7 @@ public class Bits {
      *
      * @param index the index of the bit
      * @return whether the bit was set before invocation
-     * @throws ArrayIndexOutOfBoundsException if index < 0
+     * @throws ArrayIndexOutOfBoundsException if index smaller than 0
      */
     public boolean getAndClear(int index) {
         final int word = index >>> 6;
@@ -55,7 +55,7 @@ public class Bits {
      *
      * @param index the index of the bit
      * @return whether the bit was set before invocation
-     * @throws ArrayIndexOutOfBoundsException if index < 0
+     * @throws ArrayIndexOutOfBoundsException if index smaller than 0
      */
     public boolean getAndSet(int index) {
         final int word = index >>> 6;
@@ -67,7 +67,7 @@ public class Bits {
 
     /**
      * @param index the index of the bit to set
-     * @throws ArrayIndexOutOfBoundsException if index < 0
+     * @throws ArrayIndexOutOfBoundsException if index smaller than 0
      */
     public void set(int index) {
         final int word = index >>> 6;
@@ -94,7 +94,7 @@ public class Bits {
 
     /**
      * @param index the index of the bit to clear
-     * @throws ArrayIndexOutOfBoundsException if index < 0
+     * @throws ArrayIndexOutOfBoundsException if index smaller than 0
      */
     public void clear(int index) {
         final int word = index >>> 6;

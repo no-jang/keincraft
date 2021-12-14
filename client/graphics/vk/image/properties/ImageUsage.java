@@ -1,6 +1,6 @@
 package client.graphics.vk.image.properties;
 
-import client.graphics.vk.models.Maskable;
+import common.util.enums.Maskable;
 import org.lwjgl.vulkan.VK10;
 
 public enum ImageUsage implements Maskable {

@@ -35,6 +35,10 @@ public class Node {
         return finished;
     }
 
+    void setFinished(boolean finished) {
+        this.finished = finished;
+    }
+
     public boolean isCondition() {
         if (condition == null) {
             return true;
@@ -58,9 +62,5 @@ public class Node {
         }
 
         return finished;
-    }
-
-    void setFinished(boolean finished) {
-        this.finished = finished;
     }
 }

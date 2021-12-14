@@ -8,7 +8,7 @@ import client.graphics2.vk.image.ImageOld;
 import client.graphics2.vk.image.ImageViewOld;
 import client.graphics2.vk.sync.Frame;
 import client.graphics2.vk.util.Check;
-import common.util.math.MathUtil;
+import common.util.Maths;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.KHRSurface;
 import org.lwjgl.vulkan.KHRSwapchain;
@@ -126,8 +126,8 @@ public class Swapchain {
         VkExtent2D minExtent = capabilities.minImageExtent();
         VkExtent2D maxExtent = capabilities.maxImageExtent();
 
-        actualExtent.width(MathUtil.clamp(minExtent.width(), maxExtent.width(), actualExtent.width()));
-        actualExtent.height(MathUtil.clamp(minExtent.height(), maxExtent.height(), actualExtent.height()));
+        actualExtent.width(Maths.clamp(minExtent.width(), maxExtent.width(), actualExtent.width()));
+        actualExtent.height(Maths.clamp(minExtent.height(), maxExtent.height(), actualExtent.height()));
 
         return actualExtent;
     }

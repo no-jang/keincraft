@@ -1,6 +1,6 @@
 package client.graphics.vk.surface.models;
 
-import client.graphics.vk.models.Maskable;
+import common.util.enums.Maskable;
 import org.lwjgl.vulkan.KHRSurface;
 
 public enum CompositeAlpha implements Maskable {

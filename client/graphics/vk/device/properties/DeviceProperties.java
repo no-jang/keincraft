@@ -1,7 +1,7 @@
 package client.graphics.vk.device.properties;
 
 import client.graphics.vk.instance.properties.Version;
-import client.graphics.vk.models.HasValue;
+import common.util.enums.HasValue;
 import org.lwjgl.vulkan.VkPhysicalDeviceProperties;
 
 import java.util.UUID;
@@ -16,8 +16,8 @@ public class DeviceProperties {
     private final UUID pipelineCacheUUUID;
 
     public DeviceProperties(VkPhysicalDeviceProperties properties) {
-        apiVersion = Version.fromVulkanVersion(properties.apiVersion());
-        driverVersion = Version.fromVulkanVersion(properties.driverVersion());
+        apiVersion = Version.fromVulkan(properties.apiVersion());
+        driverVersion = Version.fromVulkan(properties.driverVersion());
         id = properties.deviceID();
         type = HasValue.getByValue(properties.deviceType(), DeviceType.class);
         vendor = HasValue.getByValue(properties.vendorID(), DeviceVendor.class);

@@ -3,13 +3,13 @@ package client.graphics.vk.surface;
 import client.graphics.vk.device.PhysicalDevice;
 import client.graphics.vk.instance.VulkanInstance;
 import client.graphics.vk.memory.MemoryContext;
-import client.graphics.vk.models.HasValue;
 import client.graphics.vk.models.function.CheckFunction;
 import client.graphics.vk.models.function.EnumerateFunction;
 import client.graphics.vk.models.pointers.DestroyablePointer;
 import client.graphics.vk.surface.models.PresentMode;
 import client.graphics.vk.surface.models.SurfaceCapabilities;
 import client.graphics.vk.surface.models.SurfaceFormat;
+import common.util.enums.HasValue;
 import org.lwjgl.glfw.GLFWVulkan;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.KHRSurface;
@@ -46,7 +46,7 @@ public class Surface extends DestroyablePointer {
                 count -> VkSurfaceFormatKHR.malloc(count, stack));
 
         formats = new ArrayList<>(pFormats.capacity());
-        for(int i = 0; i < pFormats.capacity(); i++) {
+        for (int i = 0; i < pFormats.capacity(); i++) {
             formats.add(new SurfaceFormat(pFormats.get(i)));
         }
 
@@ -55,7 +55,7 @@ public class Surface extends DestroyablePointer {
                 stack::mallocInt);
 
         presentModes = new ArrayList<>(pPresentModes.capacity());
-        for(int i = 0; i < pPresentModes.capacity(); i++) {
+        for (int i = 0; i < pPresentModes.capacity(); i++) {
             presentModes.add(HasValue.getByValue(pPresentModes.get(i), PresentMode.class));
         }
     }

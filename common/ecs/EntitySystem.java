@@ -28,7 +28,7 @@ public class EntitySystem {
 
     /**
      * Processes the components of entities
-     *
+     * <p>
      * Called by update function from Engine.
      *
      * @param engine engine of update call

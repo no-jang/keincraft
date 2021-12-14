@@ -27,7 +27,7 @@ public class QueueFamily {
     }
 
     public boolean supportsPresentation(Surface surface) {
-        if(supportsPresentation != null) {
+        if (supportsPresentation != null) {
             return supportsPresentation;
         }
 

@@ -1,7 +1,7 @@
 package client.graphics.vk.instance;
 
 import client.graphics.vk.instance.properties.MessageSeverity;
-import client.graphics.vk.models.Maskable;
+import common.util.enums.Maskable;
 import org.lwjgl.system.MemoryUtil;
 import org.lwjgl.vulkan.VK10;
 import org.lwjgl.vulkan.VkDebugReportCallbackEXT;
@@ -9,6 +9,11 @@ import org.lwjgl.vulkan.VkDebugReportCallbackEXTI;
 import org.tinylog.Logger;
 import org.tinylog.TaggedLogger;
 
+/**
+ * Class for receiving debug message from vulkan validation layers. These are logged with tinylog and tag "VALIDATION_LAYER"
+ *
+ * @see VkDebugReportCallbackEXTI
+ */
 public class DebugLogger implements VkDebugReportCallbackEXTI {
     private static final TaggedLogger logger = Logger.tag("VALIDATION_LAYER");
 

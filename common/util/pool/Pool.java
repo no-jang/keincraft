@@ -1,4 +1,4 @@
-package common.util;
+package common.util.pool;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
@@ -6,7 +6,7 @@ import java.util.List;
 
 /**
  * Pool of objects which are dynamically created if needed
- *
+ * <p>
  * This can be used to reduce object allocations and so garbage collections
  *
  * @param <T> type of objects
@@ -26,7 +26,7 @@ public abstract class Pool<T> {
 
     /**
      * Creates a new pool with specified capacity and unlimited entries
-     *
+     * <p>
      * Objects are not allocated until needed.
      *
      * @param initialCapacity initial capacity for Deque
@@ -39,7 +39,7 @@ public abstract class Pool<T> {
      * Creates a new pool with specified capacity and specified max entries
      *
      * @param initialCapacity initial capacity for Deque
-     * @param max maximal entries allowed
+     * @param max             maximal entries allowed
      */
     public Pool(int initialCapacity, int max) {
         this.max = max;
@@ -48,6 +48,7 @@ public abstract class Pool<T> {
 
     /**
      * Creates a new object
+     *
      * @return new object
      */
     abstract protected T newObject();
@@ -63,7 +64,7 @@ public abstract class Pool<T> {
 
     /**
      * Puts an object in pool.
-     *
+     * <p>
      * This declares the object as "no longer in use". It will only be added if the count of free objects is under the
      * maximum. If the object implements Poolable the reset function will be called to reset all variables.
      *
@@ -80,7 +81,7 @@ public abstract class Pool<T> {
 
     /**
      * Puts a list of objects
-     *
+     * <p>
      * This declares the objects as "no longer in use". It will only be added if the count of free objects is under the
      * maximum. If the objects implements Poolable the reset function will be called to reset all variables.
      *
@@ -107,6 +108,7 @@ public abstract class Pool<T> {
 
     /**
      * Get free object count
+     *
      * @return free object count
      */
     public int getFree() {

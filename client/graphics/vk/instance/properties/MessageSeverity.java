@@ -1,9 +1,15 @@
 package client.graphics.vk.instance.properties;
 
-import client.graphics.vk.models.Maskable;
+import common.util.enums.Maskable;
 import org.lwjgl.vulkan.EXTDebugReport;
 import org.tinylog.Level;
 
+/**
+ * Wrapper enum for vulkan debug report message severity. Severities are mapped to {@link Level}
+ *
+ * @see EXTDebugReport
+ * @see Level
+ */
 public enum MessageSeverity implements Maskable {
     VERBOSE(EXTDebugReport.VK_DEBUG_REPORT_INFORMATION_BIT_EXT, Level.DEBUG),
     INFO(EXTDebugReport.VK_DEBUG_REPORT_INFORMATION_BIT_EXT, Level.INFO),
@@ -24,6 +30,11 @@ public enum MessageSeverity implements Maskable {
         return bit;
     }
 
+    /**
+     * Returns tinylog {@link Level} corresponding to the vulkan message severity
+     *
+     * @return mapped tinylog {@link Level}
+     */
     public Level getLevel() {
         return level;
     }

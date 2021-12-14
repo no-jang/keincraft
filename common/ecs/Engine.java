@@ -8,7 +8,7 @@ import java.util.Map;
 
 /**
  * Engine for the entity component system.
- *
+ * <p>
  * Holds every entity system and family
  *
  * @see Entity
@@ -41,9 +41,10 @@ public class Engine {
 
     /**
      * Registers an entity.
-     *
+     * <p>
      * If families that match exists, the entity is added to them.
      * An entity can only be registered once.
+     *
      * @param entity entity to register.
      * @throws IllegalArgumentException Throws IllegalArgumentException if entity is already registered
      * @see Entity
@@ -65,13 +66,14 @@ public class Engine {
 
     /**
      * Registers a collection of entities.
-     *
+     * <p>
      * If families that match exists, the entities are added to their corresponding families.
      * Entities can only be registered ones.
+     *
      * @param entities collection of entities
+     * @throws IllegalArgumentException Throws if entity is already registered
      * @see Entity
      * @see #addEntity(Entity)
-     * @throws IllegalArgumentException Throws if entity is already registered
      */
     public void addAllEntities(Collection<Entity> entities) {
         for (Entity entity : entities) {
@@ -81,12 +83,13 @@ public class Engine {
 
     /**
      * Unregisters an entity
-     *
+     * <p>
      * Finds families matching the enitity and removes it from them
      * Entity must be registered.
+     *
      * @param entity entity to unregister
-     * @see Entity
      * @throws IllegalArgumentException Throws if entity is not found
+     * @see Entity
      */
     public void removeEntity(Entity entity) {
         if (!entities.contains(entity)) {
@@ -107,10 +110,11 @@ public class Engine {
      * Unregisters a collection of entities
      * Finds families matching the enitity and removes it from them
      * Entity must be registered.
+     *
      * @param entities collection of entities
+     * @throws IllegalArgumentException Throws if entity is not found
      * @see Entity
      * @see #removeEntity(Entity)
-     * @throws IllegalArgumentException Throws if entity is not found
      */
     public void removeAllEntities(Collection<Entity> entities) {
         for (Entity entity : entities) {
@@ -156,6 +160,7 @@ public class Engine {
 
     /**
      * Get all entities
+     *
      * @return all entities
      */
     public List<Entity> getEntities() {
@@ -164,7 +169,7 @@ public class Engine {
 
     /**
      * Register an entity system
-     *
+     * <p>
      * Removes the old system of the same type if exists first
      *
      * @param system entity system to register
@@ -198,7 +203,7 @@ public class Engine {
 
     /**
      * Unregister an entity system
-     *
+     * <p>
      * The entity system to remove must be registered
      *
      * @param system entity system to unregister
@@ -218,7 +223,7 @@ public class Engine {
 
     /**
      * Unregisters collection of entity systems
-     *
+     * <p>
      * The entity systems to remove must be registered
      *
      * @param systems entity systems to remove
@@ -264,7 +269,8 @@ public class Engine {
 
     /**
      * Calls the update method of all registered EntitySystems
-     * @see EntitySystem#update(Engine) 
+     *
+     * @see EntitySystem#update(Engine)
      */
     public void update() {
         for (EntitySystem system : systems.values()) {

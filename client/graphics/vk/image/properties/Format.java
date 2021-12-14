@@ -1,6 +1,6 @@
 package client.graphics.vk.image.properties;
 
-import client.graphics.vk.models.HasValue;
+import common.util.enums.HasValue;
 import org.lwjgl.vulkan.VK10;
 import org.lwjgl.vulkan.VK11;
 

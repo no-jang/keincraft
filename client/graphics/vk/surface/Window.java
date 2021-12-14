@@ -96,7 +96,7 @@ public class Window {
     }
 
     public List<InstanceExtension> getRequiredExtensions() {
-        return InstanceExtension.fromNames(Objects.requireNonNull(GLFWVulkan.glfwGetRequiredInstanceExtensions()));
+        return InstanceExtension.fromNameBuffer(Objects.requireNonNull(GLFWVulkan.glfwGetRequiredInstanceExtensions()));
     }
 
     /**

@@ -1,4 +1,4 @@
-package client.graphics.vk.models;
+package common.util.enums;
 
 import java.util.Collection;
 import java.util.EnumSet;

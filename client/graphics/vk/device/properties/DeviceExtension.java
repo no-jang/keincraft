@@ -1,7 +1,7 @@
 package client.graphics.vk.device.properties;
 
 import client.graphics.vk.memory.MemoryContext;
-import client.graphics.vk.models.HasValue;
+import common.util.enums.HasValue;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.KHRSwapchain;
