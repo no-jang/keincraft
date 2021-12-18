@@ -1,11 +1,9 @@
 package client.graphics.vk.instance;
 
 import client.graphics.vk.device.PhysicalDevice;
-import client.graphics.vk.instance.properties.ApplicationInfo;
-import client.graphics.vk.instance.properties.DebugInfo;
 import client.graphics.vk.instance.properties.InstanceExtension;
-import client.graphics.vk.instance.properties.InstanceInfo;
 import client.graphics.vk.instance.properties.InstanceLayer;
+import client.graphics.vk.instance.properties.InstanceProperties;
 import client.graphics.vk.instance.properties.Version;
 import client.graphics.vk.memory.MemoryContext;
 import client.graphics.vk.models.function.CheckFunction;
@@ -15,7 +13,6 @@ import common.util.Buffers;
 import common.util.enums.HasValue;
 import common.util.enums.Maskable;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.EXTDebugReport;
@@ -40,17 +37,14 @@ import java.util.stream.Collectors;
 
 /**
  * {@link VkInstance} wrapper. A vulkan instance holds the vulkan state. It can be expanded through {@link InstanceExtension} and
- * inputs can be validated through {@link InstanceLayer}. A debug output can be achieved through {@link DebugInfo} and {@link DebugLogger}.
- * Thus is holds general information regarding the application {@link ApplicationInfo}
+ * inputs can be validated through {@link InstanceLayer}. All properties regarding the instance are stored in
+ * {@link InstanceProperties}
  *
- * @see InstanceInfo
- * @see ApplicationInfo
- * @see DebugInfo
- * @see DebugLogger
+ * @see InstanceProperties
  */
 public class VulkanInstance extends DestroyableReferencePointer<VkInstance> {
     private final VkInstance handle;
-    private final InstanceInfo info;
+    private final InstanceProperties properties;
     private final long debugHandle;
 
     /**
@@ -58,12 +52,10 @@ public class VulkanInstance extends DestroyableReferencePointer<VkInstance> {
      * If extensions and layers are not available throw exception (required) or log warning (optional).
      * Checks if required vulkan api version requirement is meet.
      *
-     * @param applicationInfo {@link ApplicationInfo} containing application information
-     * @param info            {@link InstanceInfo} information for initializing the instance
-     * @param debugInfo       {@link DebugInfo} information regarding the debug log. Can be null to skip debug reporter initialization
+     * @param properties {@link InstanceProperties} containing all information regarding the instance creation
      */
-    public VulkanInstance(@NotNull ApplicationInfo applicationInfo, @NotNull InstanceInfo info, @Nullable DebugInfo debugInfo) {
-        this.info = info;
+    public VulkanInstance(@NotNull InstanceProperties properties) {
+        this.properties = properties;
 
         MemoryStack stack = MemoryContext.getStack();
 
@@ -73,35 +65,35 @@ public class VulkanInstance extends DestroyableReferencePointer<VkInstance> {
         Version availableApiVersion = Version.fromVulkan(pAvailableApiVersion.get(0));
 
         // Check if requested version <= available version
-        if (availableApiVersion.compareTo(applicationInfo.getApiVersion()) < 0) {
-            throw new RuntimeException("Available api version " + availableApiVersion + " is lower than required api version " + applicationInfo.getApiVersion());
+        if (availableApiVersion.compareTo(properties.getApiVersion()) < 0) {
+            throw new RuntimeException("Available api version " + availableApiVersion + " is lower than required api version " + properties.getApiVersion());
         }
 
         Logger.debug("API Version: {}", availableApiVersion);
 
         // Fetch and check extensions and layers
-        PointerBuffer extensions = fetchExtensions(stack, info);
-        PointerBuffer layers = fetchLayers(stack, info);
+        PointerBuffer extensions = fetchExtensions(stack);
+        PointerBuffer layers = fetchLayers(stack);
 
         // Convert application properties to vulkan equivalence
         ByteBuffer applicationName = null;
-        if (applicationInfo.getApplicationName() != null) {
-            applicationName = stack.ASCII(applicationInfo.getApplicationName());
+        if (properties.getApplicationName() != null) {
+            applicationName = stack.ASCII(properties.getApplicationName());
         }
 
         ByteBuffer engineName = null;
-        if (applicationInfo.getEngineName() != null) {
-            engineName = stack.ASCII(applicationInfo.getEngineName());
+        if (properties.getEngineName() != null) {
+            engineName = stack.ASCII(properties.getEngineName());
         }
 
         int applicationVersion = 0;
-        if (applicationInfo.getApplicationVersion() != null) {
-            applicationVersion = applicationInfo.getApplicationVersion().toVulkan();
+        if (properties.getApplicationVersion() != null) {
+            applicationVersion = properties.getApplicationVersion().toVulkan();
         }
 
         int engineVersion = 0;
-        if (applicationInfo.getEngineVersion() != null) {
-            engineVersion = applicationInfo.getEngineVersion().toVulkan();
+        if (properties.getEngineVersion() != null) {
+            engineVersion = properties.getEngineVersion().toVulkan();
         }
 
         // Malloc create infos
@@ -112,7 +104,7 @@ public class VulkanInstance extends DestroyableReferencePointer<VkInstance> {
                 .pEngineName(engineName)
                 .applicationVersion(applicationVersion)
                 .engineVersion(engineVersion)
-                .apiVersion(applicationInfo.getApiVersion().toVulkan());
+                .apiVersion(properties.getApiVersion().toVulkan());
 
         VkInstanceCreateInfo createInfo = VkInstanceCreateInfo.malloc(stack)
                 .sType$Default()
@@ -123,7 +115,7 @@ public class VulkanInstance extends DestroyableReferencePointer<VkInstance> {
                 .ppEnabledLayerNames(layers);
 
         // Check if debug report is enabled and which levels should be used
-        VkDebugReportCallbackCreateInfoEXT debugCreateInfo = setupDebugCallback(stack, createInfo, debugInfo);
+        VkDebugReportCallbackCreateInfoEXT debugCreateInfo = setupDebugCallback(stack, createInfo);
 
         // Create instance
         PointerBuffer pHandle = stack.mallocPointer(1);
@@ -180,23 +172,20 @@ public class VulkanInstance extends DestroyableReferencePointer<VkInstance> {
     }
 
     /**
-     * Returns {@link InstanceInfo} about current information regarding this instance
+     * Returns {@link InstanceProperties} about current information regarding this instance
      *
-     * @return {@link InstanceInfo}
-     * @see InstanceInfo
+     * @return {@link InstanceProperties}
+     * @see InstanceProperties
      */
     @NotNull
-    public InstanceInfo getInfo() {
-        return info;
+    public InstanceProperties getProperties() {
+        return properties;
     }
 
-    private VkDebugReportCallbackCreateInfoEXT setupDebugCallback(MemoryStack stack, VkInstanceCreateInfo instanceCreateInfo, DebugInfo debugInfo) {
-        if (debugInfo == null) {
-            return null;
-        }
 
+    private VkDebugReportCallbackCreateInfoEXT setupDebugCallback(MemoryStack stack, VkInstanceCreateInfo instanceCreateInfo) {
         // If no severities given don't create debug report callback
-        if (debugInfo.getSeverities() == null || debugInfo.getSeverities().isEmpty()) {
+        if (properties.getSeverities().isEmpty()) {
             return null;
         }
 
@@ -204,7 +193,7 @@ public class VulkanInstance extends DestroyableReferencePointer<VkInstance> {
                 .sType$Default()
                 .flags(0)
                 .pNext(0)
-                .flags(Maskable.toBitMask(debugInfo.getSeverities()))
+                .flags(Maskable.toBitMask(properties.getSeverities()))
                 .pfnCallback(VkDebugReportCallbackEXT.create(new DebugLogger()))
                 .pUserData(0);
 
@@ -223,16 +212,16 @@ public class VulkanInstance extends DestroyableReferencePointer<VkInstance> {
         return pDebugHandle.get(0);
     }
 
-    private PointerBuffer fetchExtensions(MemoryStack stack, InstanceInfo info) {
+    private PointerBuffer fetchExtensions(MemoryStack stack) {
         // Fetch available extensions
         VkExtensionProperties.Buffer vkAvailableExtensions = EnumerateFunction.execute(stack.mallocInt(1),
                 (pCount, pBuffer) -> VK10.vkEnumerateInstanceExtensionProperties((String) null, pCount, pBuffer),
                 (count) -> VkExtensionProperties.malloc(count, stack));
 
-        List<InstanceExtension> requiredExtensions = new ArrayList<>(info.getRequiredExtensions());
-        List<InstanceExtension> optionalExtensions = new ArrayList<>(info.getOptionalExtensions());
+        List<InstanceExtension> requiredExtensions = new ArrayList<>(properties.getRequiredExtensions());
+        List<InstanceExtension> optionalExtensions = new ArrayList<>(properties.getOptionalExtensions());
         List<InstanceExtension> availableExtensions = InstanceExtension.fromBuffer(vkAvailableExtensions);
-        List<InstanceExtension> enabledExtensions = info.getEnabledExtensions();
+        List<InstanceExtension> enabledExtensions = properties.getEnabledExtensions();
 
         Logger.debug("Found {} extensions", availableExtensions.size());
 
@@ -256,16 +245,16 @@ public class VulkanInstance extends DestroyableReferencePointer<VkInstance> {
         return Buffers.toStringBuffer(enabledExtensions);
     }
 
-    private PointerBuffer fetchLayers(MemoryStack stack, InstanceInfo info) {
+    private PointerBuffer fetchLayers(MemoryStack stack) {
         // Fetch available layers
         VkLayerProperties.Buffer pAvailableLayers = EnumerateFunction.execute(stack.mallocInt(1),
                 VK10::vkEnumerateInstanceLayerProperties,
                 count -> VkLayerProperties.malloc(count, stack));
 
-        List<InstanceLayer> requiredLayers = new ArrayList<>(info.getRequiredLayers());
-        List<InstanceLayer> optionalLayers = new ArrayList<>(info.getOptionalLayers());
+        List<InstanceLayer> requiredLayers = new ArrayList<>(properties.getRequiredLayers());
+        List<InstanceLayer> optionalLayers = new ArrayList<>(properties.getOptionalLayers());
         List<InstanceLayer> availableLayers = InstanceLayer.fromBuffer(pAvailableLayers);
-        List<InstanceLayer> enabledLayers = info.getEnabledLayers();
+        List<InstanceLayer> enabledLayers = properties.getEnabledLayers();
 
         Logger.debug("Found {} layers", availableLayers.size());
 
