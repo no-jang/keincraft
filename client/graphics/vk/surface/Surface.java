@@ -1,7 +1,7 @@
 package client.graphics.vk.surface;
 
 import client.graphics.vk.device.PhysicalDevice;
-import client.graphics.vk.instance.VulkanInstance;
+import client.graphics.vk.instance.Instance;
 import client.graphics.vk.memory.MemoryContext;
 import client.graphics.vk.models.function.CheckFunction;
 import client.graphics.vk.models.function.EnumerateFunction;
@@ -23,12 +23,12 @@ import java.util.List;
 
 public class Surface extends DestroyablePointer {
     private final long handle;
-    private final VulkanInstance instance;
+    private final Instance instance;
     private final SurfaceCapabilities capabilities;
     private final List<SurfaceFormat> formats;
     private final List<PresentMode> presentModes;
 
-    public Surface(VulkanInstance instance, Window window, PhysicalDevice device) {
+    public Surface(Instance instance, Window window, PhysicalDevice device) {
         MemoryStack stack = MemoryContext.getStack();
 
         this.instance = instance;

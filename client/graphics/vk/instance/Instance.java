@@ -10,6 +10,7 @@ import client.graphics.vk.models.function.CheckFunction;
 import client.graphics.vk.models.function.EnumerateFunction;
 import client.graphics.vk.models.pointers.DestroyableReferencePointer;
 import common.util.Buffers;
+import common.util.Collections;
 import common.util.enums.HasValue;
 import common.util.enums.Maskable;
 import org.jetbrains.annotations.NotNull;
@@ -42,7 +43,7 @@ import java.util.stream.Collectors;
  *
  * @see InstanceProperties
  */
-public class VulkanInstance extends DestroyableReferencePointer<VkInstance> {
+public class Instance extends DestroyableReferencePointer<VkInstance> {
     private final VkInstance handle;
     private final InstanceProperties properties;
     private final long debugHandle;
@@ -54,7 +55,7 @@ public class VulkanInstance extends DestroyableReferencePointer<VkInstance> {
      *
      * @param properties {@link InstanceProperties} containing all information regarding the instance creation
      */
-    public VulkanInstance(@NotNull InstanceProperties properties) {
+    public Instance(@NotNull InstanceProperties properties) {
         this.properties = properties;
 
         MemoryStack stack = MemoryContext.getStack();
@@ -226,7 +227,7 @@ public class VulkanInstance extends DestroyableReferencePointer<VkInstance> {
         Logger.debug("Found {} extensions", availableExtensions.size());
 
         // Check every available extension if it should be added
-        checkRequiredOptional(availableExtensions, requiredExtensions, optionalExtensions, enabledExtensions);
+        Collections.checkRequiredOptional(availableExtensions, requiredExtensions, optionalExtensions, enabledExtensions);
 
         // If not all required extensions are available then throw exception
         if (!requiredExtensions.isEmpty()) {
@@ -259,7 +260,7 @@ public class VulkanInstance extends DestroyableReferencePointer<VkInstance> {
         Logger.debug("Found {} layers", availableLayers.size());
 
         // Check every available layers if it should be added
-        checkRequiredOptional(availableLayers, requiredLayers, optionalLayers, enabledLayers);
+        Collections.checkRequiredOptional(availableLayers, requiredLayers, optionalLayers, enabledLayers);
 
         // If not all required layers are available then throw exception
         if (!requiredLayers.isEmpty()) {
@@ -276,27 +277,5 @@ public class VulkanInstance extends DestroyableReferencePointer<VkInstance> {
 
         // Return layer names
         return Buffers.toStringBuffer(enabledLayers);
-    }
-
-    private <T extends HasValue<String>> void checkRequiredOptional(List<T> available, List<T> required, List<T> optional, List<T> enabled) {
-        // Check every available if it should be added
-        for (T t : available) {
-            Logger.trace(t.getValue());
-
-            // If is required add to enabled and remove from required layer
-            int requiredIndex = required.indexOf(t);
-            if (requiredIndex != -1) {
-                required.remove(requiredIndex);
-                enabled.add(t);
-                continue;
-            }
-
-            // If is optional add to enabled and remove from optional layer
-            int optionalIndex = optional.indexOf(t);
-            if (optionalIndex != -1) {
-                optional.remove(optionalIndex);
-                enabled.add(t);
-            }
-        }
     }
 }

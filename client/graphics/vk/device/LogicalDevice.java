@@ -7,6 +7,7 @@ import client.graphics.vk.memory.MemoryContext;
 import client.graphics.vk.models.function.CheckFunction;
 import client.graphics.vk.models.pointers.DestroyableReferencePointer;
 import client.graphics.vk.queue.QueueFamily;
+import common.util.Collections;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.VK10;
@@ -33,6 +34,7 @@ public class LogicalDevice extends DestroyableReferencePointer<VkDevice> {
 
         MemoryStack stack = MemoryContext.getStack();
 
+        // Test if all requested queue families are found on the physical device
         for (QueueFamily family : info.getQueuePriorities().keySet()) {
             if (!physicalDevice.getQueueFamilies().contains(family)) {
                 throw new IllegalArgumentException(physicalDevice + " does not have a family queue " + family);
@@ -44,21 +46,10 @@ public class LogicalDevice extends DestroyableReferencePointer<VkDevice> {
         List<DeviceExtension> availableExtensions = physicalDevice.getExtensions();
         List<DeviceExtension> enabledExtensions = info.getEnabledExtensions();
 
-        for (DeviceExtension extension : availableExtensions) {
-            int requiredIndex = requiredExtensions.indexOf(extension);
-            if (requiredIndex != -1) {
-                requiredExtensions.remove(requiredIndex);
-                enabledExtensions.add(extension);
-                continue;
-            }
+        // Check every extension if it should be added
+        Collections.checkRequiredOptional(availableExtensions, requiredExtensions, optionalExtensions, enabledExtensions);
 
-            int optionalIndex = optionalExtensions.indexOf(extension);
-            if (optionalIndex != -1) {
-                requiredExtensions.remove(optionalIndex);
-                enabledExtensions.add(extension);
-            }
-        }
-
+        // If a required extension is not available throw exception
         if (!requiredExtensions.isEmpty()) {
             throw new IllegalArgumentException(physicalDevice + "does not have required extensions: " +
                     requiredExtensions.stream()
@@ -66,6 +57,7 @@ public class LogicalDevice extends DestroyableReferencePointer<VkDevice> {
                             .collect(Collectors.joining(", ")));
         }
 
+        // If a optional extension is not available log warning
         if (!optionalExtensions.isEmpty()) {
             Logger.debug("{} does not have optional extensions: {}", physicalDevice, optionalExtensions);
         }
@@ -77,21 +69,10 @@ public class LogicalDevice extends DestroyableReferencePointer<VkDevice> {
         List<DeviceFeature> availableFeatures = physicalDevice.getFeatures();
         List<DeviceFeature> enabledFeatures = info.getEnabledFeatures();
 
-        for (DeviceFeature feature : availableFeatures) {
-            int requiredIndex = requiredFeatures.indexOf(feature);
-            if (requiredIndex != -1) {
-                requiredFeatures.remove(requiredIndex);
-                enabledFeatures.add(feature);
-                continue;
-            }
+        // Check every feature if it should be added
+        Collections.checkRequiredOptional(availableFeatures, requiredFeatures, optionalFeatures, enabledFeatures);
 
-            int optionalIndex = optionalFeatures.indexOf(feature);
-            if (optionalIndex != -1) {
-                optionalFeatures.remove(optionalIndex);
-                enabledFeatures.add(feature);
-            }
-        }
-
+        // If required features is not available throw exception
         if (!requiredFeatures.isEmpty()) {
             throw new IllegalArgumentException(physicalDevice + " does not have required features: " +
                     requiredFeatures.stream()
@@ -99,6 +80,7 @@ public class LogicalDevice extends DestroyableReferencePointer<VkDevice> {
                             .collect(Collectors.joining(", ")));
         }
 
+        // If optional feature is not available log warning
         if (!optionalFeatures.isEmpty()) {
             Logger.debug("{} does not have optional features: {}", physicalDevice, optionalFeatures);
         }
@@ -106,9 +88,6 @@ public class LogicalDevice extends DestroyableReferencePointer<VkDevice> {
         VkPhysicalDeviceFeatures features = DeviceFeature.toVulkanFeatures(enabledFeatures);
 
         VkDeviceQueueCreateInfo.Buffer pQueues = VkDeviceQueueCreateInfo.malloc(info.getQueuePriorities().size(), stack);
-
-        //pQueues.position(0);
-        //pQueues.flip();
 
         VkDeviceCreateInfo createInfo = VkDeviceCreateInfo.malloc(stack)
                 .sType$Default()
@@ -118,6 +97,7 @@ public class LogicalDevice extends DestroyableReferencePointer<VkDevice> {
                 .ppEnabledExtensionNames(pExtensions)
                 .pEnabledFeatures(features);
 
+        // Create one queue entry for every requested queue family
         for (Map.Entry<QueueFamily, List<Float>> queueEntry : info.getQueuePriorities().entrySet()) {
             QueueFamily family = queueEntry.getKey();
             List<Float> priorities = queueEntry.getValue();

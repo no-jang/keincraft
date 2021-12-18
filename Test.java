@@ -2,7 +2,7 @@ import client.graphics.vk.device.LogicalDevice;
 import client.graphics.vk.device.PhysicalDevice;
 import client.graphics.vk.device.properties.DeviceExtension;
 import client.graphics.vk.device.properties.DeviceInfo;
-import client.graphics.vk.instance.VulkanInstance;
+import client.graphics.vk.instance.Instance;
 import client.graphics.vk.instance.properties.InstanceExtension;
 import client.graphics.vk.instance.properties.InstanceLayer;
 import client.graphics.vk.instance.properties.InstanceProperties;
@@ -35,7 +35,7 @@ public class Test {
                         MessageSeverity.INFO,
                         MessageSeverity.VERBOSE);
 
-        VulkanInstance instance = new VulkanInstance(instanceProperties);
+        Instance instance = new Instance(instanceProperties);
         List<PhysicalDevice> physicalDevices = instance.getPhysicalDevices();
         PhysicalDevice physicalDevice = physicalDevices.get(0);
         physicalDevice.printDevice();
