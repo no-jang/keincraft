@@ -35,7 +35,7 @@ public class ExtensionContainer<T extends HasValue<String>> {
         }
 
         public Builder<T> request(T extension) {
-            if(!availableExtensions.contains(extension)) {
+            if (!availableExtensions.contains(extension)) {
                 throw new IllegalArgumentException("Requested " + extension + " is not available");
             }
 
@@ -45,7 +45,7 @@ public class ExtensionContainer<T extends HasValue<String>> {
         }
 
         public Builder<T> request(Collection<T> extensions) {
-            for(T extension : extensions) {
+            for (T extension : extensions) {
                 request(extension);
             }
 

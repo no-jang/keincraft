@@ -10,7 +10,7 @@ public interface HasValue<T> {
     @Nullable
     static <T, E extends Enum<E> & HasValue<T>> E getByValue(T value, Class<E> enumType) {
         E[] constants = enumType.getEnumConstants();
-        if(constants == null) {
+        if (constants == null) {
             throw new IllegalStateException("Should not be reached: class is not an enum");
         }
 

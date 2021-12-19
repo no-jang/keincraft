@@ -13,7 +13,7 @@ public abstract class DestroyablePointer extends Pointer implements Destroyable 
 
     @Override
     public long getHandle() {
-        if(isDisposed.get()) {
+        if (isDisposed.get()) {
             throw new IllegalStateException("Underlying pointer has already been destroyed");
         }
 
@@ -22,7 +22,7 @@ public abstract class DestroyablePointer extends Pointer implements Destroyable 
 
     @Override
     public void destroy() {
-        if(!isDisposed.getAndSet(true)) {
+        if (!isDisposed.getAndSet(true)) {
             destroy(handle);
         }
     }

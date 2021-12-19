@@ -15,7 +15,7 @@ public abstract class DestroyableReferencePointer<T extends Pointer> extends Ref
 
     @Override
     public long getHandle() {
-        if(isDestroyed.get()) {
+        if (isDestroyed.get()) {
             throw new IllegalStateException("Underlying reference has already been destroyed");
         }
 
@@ -24,7 +24,7 @@ public abstract class DestroyableReferencePointer<T extends Pointer> extends Ref
 
     @Override
     public T getReference() {
-        if(isDestroyed.get()) {
+        if (isDestroyed.get()) {
             throw new IllegalStateException("Underlying reference has already been destroyed");
         }
 
@@ -33,7 +33,7 @@ public abstract class DestroyableReferencePointer<T extends Pointer> extends Ref
 
     @Override
     public void destroy() {
-        if(!isDestroyed.getAndSet(true)) {
+        if (!isDestroyed.getAndSet(true)) {
             destroy(reference);
         }
     }

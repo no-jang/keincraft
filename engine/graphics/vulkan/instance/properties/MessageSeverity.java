@@ -2,7 +2,7 @@ package engine.graphics.vulkan.instance.properties;
 
 import engine.helper.enums.Maskable;
 import org.lwjgl.vulkan.EXTDebugReport;
-import org.slf4j.event.Level;
+import org.tinylog.Level;
 
 public enum MessageSeverity implements Maskable {
     VERBOSE(EXTDebugReport.VK_DEBUG_REPORT_INFORMATION_BIT_EXT, Level.DEBUG),

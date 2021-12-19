@@ -1,25 +1,41 @@
 package engine.graphics.vulkan.instance.factory;
 
+import engine.collections.list.DefaultImmutableList;
+import engine.collections.list.ImmutableList;
+import engine.graphics.vulkan.instance.properties.MessageSeverity;
 import engine.graphics.vulkan.instance.properties.Version;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 public class InstanceInfo {
-    @Nullable private final String applicationName;
-    @Nullable private final String engineName;
-    @Nullable private final Version applicationVersion;
-    @Nullable private final Version engineVersion;
+    @Nullable
+    private final String applicationName;
+    @Nullable
+    private final String engineName;
+    @Nullable
+    private final Version applicationVersion;
+    @Nullable
+    private final Version engineVersion;
+
     private final Version vulkanVersion;
+    private final ImmutableList<MessageSeverity> debugSeverities;
 
     public InstanceInfo(@Nullable String applicationName,
                         @Nullable String engineName,
                         @Nullable Version applicationVersion,
                         @Nullable Version engineVersion,
-                        Version vulkanVersion) {
+                        Version vulkanVersion,
+                        List<MessageSeverity> debugSeverities) {
         this.applicationName = applicationName;
         this.engineName = engineName;
         this.applicationVersion = applicationVersion;
         this.engineVersion = engineVersion;
         this.vulkanVersion = vulkanVersion;
+
+        this.debugSeverities = new DefaultImmutableList<>(debugSeverities);
     }
 
     @Nullable
@@ -46,15 +62,25 @@ public class InstanceInfo {
         return vulkanVersion;
     }
 
+    public ImmutableList<MessageSeverity> getDebugSeverities() {
+        return debugSeverities;
+    }
+
     public static class Builder {
-        @Nullable private String applicationName;
-        @Nullable private String engineName;
-        @Nullable private Version applicationVersion;
-        @Nullable private Version engineVersion;
         private final Version vulkanVersion;
+        private final List<MessageSeverity> debugSeverities;
+        @Nullable
+        private String applicationName;
+        @Nullable
+        private String engineName;
+        @Nullable
+        private Version applicationVersion;
+        @Nullable
+        private Version engineVersion;
 
         public Builder(Version vulkanVersion) {
             this.vulkanVersion = vulkanVersion;
+            this.debugSeverities = new ArrayList<>();
         }
 
         public Builder applicationName(@Nullable String applicationName) {
@@ -77,8 +103,20 @@ public class InstanceInfo {
             return this;
         }
 
+        public Builder debugSeverities(MessageSeverity... severities) {
+            Collections.addAll(debugSeverities, severities);
+            return this;
+        }
+
         public InstanceInfo build() {
-            return new InstanceInfo(applicationName, engineName, applicationVersion, engineVersion, vulkanVersion);
+            return new InstanceInfo(
+                    applicationName,
+                    engineName,
+                    applicationVersion,
+                    engineVersion,
+                    vulkanVersion,
+                    debugSeverities
+            );
         }
     }
 }

@@ -6,17 +6,17 @@ import engine.helper.enums.HasValue;
 
 @FunctionalInterface
 public interface VkFunction {
+    static void execute(VkFunction function) {
+        function.execute();
+    }
+
     int getResult();
 
     default void execute() {
         VkResult result = HasValue.getByValue(getResult(), VkResult.class);
 
-        if(result != VkResult.SUCCESS) {
+        if (result != VkResult.SUCCESS) {
             throw new VkException(result);
         }
-    }
-
-    static void execute(VkFunction function) {
-        function.execute();
     }
 }

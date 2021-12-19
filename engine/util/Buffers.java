@@ -1,7 +1,6 @@
 package engine.util;
 
 import engine.helper.enums.HasValue;
-import engine.memory.MemoryContext;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.MemoryUtil;
@@ -18,11 +17,11 @@ public final class Buffers {
     public static <E extends Enum<E> & HasValue<String>> List<E> fromStringBuffer(PointerBuffer buffer, Class<E> enumClass) {
         List<E> values = new ArrayList<>(buffer.capacity());
 
-        for(int i = 0; i < buffer.capacity(); i++) {
+        for (int i = 0; i < buffer.capacity(); i++) {
             String value = MemoryUtil.memASCII(buffer.get(i));
             E enumValue = HasValue.getByValue(value, enumClass);
 
-            if(enumValue == null) {
+            if (enumValue == null) {
                 throw new IllegalArgumentException("Unable to find enum value in " + enumClass +
                         " with string value " + value);
             }
@@ -36,11 +35,11 @@ public final class Buffers {
     public static <E extends Enum<E> & HasValue<Integer>> List<E> fromIntBuffer(IntBuffer buffer, Class<E> enumClass) {
         List<E> values = new ArrayList<>(buffer.capacity());
 
-        for(int i = 0; i < buffer.capacity(); i++) {
+        for (int i = 0; i < buffer.capacity(); i++) {
             int value = buffer.get(i);
             E enumValue = HasValue.getByValue(buffer.get(i), enumClass);
 
-            if(enumValue == null) {
+            if (enumValue == null) {
                 throw new IllegalArgumentException("Unable to find enum value in " + enumClass +
                         " with int value " + value);
             }
@@ -54,11 +53,11 @@ public final class Buffers {
     public static <E extends Enum<E> & HasValue<Long>> List<E> fromLongBuffer(LongBuffer buffer, Class<E> enumClass) {
         List<E> values = new ArrayList<>(buffer.capacity());
 
-        for(int i = 0; i < buffer.capacity(); i++) {
+        for (int i = 0; i < buffer.capacity(); i++) {
             long value = buffer.get(i);
             E enumValue = HasValue.getByValue(buffer.get(i), enumClass);
 
-            if(enumValue == null) {
+            if (enumValue == null) {
                 throw new IllegalArgumentException("Unable to find enum value in " + enumClass +
                         " with int value " + value);
             }
@@ -73,7 +72,7 @@ public final class Buffers {
     List<E> fromStructBuffer(B buffer, Class<E> enumClass, Function<S, C> convertFunction) {
         List<E> values = new ArrayList<>(buffer.capacity());
 
-        for(int i = 0; i < buffer.capacity(); i++) {
+        for (int i = 0; i < buffer.capacity(); i++) {
             C converted = convertFunction.apply(buffer.get(i));
             E value = HasValue.getByValue(converted, enumClass);
             values.add(value);
@@ -85,7 +84,7 @@ public final class Buffers {
     public static <E extends HasValue<String>> PointerBuffer toStringBuffer(MemoryStack stack, List<E> values) {
         PointerBuffer buffer = stack.mallocPointer(values.size());
 
-        for(int i = 0; i < values.size(); i++) {
+        for (int i = 0; i < values.size(); i++) {
             buffer.put(i, stack.ASCII(values.get(i).getValue()));
         }
 
@@ -95,7 +94,7 @@ public final class Buffers {
     public static <E extends HasValue<Integer>> IntBuffer toIntBuffer(MemoryStack stack, List<E> values) {
         IntBuffer buffer = stack.mallocInt(values.size());
 
-        for(int i = 0; i < values.size(); i++) {
+        for (int i = 0; i < values.size(); i++) {
             buffer.put(i, values.get(i).getValue());
         }
 
@@ -105,7 +104,7 @@ public final class Buffers {
     public static <E extends HasValue<Long>> LongBuffer toLongBuffer(MemoryStack stack, List<E> values) {
         LongBuffer buffer = stack.mallocLong(values.size());
 
-        for(int i = 0; i < values.size(); i++) {
+        for (int i = 0; i < values.size(); i++) {
             buffer.put(i, values.get(i).getValue());
         }
 

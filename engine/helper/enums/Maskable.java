@@ -1,5 +1,7 @@
 package engine.helper.enums;
 
+import engine.collections.ImmutableCollection;
+
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.Optional;
@@ -51,6 +53,10 @@ public interface Maskable {
         }
 
         return bitMask;
+    }
+
+    static <T extends Enum<T> & Maskable> int toBitMask(ImmutableCollection<T> enumCollection) {
+        return toBitMask(enumCollection.toMutable());
     }
 
     static <T extends Enum<T> & Maskable> int toBitMask(Stream<T> enumStream) {

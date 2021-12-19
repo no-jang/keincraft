@@ -5,6 +5,7 @@ import engine.graphics.vulkan.instance.extension.properties.InstanceExtension;
 import engine.graphics.vulkan.instance.extension.properties.InstanceLayer;
 import engine.graphics.vulkan.instance.factory.InstanceFactory;
 import engine.graphics.vulkan.instance.factory.InstanceInfo;
+import engine.graphics.vulkan.instance.properties.MessageSeverity;
 import engine.graphics.vulkan.instance.properties.Version;
 
 public class Test {
@@ -23,6 +24,13 @@ public class Test {
                 .engineName("engine")
                 .applicationVersion(new Version(1, 0, 0))
                 .engineVersion(new Version(1, 0, 0))
+                .debugSeverities(
+                        MessageSeverity.ERROR,
+                        MessageSeverity.WARNING,
+                        MessageSeverity.PERFORMANCE_WARNING,
+                        MessageSeverity.INFO,
+                        MessageSeverity.VERBOSE
+                )
                 .build();
 
         InstanceFactory instanceFactory = new InstanceFactory();
