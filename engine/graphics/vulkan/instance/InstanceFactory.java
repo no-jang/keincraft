@@ -1,13 +1,11 @@
-package engine.graphics.vulkan.instance.factory;
+package engine.graphics.vulkan.instance;
 
 import engine.graphics.vulkan.helper.function.VkFunction;
-import engine.graphics.vulkan.instance.Instance;
-import engine.graphics.vulkan.instance.InstanceLogger;
 import engine.graphics.vulkan.instance.extension.ExtensionContainer;
 import engine.graphics.vulkan.instance.extension.properties.InstanceExtension;
 import engine.graphics.vulkan.instance.extension.properties.InstanceLayer;
+import engine.graphics.vulkan.instance.properties.InstanceInfo;
 import engine.graphics.vulkan.instance.properties.Version;
-import engine.graphics.vulkan.instance.util.InstanceUtil;
 import engine.helper.enums.Maskable;
 import engine.memory.MemoryContext;
 import engine.util.Buffers;

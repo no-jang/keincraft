@@ -1,4 +1,4 @@
-package engine.graphics.vulkan.instance.util;
+package engine.graphics.vulkan.instance;
 
 import engine.graphics.vulkan.helper.function.VkFunction;
 import engine.graphics.vulkan.instance.properties.Version;

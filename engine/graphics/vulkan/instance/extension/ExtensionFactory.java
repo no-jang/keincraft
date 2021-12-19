@@ -1,7 +1,6 @@
-package engine.graphics.vulkan.instance.extension.factory;
+package engine.graphics.vulkan.instance.extension;
 
 import engine.graphics.vulkan.helper.function.VkFunction;
-import engine.graphics.vulkan.instance.extension.ExtensionContainer;
 import engine.graphics.vulkan.instance.extension.properties.InstanceExtension;
 import engine.graphics.vulkan.instance.extension.properties.InstanceLayer;
 import engine.memory.MemoryContext;

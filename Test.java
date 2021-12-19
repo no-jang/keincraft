@@ -1,15 +1,28 @@
 import engine.graphics.vulkan.instance.Instance;
+import engine.graphics.vulkan.instance.InstanceFactory;
 import engine.graphics.vulkan.instance.extension.ExtensionContainer;
-import engine.graphics.vulkan.instance.extension.factory.ExtensionFactory;
+import engine.graphics.vulkan.instance.extension.ExtensionFactory;
 import engine.graphics.vulkan.instance.extension.properties.InstanceExtension;
 import engine.graphics.vulkan.instance.extension.properties.InstanceLayer;
-import engine.graphics.vulkan.instance.factory.InstanceFactory;
-import engine.graphics.vulkan.instance.factory.InstanceInfo;
+import engine.graphics.vulkan.instance.properties.InstanceInfo;
 import engine.graphics.vulkan.instance.properties.MessageSeverity;
 import engine.graphics.vulkan.instance.properties.Version;
+import engine.window.Window;
+import engine.window.WindowContext;
+import engine.window.WindowFactory;
+import engine.window.properties.WindowInfo;
 
 public class Test {
     public static void main(String[] args) throws InterruptedException {
+        WindowFactory windowFactory = new WindowFactory();
+        WindowContext windowContext = windowFactory.createWindowContext();
+
+        WindowInfo windowInfo = new WindowInfo.Builder()
+                .title("test")
+                .build();
+
+        Window window = windowFactory.createWindow(windowContext, windowInfo);
+
         ExtensionFactory extensionFactory = new ExtensionFactory();
         ExtensionContainer<InstanceExtension> instanceExtensions = extensionFactory.createExtensionContainer()
                 .request(InstanceExtension.DEBUG_REPORT)
@@ -37,27 +50,14 @@ public class Test {
 
         Instance instance = instanceFactory.create(instanceInfo, instanceExtensions, instanceLayers);
 
+        while (!window.isCloseRequested()) {
+            windowContext.input();
+        }
+
         instance.destroy();
+        window.destroy();
 
-/*        Window window = new Window("test", 900, 900);
-
-        InstanceProperties instanceProperties = new InstanceProperties(new Version(1, 2, 0))
-                .applicationName("test")
-                .engineName("engine")
-                .applicationVersion(new Version(1, 0, 0))
-                .engineVersion(new Version(1, 0, 0))
-
-                .requiredExtension(window.getRequiredExtensions())
-                .requiredExtension(InstanceExtension.DEBUG_REPORT)
-                .requiredLayer(InstanceLayer.KHRONOS_VALIDATION)
-
-                .severity(MessageSeverity.ERROR,
-                        MessageSeverity.WARNING,
-                        MessageSeverity.PERFORMANCE_WARNING,
-                        MessageSeverity.INFO,
-                        MessageSeverity.VERBOSE);
-
-        Instance instance = new Instance(instanceProperties);
+/*
         List<PhysicalDevice> physicalDevices = instance.getPhysicalDevices();
         PhysicalDevice physicalDevice = physicalDevices.get(0);
         physicalDevice.printDevice();

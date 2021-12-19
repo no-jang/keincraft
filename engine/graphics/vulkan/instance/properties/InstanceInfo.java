@@ -1,9 +1,7 @@
-package engine.graphics.vulkan.instance.factory;
+package engine.graphics.vulkan.instance.properties;
 
 import engine.collections.list.DefaultImmutableList;
 import engine.collections.list.ImmutableList;
-import engine.graphics.vulkan.instance.properties.MessageSeverity;
-import engine.graphics.vulkan.instance.properties.Version;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 import java.util.ArrayList;
