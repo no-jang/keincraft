@@ -1,5 +1,3 @@
-import client.KeincraftClient;
-
 import java.util.Objects;
 
 public class Main {
@@ -21,9 +19,7 @@ public class Main {
     }
 
     public static void runClient() {
-        KeincraftClient client = new KeincraftClient();
-        client.loop();
-        client.destroy();
+        // TODO Write client
     }
 
     public static void runServer() {

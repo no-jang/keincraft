@@ -1,4 +1,4 @@
-package common.util.enums;
+package engine.helper.enums;
 
 import java.util.Collection;
 import java.util.EnumSet;
@@ -16,15 +16,11 @@ public interface Maskable {
         throw new IllegalArgumentException("Unrecognized bit value: " + bit);
     }
 
-    static <T extends Enum<T> & Maskable> int toBit(final T enumValue) {
-        if (enumValue == null) {
-            return 0;
-        }
-
+    static <T extends Enum<T> & Maskable> int toBit(T enumValue) {
         return enumValue.getBit();
     }
 
-    static <T extends Enum<T> & Maskable> EnumSet<T> fromBitMask(final int bitmask, final Class<T> enumType) {
+    static <T extends Enum<T> & Maskable> EnumSet<T> fromBitMask(int bitmask, Class<T> enumType) {
         EnumSet<T> entries = EnumSet.noneOf(enumType);
 
         for (T entry : enumType.getEnumConstants()) {
@@ -37,7 +33,7 @@ public interface Maskable {
     }
 
     @SafeVarargs
-    static <T extends Enum<T> & Maskable> int toBitMask(final T... enumValues) {
+    static <T extends Enum<T> & Maskable> int toBitMask(T... enumValues) {
         int bitMask = 0;
 
         for (T entry : enumValues) {
@@ -47,7 +43,7 @@ public interface Maskable {
         return bitMask;
     }
 
-    static <T extends Enum<T> & Maskable> int toBitMask(final Collection<T> enumCollection) {
+    static <T extends Enum<T> & Maskable> int toBitMask(Collection<T> enumCollection) {
         int bitMask = 0;
 
         for (T entry : enumCollection) {
@@ -57,8 +53,8 @@ public interface Maskable {
         return bitMask;
     }
 
-    static <T extends Enum<T> & Maskable> int toBitMask(final Stream<T> enumStream) {
-        return Optional.ofNullable(enumStream)
+    static <T extends Enum<T> & Maskable> int toBitMask(Stream<T> enumStream) {
+        return Optional.of(enumStream)
                 .orElseGet(Stream::empty)
                 .map(Maskable.class::cast)
                 .mapToInt(Maskable::getBit)

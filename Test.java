@@ -1,23 +1,37 @@
-import client.graphics.vk.device.LogicalDevice;
-import client.graphics.vk.device.PhysicalDevice;
-import client.graphics.vk.device.properties.DeviceExtension;
-import client.graphics.vk.device.properties.DeviceInfo;
-import client.graphics.vk.instance.Instance;
-import client.graphics.vk.instance.properties.InstanceExtension;
-import client.graphics.vk.instance.properties.InstanceLayer;
-import client.graphics.vk.instance.properties.InstanceProperties;
-import client.graphics.vk.instance.properties.MessageSeverity;
-import client.graphics.vk.instance.properties.Version;
-import client.graphics.vk.queue.QueueCapability;
-import client.graphics.vk.queue.QueueFamily;
-import client.graphics.vk.surface.Surface;
-import client.graphics.vk.surface.Window;
-
-import java.util.List;
+import engine.graphics.vulkan.instance.Instance;
+import engine.graphics.vulkan.instance.extension.ExtensionContainer;
+import engine.graphics.vulkan.instance.extension.factory.ExtensionFactory;
+import engine.graphics.vulkan.instance.extension.properties.InstanceExtension;
+import engine.graphics.vulkan.instance.extension.properties.InstanceLayer;
+import engine.graphics.vulkan.instance.factory.InstanceFactory;
+import engine.graphics.vulkan.instance.factory.InstanceInfo;
+import engine.graphics.vulkan.instance.properties.Version;
 
 public class Test {
     public static void main(String[] args) throws InterruptedException {
-        Window window = new Window("test", 900, 900);
+        ExtensionFactory extensionFactory = new ExtensionFactory();
+        ExtensionContainer<InstanceExtension> instanceExtensions = extensionFactory.createExtensionContainer()
+                .request(InstanceExtension.DEBUG_REPORT)
+                .build();
+
+        ExtensionContainer<InstanceLayer> instanceLayers = extensionFactory.createLayerContainer()
+                .request(InstanceLayer.KHRONOS_VALIDATION)
+                .build();
+
+        InstanceInfo instanceInfo = new InstanceInfo.Builder(new Version(1, 2, 0))
+                .applicationName("test")
+                .engineName("engine")
+                .applicationVersion(new Version(1, 0, 0))
+                .engineVersion(new Version(1, 0, 0))
+                .build();
+
+        InstanceFactory instanceFactory = new InstanceFactory();
+
+        Instance instance = instanceFactory.create(instanceInfo, instanceExtensions, instanceLayers);
+
+        instance.destroy();
+
+/*        Window window = new Window("test", 900, 900);
 
         InstanceProperties instanceProperties = new InstanceProperties(new Version(1, 2, 0))
                 .applicationName("test")
@@ -64,6 +78,6 @@ public class Test {
 
         device.destroy();
         surface.destroy();
-        instance.destroy();
+        instance.destroy();*/
     }
 }
