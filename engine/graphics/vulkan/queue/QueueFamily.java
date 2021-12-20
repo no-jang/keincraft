@@ -1,9 +1,10 @@
-package engine.graphics.vulkan.device.queue;
+package engine.graphics.vulkan.queue;
 
 import engine.collections.set.DefaultImmutableSet;
 import engine.collections.set.ImmutableSet;
 import engine.graphics.vulkan.device.PhysicalDevice;
 import engine.graphics.vulkan.helper.function.VkFunction;
+import engine.graphics.vulkan.queue.properties.QueueCapability;
 import engine.graphics.vulkan.surface.Surface;
 import engine.helper.enums.Maskable;
 import engine.memory.MemoryContext;

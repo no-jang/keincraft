@@ -1,7 +1,8 @@
-package engine.graphics.vulkan.device.queue;
+package engine.graphics.vulkan.queue;
 
 import engine.graphics.vulkan.device.Device;
 import engine.graphics.vulkan.device.PhysicalDevice;
+import engine.graphics.vulkan.queue.properties.QueueContainer;
 import engine.memory.MemoryContext;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.system.MemoryStack;

@@ -1,4 +1,6 @@
-package engine.graphics.vulkan.device.queue;
+package engine.graphics.vulkan.queue.properties;
+
+import engine.graphics.vulkan.queue.QueueFamily;
 
 import java.util.List;
 

@@ -1,9 +1,10 @@
-package engine.graphics.vulkan.device.queue;
+package engine.graphics.vulkan.queue.properties;
 
 import engine.collections.container.DefaultDoubleContainer;
 import engine.collections.container.DoubleContainer;
 import engine.collections.list.DefaultImmutableList;
 import engine.collections.list.ImmutableList;
+import engine.graphics.vulkan.queue.QueueFamily;
 
 import java.util.List;
 import java.util.function.Function;

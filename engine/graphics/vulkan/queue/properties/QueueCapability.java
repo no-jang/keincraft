@@ -1,4 +1,4 @@
-package engine.graphics.vulkan.device.queue;
+package engine.graphics.vulkan.queue.properties;
 
 import engine.helper.enums.Maskable;
 import org.lwjgl.vulkan.VK10;

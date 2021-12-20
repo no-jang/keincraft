@@ -1,4 +1,4 @@
-package engine.graphics.vulkan.device.queue;
+package engine.graphics.vulkan.queue;
 
 import engine.helper.pointer.ReferencePointer;
 import org.lwjgl.vulkan.VkQueue;
