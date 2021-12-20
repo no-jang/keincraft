@@ -13,10 +13,17 @@ public interface VkFunction {
     int getResult();
 
     default void execute() {
-        VkResult result = HasValue.getByValue(getResult(), VkResult.class);
+        int resultCode = getResult();
+        VkResult result = HasValue.getByValue(resultCode, VkResult.class);
 
-        if (result != VkResult.SUCCESS) {
+        if (resultCode == VkResult.SUCCESS.getValue()) {
+            return;
+        }
+
+        if (result != null) {
             throw new VkException(result);
+        } else {
+            throw new RuntimeException("Unknown vulkan error: " + resultCode);
         }
     }
 }

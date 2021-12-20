@@ -22,8 +22,7 @@ public final class Buffers {
             E enumValue = HasValue.getByValue(value, enumClass);
 
             if (enumValue == null) {
-                throw new IllegalArgumentException("Unable to find enum value in " + enumClass +
-                        " with string value " + value);
+                continue;
             }
 
             values.add(enumValue);
@@ -40,8 +39,7 @@ public final class Buffers {
             E enumValue = HasValue.getByValue(buffer.get(i), enumClass);
 
             if (enumValue == null) {
-                throw new IllegalArgumentException("Unable to find enum value in " + enumClass +
-                        " with int value " + value);
+                continue;
             }
 
             values.add(enumValue);
@@ -58,8 +56,7 @@ public final class Buffers {
             E enumValue = HasValue.getByValue(buffer.get(i), enumClass);
 
             if (enumValue == null) {
-                throw new IllegalArgumentException("Unable to find enum value in " + enumClass +
-                        " with int value " + value);
+                continue;
             }
 
             values.add(enumValue);
@@ -75,6 +72,11 @@ public final class Buffers {
         for (int i = 0; i < buffer.capacity(); i++) {
             C converted = convertFunction.apply(buffer.get(i));
             E value = HasValue.getByValue(converted, enumClass);
+
+            if (value == null) {
+                continue;
+            }
+
             values.add(value);
         }
 

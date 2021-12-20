@@ -1,3 +1,9 @@
+import engine.collections.list.ImmutableList;
+import engine.graphics.vulkan.device.PhysicalDevice;
+import engine.graphics.vulkan.device.PhysicalDeviceFactory;
+import engine.graphics.vulkan.device.queue.QueueCapability;
+import engine.graphics.vulkan.device.queue.QueueFactory;
+import engine.graphics.vulkan.device.queue.QueueFamily;
 import engine.graphics.vulkan.instance.Instance;
 import engine.graphics.vulkan.instance.InstanceFactory;
 import engine.graphics.vulkan.instance.extension.ExtensionContainer;
@@ -7,10 +13,15 @@ import engine.graphics.vulkan.instance.extension.properties.InstanceLayer;
 import engine.graphics.vulkan.instance.properties.InstanceInfo;
 import engine.graphics.vulkan.instance.properties.MessageSeverity;
 import engine.graphics.vulkan.instance.properties.Version;
+import engine.graphics.vulkan.surface.Surface;
+import engine.graphics.vulkan.surface.SurfaceFactory;
 import engine.window.Window;
 import engine.window.WindowContext;
 import engine.window.WindowFactory;
 import engine.window.properties.WindowInfo;
+import org.tinylog.Logger;
+
+import java.util.List;
 
 public class Test {
     public static void main(String[] args) throws InterruptedException {
@@ -25,6 +36,7 @@ public class Test {
 
         ExtensionFactory extensionFactory = new ExtensionFactory();
         ExtensionContainer<InstanceExtension> instanceExtensions = extensionFactory.createExtensionContainer()
+                .request(windowContext.getVulkanExtensions())
                 .request(InstanceExtension.DEBUG_REPORT)
                 .build();
 
@@ -47,22 +59,37 @@ public class Test {
                 .build();
 
         InstanceFactory instanceFactory = new InstanceFactory();
-
         Instance instance = instanceFactory.create(instanceInfo, instanceExtensions, instanceLayers);
+
+        PhysicalDeviceFactory physicalDeviceFactory = new PhysicalDeviceFactory();
+        List<PhysicalDevice> physicalDevices = physicalDeviceFactory.createPhysicalDevices(instance);
+        PhysicalDevice physicalDevice = physicalDevices.get(0);
+        Logger.info(physicalDevice.toPropertyString());
+
+        SurfaceFactory surfaceFactory = new SurfaceFactory();
+        Surface surface = surfaceFactory.createSurface(instance, physicalDevice, window);
+
+        QueueFactory queueFactory = new QueueFactory();
+        ImmutableList<QueueFamily> queueFamilies = queueFactory.createQueueFamilies(physicalDevice);
+
+        QueueFamily graphicsFamily = queueFamilies.stream()
+                .filter(family -> family.getCount() > 0 && family.getCapabilities().contains(QueueCapability.GRAPHICS))
+                .findFirst()
+                .orElseThrow(() -> new RuntimeException("Failed to find graphics family"));
+
+        QueueFamily presentFamily = queueFamilies.stream()
+                .filter(family -> family.getCount() > 0 && family.hasPresentationSupport(surface))
+                .findFirst()
+                .orElseThrow(() -> new RuntimeException("Failed to find present family"));
 
         while (!window.isCloseRequested()) {
             windowContext.input();
         }
 
+        surface.destroy();
         instance.destroy();
         window.destroy();
-
 /*
-        List<PhysicalDevice> physicalDevices = instance.getPhysicalDevices();
-        PhysicalDevice physicalDevice = physicalDevices.get(0);
-        physicalDevice.printDevice();
-
-        Surface surface = new Surface(instance, window, physicalDevice);
 
         QueueFamily graphicsFamily = physicalDevice.getQueueFamilies().stream()
                 .filter(family -> family.getQueueCount() > 0)
@@ -84,8 +111,6 @@ public class Test {
         LogicalDevice device = new LogicalDevice(physicalDevice, deviceInfo);
         device.printDevice();
 
-        device.destroy();
-        surface.destroy();
-        instance.destroy();*/
+        device.destroy();*/
     }
 }

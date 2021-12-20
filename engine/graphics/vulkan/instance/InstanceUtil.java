@@ -14,6 +14,6 @@ public final class InstanceUtil {
 
         IntBuffer vkVersion = stack.mallocInt(1);
         VkFunction.execute(() -> VK11.vkEnumerateInstanceVersion(vkVersion));
-        return Version.fromVulkan(vkVersion.get(0));
+        return Version.ofVk(vkVersion.get(0));
     }
 }

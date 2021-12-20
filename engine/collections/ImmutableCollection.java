@@ -1,6 +1,7 @@
 package engine.collections;
 
 import java.util.Collection;
+import java.util.stream.Stream;
 
 public interface ImmutableCollection<E> extends Iterable<E> {
     int size();
@@ -12,4 +13,6 @@ public interface ImmutableCollection<E> extends Iterable<E> {
     boolean containsAll(Collection<E> collection);
 
     Collection<E> toMutable();
+
+    Stream<E> stream();
 }

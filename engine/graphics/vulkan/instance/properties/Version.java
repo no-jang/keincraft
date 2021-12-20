@@ -32,7 +32,7 @@ public class Version implements Comparable<Version> {
      * @param version vulkan integer version
      * @return converted {@link Version}
      */
-    public static Version fromVulkan(int version) {
+    public static Version ofVk(int version) {
         return new Version(VK10.VK_VERSION_MAJOR(version), VK10.VK_VERSION_MINOR(version), VK10.VK_VERSION_PATCH(version));
     }
 
