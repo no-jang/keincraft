@@ -1,10 +1,10 @@
 package engine.helper.pointer;
 
-public abstract class ReferencePointer<T> extends Pointer {
+public abstract class ReferencePointer<T extends org.lwjgl.system.Pointer> extends Pointer {
     protected final T reference;
 
-    public ReferencePointer(T reference, long handle) {
-        super(handle);
+    public ReferencePointer(T reference) {
+        super(reference.address());
 
         this.reference = reference;
     }

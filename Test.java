@@ -6,6 +6,7 @@ import engine.graphics.vulkan.device.PhysicalDevice;
 import engine.graphics.vulkan.device.PhysicalDeviceFactory;
 import engine.graphics.vulkan.device.properties.DeviceExtension;
 import engine.graphics.vulkan.device.properties.DeviceFeature;
+import engine.graphics.vulkan.device.queue.Queue;
 import engine.graphics.vulkan.device.queue.QueueCapability;
 import engine.graphics.vulkan.device.queue.QueueContainer;
 import engine.graphics.vulkan.device.queue.QueueFactory;
@@ -92,6 +93,9 @@ public class Test {
 
         DeviceFactory deviceFactory = new DeviceFactory();
         Device device = deviceFactory.createDevice(physicalDevice, queueContainer, deviceExtensions, deviceFeatures);
+
+        Queue graphicsQueue = queueFactory.createQueue(device, graphicsFamily, 0);
+        Queue presentQueue = queueFactory.createQueue(device, presentFamily, 0);
 
         while (!window.isCloseRequested()) {
             windowContext.input();

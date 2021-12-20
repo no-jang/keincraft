@@ -31,7 +31,7 @@ public class PhysicalDevice extends ReferencePointer<VkPhysicalDevice> {
                           DeviceLimits limits,
                           List<DeviceSpareProperties> spareProperties,
                           List<MemoryType> memoryTypes) {
-        super(reference, reference.address());
+        super(reference);
         this.properties = properties;
         this.limits = limits;
         this.spareProperties = new DefaultImmutableList<>(spareProperties);

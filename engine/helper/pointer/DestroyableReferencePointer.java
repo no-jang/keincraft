@@ -8,7 +8,7 @@ public abstract class DestroyableReferencePointer<T extends Pointer> extends Ref
     private final AtomicBoolean isDestroyed;
 
     public DestroyableReferencePointer(T reference) {
-        super(reference, reference.address());
+        super(reference);
 
         isDestroyed = new AtomicBoolean(false);
     }
