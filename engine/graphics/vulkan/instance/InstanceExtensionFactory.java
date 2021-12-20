@@ -16,7 +16,7 @@ import java.nio.IntBuffer;
 import java.util.List;
 
 public class InstanceExtensionFactory {
-    public Container.Builder<InstanceExtension> createExtensionContainer() {
+    public static Container.Builder<InstanceExtension> createExtensionContainer() {
         MemoryStack stack = MemoryContext.getStack();
 
         IntBuffer availableExtensionCountBuffer = stack.mallocInt(1);
@@ -31,7 +31,7 @@ public class InstanceExtensionFactory {
         return new DefaultContainer.Builder<>(availableExtensions);
     }
 
-    public DefaultContainer.Builder<InstanceLayer> createLayerContainer() {
+    public static DefaultContainer.Builder<InstanceLayer> createLayerContainer() {
         MemoryStack stack = MemoryContext.getStack();
 
         IntBuffer availableLayerCountBuffer = stack.mallocInt(1);

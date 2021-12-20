@@ -16,7 +16,7 @@ import java.nio.IntBuffer;
 import java.util.List;
 
 public class DeviceExtensionFactory {
-    public Container.Builder<DeviceExtension> createExtensionContainer(PhysicalDevice device) {
+    public static Container.Builder<DeviceExtension> createExtensionContainer(PhysicalDevice device) {
         MemoryStack stack = MemoryContext.getStack();
 
         IntBuffer extensionCountBuffer = stack.mallocInt(1);
@@ -30,7 +30,7 @@ public class DeviceExtensionFactory {
         return new DefaultContainer.Builder<>(extensions);
     }
 
-    public Container.Builder<DeviceFeature> createFeatureContainer(PhysicalDevice device) {
+    public static Container.Builder<DeviceFeature> createFeatureContainer(PhysicalDevice device) {
         MemoryStack stack = MemoryContext.getStack();
 
         VkPhysicalDeviceFeatures vkFeatures = VkPhysicalDeviceFeatures.malloc(stack);

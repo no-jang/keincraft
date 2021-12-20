@@ -31,22 +31,20 @@ import java.util.List;
 
 public class Test {
     public static void main(String[] args) throws InterruptedException {
-        WindowFactory windowFactory = new WindowFactory();
-        WindowContext windowContext = windowFactory.createWindowContext();
+        WindowContext windowContext = WindowFactory.createWindowContext();
 
         WindowInfo windowInfo = new WindowInfo.Builder()
                 .title("test")
                 .build();
 
-        Window window = windowFactory.createWindow(windowContext, windowInfo);
+        Window window = WindowFactory.createWindow(windowContext, windowInfo);
 
-        InstanceExtensionFactory extensionFactory = new InstanceExtensionFactory();
-        Container<InstanceExtension> instanceExtensions = extensionFactory.createExtensionContainer()
+        Container<InstanceExtension> instanceExtensions = InstanceExtensionFactory.createExtensionContainer()
                 .required(windowContext.getVulkanExtensions())
                 .required(InstanceExtension.DEBUG_REPORT)
                 .build();
 
-        Container<InstanceLayer> instanceLayers = extensionFactory.createLayerContainer()
+        Container<InstanceLayer> instanceLayers = InstanceExtensionFactory.createLayerContainer()
                 .required(InstanceLayer.KHRONOS_VALIDATION)
                 .build();
 
@@ -64,38 +62,32 @@ public class Test {
                 )
                 .build();
 
-        InstanceFactory instanceFactory = new InstanceFactory();
-        Instance instance = instanceFactory.create(instanceInfo, instanceExtensions, instanceLayers);
+        Instance instance = InstanceFactory.create(instanceInfo, instanceExtensions, instanceLayers);
 
-        PhysicalDeviceFactory physicalDeviceFactory = new PhysicalDeviceFactory();
-        List<PhysicalDevice> physicalDevices = physicalDeviceFactory.createPhysicalDevices(instance);
+        List<PhysicalDevice> physicalDevices = PhysicalDeviceFactory.createPhysicalDevices(instance);
         PhysicalDevice physicalDevice = physicalDevices.get(0);
         Logger.info(physicalDevice.toPropertyString());
 
-        SurfaceFactory surfaceFactory = new SurfaceFactory();
-        Surface surface = surfaceFactory.createSurface(instance, physicalDevice, window);
+        Surface surface = SurfaceFactory.createSurface(instance, physicalDevice, window);
 
-        QueueFactory queueFactory = new QueueFactory();
-        QueueContainer.Builder queueBuilder = queueFactory.createQueueFamilies(physicalDevice);
+        QueueContainer.Builder queueBuilder = QueueFactory.createQueueFamilies(physicalDevice);
 
         QueueFamily graphicsFamily = queueBuilder.required(stream -> stream.filter(family -> family.getCapabilities().contains(QueueCapability.GRAPHICS)));
         QueueFamily presentFamily = queueBuilder.required(stream -> stream.filter(family -> family.hasPresentationSupport(surface)));
 
         QueueContainer queueContainer = queueBuilder.build();
 
-        DeviceExtensionFactory deviceExtensionFactory = new DeviceExtensionFactory();
-        Container<DeviceExtension> deviceExtensions = deviceExtensionFactory.createExtensionContainer(physicalDevice)
+        Container<DeviceExtension> deviceExtensions = DeviceExtensionFactory.createExtensionContainer(physicalDevice)
                 .required(DeviceExtension.KHR_SWAPCHAIN)
                 .build();
 
-        Container<DeviceFeature> deviceFeatures = deviceExtensionFactory.createFeatureContainer(physicalDevice)
+        Container<DeviceFeature> deviceFeatures = DeviceExtensionFactory.createFeatureContainer(physicalDevice)
                 .build();
 
-        DeviceFactory deviceFactory = new DeviceFactory();
-        Device device = deviceFactory.createDevice(physicalDevice, queueContainer, deviceExtensions, deviceFeatures);
+        Device device = DeviceFactory.createDevice(physicalDevice, queueContainer, deviceExtensions, deviceFeatures);
 
-        Queue graphicsQueue = queueFactory.createQueue(device, graphicsFamily, 0);
-        Queue presentQueue = queueFactory.createQueue(device, presentFamily, 0);
+        Queue graphicsQueue = QueueFactory.createQueue(device, graphicsFamily, 0);
+        Queue presentQueue = QueueFactory.createQueue(device, presentFamily, 0);
 
         while (!window.isCloseRequested()) {
             windowContext.input();

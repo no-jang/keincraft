@@ -24,9 +24,9 @@ import java.nio.ByteBuffer;
 import java.nio.LongBuffer;
 
 public class InstanceFactory {
-    public Instance create(InstanceInfo info,
-                           Container<InstanceExtension> extensions,
-                           Container<InstanceLayer> layers) {
+    public static Instance create(InstanceInfo info,
+                                  Container<InstanceExtension> extensions,
+                                  Container<InstanceLayer> layers) {
         MemoryStack stack = MemoryContext.getStack();
 
         checkVkVersion(info);
@@ -57,7 +57,7 @@ public class InstanceFactory {
         return new Instance(instance, properties, messageCallbackHandle);
     }
 
-    private void checkVkVersion(InstanceInfo info) {
+    private static void checkVkVersion(InstanceInfo info) {
         Version availableVkVersion = InstanceUtil.currentVulkanVersion();
         if (availableVkVersion.compareTo(info.getVulkanVersion()) < 0) {
             throw new IllegalArgumentException("Requested vulkan version " + info.getVulkanVersion() + " is higher" +
@@ -65,7 +65,7 @@ public class InstanceFactory {
         }
     }
 
-    private VkApplicationInfo createApplicationInfo(MemoryStack stack, InstanceInfo info) {
+    private static VkApplicationInfo createApplicationInfo(MemoryStack stack, InstanceInfo info) {
         ByteBuffer applicationName = null;
         if (info.getApplicationName() != null) {
             applicationName = stack.ASCII(info.getApplicationName());
@@ -97,7 +97,7 @@ public class InstanceFactory {
     }
 
     @Nullable
-    private VkDebugReportCallbackCreateInfoEXT createMessageCallback(MemoryStack stack, InstanceInfo info, VkInstanceCreateInfo createInfo) {
+    private static VkDebugReportCallbackCreateInfoEXT createMessageCallback(MemoryStack stack, InstanceInfo info, VkInstanceCreateInfo createInfo) {
         if (info.getDebugSeverities().isEmpty()) {
             return null;
         }
@@ -113,8 +113,8 @@ public class InstanceFactory {
         return callbackCreateInfo;
     }
 
-    private long finishMessageCallback(MemoryStack stack, VkInstance instance,
-                                       @Nullable VkDebugReportCallbackCreateInfoEXT callbackCreateInfo) {
+    private static long finishMessageCallback(MemoryStack stack, VkInstance instance,
+                                              @Nullable VkDebugReportCallbackCreateInfoEXT callbackCreateInfo) {
         if (callbackCreateInfo == null) {
             return -1;
         }

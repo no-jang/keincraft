@@ -22,7 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class PhysicalDeviceFactory {
-    public List<PhysicalDevice> createPhysicalDevices(Instance instance) {
+    public static List<PhysicalDevice> createPhysicalDevices(Instance instance) {
         MemoryStack stack = MemoryContext.getStack();
 
         IntBuffer physicalDeviceCountBuffer = stack.mallocInt(1);
@@ -40,7 +40,7 @@ public class PhysicalDeviceFactory {
         return physicalDevices;
     }
 
-    public PhysicalDevice createPhysicalDevice(VkPhysicalDevice device) {
+    public static PhysicalDevice createPhysicalDevice(VkPhysicalDevice device) {
         MemoryStack stack = MemoryContext.getStack();
 
         VkPhysicalDeviceProperties vkProperties = VkPhysicalDeviceProperties.malloc(stack);

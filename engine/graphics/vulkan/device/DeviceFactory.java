@@ -21,10 +21,10 @@ import java.nio.FloatBuffer;
 import java.util.List;
 
 public class DeviceFactory {
-    public Device createDevice(PhysicalDevice physicalDevice,
-                               QueueContainer queues,
-                               Container<DeviceExtension> extensions,
-                               Container<DeviceFeature> features) {
+    public static Device createDevice(PhysicalDevice physicalDevice,
+                                      QueueContainer queues,
+                                      Container<DeviceExtension> extensions,
+                                      Container<DeviceFeature> features) {
 
         MemoryStack stack = MemoryContext.getStack();
 

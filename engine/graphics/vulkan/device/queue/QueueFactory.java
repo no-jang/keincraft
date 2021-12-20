@@ -14,7 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class QueueFactory {
-    public QueueContainer.Builder createQueueFamilies(PhysicalDevice physicalDevice) {
+    public static QueueContainer.Builder createQueueFamilies(PhysicalDevice physicalDevice) {
         MemoryStack stack = MemoryContext.getStack();
 
         IntBuffer queueFamilyCountBuffer = stack.mallocInt(1);
@@ -32,7 +32,7 @@ public class QueueFactory {
         return new QueueContainer.Builder(queueFamilies);
     }
 
-    public Queue createQueue(Device device, QueueFamily family, int index) {
+    public static Queue createQueue(Device device, QueueFamily family, int index) {
         MemoryStack stack = MemoryContext.getStack();
 
         PointerBuffer handleBuffer = stack.mallocPointer(1);

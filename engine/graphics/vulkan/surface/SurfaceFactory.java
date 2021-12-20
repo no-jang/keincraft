@@ -21,7 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class SurfaceFactory {
-    public Surface createSurface(Instance instance, PhysicalDevice physicalDevice, Window window) {
+    public static Surface createSurface(Instance instance, PhysicalDevice physicalDevice, Window window) {
         MemoryStack stack = MemoryContext.getStack();
 
         LongBuffer handleBuffer = stack.mallocLong(1);

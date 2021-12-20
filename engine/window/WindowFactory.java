@@ -8,7 +8,7 @@ import org.lwjgl.glfw.GLFWVidMode;
 import org.lwjgl.glfw.GLFWVulkan;
 
 public class WindowFactory {
-    public WindowContext createWindowContext() {
+    public static WindowContext createWindowContext() {
         GLFWErrorCallback.create((error, description) -> {
             throw new WindowException(error, description);
         });
@@ -27,7 +27,7 @@ public class WindowFactory {
         return new WindowContext();
     }
 
-    public Window createWindow(WindowContext context, WindowInfo info) {
+    public static Window createWindow(WindowContext context, WindowInfo info) {
         long handle = GLFW.glfwCreateWindow(info.getWidth(), info.getHeight(), info.getTitle(), 0, 0);
         if (handle == 0L) {
             throw new RuntimeException("Failed to create window " + info);
