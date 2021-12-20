@@ -1,4 +1,4 @@
-package engine.graphics.vulkan.instance.extension.properties;
+package engine.graphics.vulkan.instance.properties;
 
 import engine.helper.enums.HasValue;
 

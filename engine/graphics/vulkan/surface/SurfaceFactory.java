@@ -6,8 +6,8 @@ import engine.graphics.vulkan.instance.Instance;
 import engine.graphics.vulkan.surface.properties.PresentMode;
 import engine.graphics.vulkan.surface.properties.SurfaceCapabilities;
 import engine.graphics.vulkan.surface.properties.SurfaceFormat;
+import engine.memory.EnumBuffers;
 import engine.memory.MemoryContext;
-import engine.util.Buffers;
 import engine.window.Window;
 import org.lwjgl.glfw.GLFWVulkan;
 import org.lwjgl.system.MemoryStack;
@@ -50,7 +50,7 @@ public class SurfaceFactory {
 
         IntBuffer presentModeBuffer = stack.mallocInt(presentModeCount);
         VkFunction.execute(() -> KHRSurface.vkGetPhysicalDeviceSurfacePresentModesKHR(physicalDevice.getReference(), handle, presentModeBuffer, null));
-        List<PresentMode> presentModes = Buffers.fromIntBuffer(presentModeBuffer, PresentMode.class);
+        List<PresentMode> presentModes = EnumBuffers.ofInt(presentModeBuffer, PresentMode.class);
 
         return new Surface(instance, handle, capabilities, formats, presentModes);
     }

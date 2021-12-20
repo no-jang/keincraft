@@ -1,15 +1,15 @@
 package engine.graphics.vulkan.instance;
 
+import engine.collections.container.Container;
 import engine.graphics.vulkan.helper.function.VkFunction;
-import engine.graphics.vulkan.instance.extension.ExtensionContainer;
-import engine.graphics.vulkan.instance.extension.properties.InstanceExtension;
-import engine.graphics.vulkan.instance.extension.properties.InstanceLayer;
+import engine.graphics.vulkan.instance.properties.InstanceExtension;
 import engine.graphics.vulkan.instance.properties.InstanceInfo;
+import engine.graphics.vulkan.instance.properties.InstanceLayer;
 import engine.graphics.vulkan.instance.properties.InstanceProperties;
 import engine.graphics.vulkan.instance.properties.Version;
 import engine.helper.enums.Maskable;
+import engine.memory.EnumBuffers;
 import engine.memory.MemoryContext;
-import engine.util.Buffers;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.system.MemoryStack;
@@ -24,25 +24,17 @@ import java.nio.ByteBuffer;
 import java.nio.LongBuffer;
 
 public class InstanceFactory {
-    public Instance create(InstanceInfo info) {
-        return create(info, null, null);
-    }
-
-    public Instance create(InstanceInfo info, @Nullable ExtensionContainer<InstanceExtension> extensions) {
-        return create(info, extensions, null);
-    }
-
     public Instance create(InstanceInfo info,
-                           @Nullable ExtensionContainer<InstanceExtension> extensions,
-                           @Nullable ExtensionContainer<InstanceLayer> layers) {
+                           Container<InstanceExtension> extensions,
+                           Container<InstanceLayer> layers) {
         MemoryStack stack = MemoryContext.getStack();
 
         checkVkVersion(info);
 
         VkApplicationInfo applicationInfo = createApplicationInfo(stack, info);
 
-        PointerBuffer extensionNames = createExtensions(stack, extensions);
-        PointerBuffer layerNames = createLayers(stack, layers);
+        PointerBuffer extensionNames = EnumBuffers.toString(stack, extensions.getRequested().toMutable());
+        PointerBuffer layerNames = EnumBuffers.toString(stack, layers.getRequested().toMutable());
 
         VkInstanceCreateInfo createInfo = VkInstanceCreateInfo.malloc(stack)
                 .sType$Default()
@@ -102,24 +94,6 @@ public class InstanceFactory {
                 .applicationVersion(applicationVersion)
                 .engineVersion(engineVersion)
                 .apiVersion(info.getVulkanVersion().toVulkan());
-    }
-
-    @Nullable
-    private PointerBuffer createExtensions(MemoryStack stack, @Nullable ExtensionContainer<InstanceExtension> extensions) {
-        if (extensions == null) {
-            return null;
-        }
-
-        return Buffers.toStringBuffer(stack, extensions.getRequestedExtensions().toMutable());
-    }
-
-    @Nullable
-    private PointerBuffer createLayers(MemoryStack stack, @Nullable ExtensionContainer<InstanceLayer> layers) {
-        if (layers == null) {
-            return null;
-        }
-
-        return Buffers.toStringBuffer(stack, layers.getRequestedExtensions().toMutable());
     }
 
     @Nullable

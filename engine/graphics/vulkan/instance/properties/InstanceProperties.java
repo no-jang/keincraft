@@ -1,29 +1,27 @@
 package engine.graphics.vulkan.instance.properties;
 
-import engine.graphics.vulkan.instance.extension.ExtensionContainer;
-import engine.graphics.vulkan.instance.extension.properties.InstanceExtension;
-import engine.graphics.vulkan.instance.extension.properties.InstanceLayer;
+import engine.collections.container.Container;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 public class InstanceProperties {
     @Nullable
-    private final ExtensionContainer<InstanceExtension> enabledExtensions;
+    private final Container<InstanceExtension> enabledExtensions;
     @Nullable
-    private final ExtensionContainer<InstanceLayer> enabledLayers;
+    private final Container<InstanceLayer> enabledLayers;
 
-    public InstanceProperties(@Nullable ExtensionContainer<InstanceExtension> enabledExtensions,
-                              @Nullable ExtensionContainer<InstanceLayer> enabledLayers) {
+    public InstanceProperties(@Nullable Container<InstanceExtension> enabledExtensions,
+                              @Nullable Container<InstanceLayer> enabledLayers) {
         this.enabledExtensions = enabledExtensions;
         this.enabledLayers = enabledLayers;
     }
 
     @Nullable
-    public ExtensionContainer<InstanceExtension> getEnabledExtensions() {
+    public Container<InstanceExtension> getEnabledExtensions() {
         return enabledExtensions;
     }
 
     @Nullable
-    public ExtensionContainer<InstanceLayer> getEnabledLayers() {
+    public Container<InstanceLayer> getEnabledLayers() {
         return enabledLayers;
     }
 }

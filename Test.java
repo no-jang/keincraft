@@ -1,16 +1,21 @@
-import engine.collections.list.ImmutableList;
+import engine.collections.container.Container;
+import engine.graphics.vulkan.device.Device;
+import engine.graphics.vulkan.device.DeviceExtensionFactory;
+import engine.graphics.vulkan.device.DeviceFactory;
 import engine.graphics.vulkan.device.PhysicalDevice;
 import engine.graphics.vulkan.device.PhysicalDeviceFactory;
+import engine.graphics.vulkan.device.properties.DeviceExtension;
+import engine.graphics.vulkan.device.properties.DeviceFeature;
 import engine.graphics.vulkan.device.queue.QueueCapability;
+import engine.graphics.vulkan.device.queue.QueueContainer;
 import engine.graphics.vulkan.device.queue.QueueFactory;
 import engine.graphics.vulkan.device.queue.QueueFamily;
 import engine.graphics.vulkan.instance.Instance;
+import engine.graphics.vulkan.instance.InstanceExtensionFactory;
 import engine.graphics.vulkan.instance.InstanceFactory;
-import engine.graphics.vulkan.instance.extension.ExtensionContainer;
-import engine.graphics.vulkan.instance.extension.ExtensionFactory;
-import engine.graphics.vulkan.instance.extension.properties.InstanceExtension;
-import engine.graphics.vulkan.instance.extension.properties.InstanceLayer;
+import engine.graphics.vulkan.instance.properties.InstanceExtension;
 import engine.graphics.vulkan.instance.properties.InstanceInfo;
+import engine.graphics.vulkan.instance.properties.InstanceLayer;
 import engine.graphics.vulkan.instance.properties.MessageSeverity;
 import engine.graphics.vulkan.instance.properties.Version;
 import engine.graphics.vulkan.surface.Surface;
@@ -34,14 +39,14 @@ public class Test {
 
         Window window = windowFactory.createWindow(windowContext, windowInfo);
 
-        ExtensionFactory extensionFactory = new ExtensionFactory();
-        ExtensionContainer<InstanceExtension> instanceExtensions = extensionFactory.createExtensionContainer()
-                .request(windowContext.getVulkanExtensions())
-                .request(InstanceExtension.DEBUG_REPORT)
+        InstanceExtensionFactory extensionFactory = new InstanceExtensionFactory();
+        Container<InstanceExtension> instanceExtensions = extensionFactory.createExtensionContainer()
+                .required(windowContext.getVulkanExtensions())
+                .required(InstanceExtension.DEBUG_REPORT)
                 .build();
 
-        ExtensionContainer<InstanceLayer> instanceLayers = extensionFactory.createLayerContainer()
-                .request(InstanceLayer.KHRONOS_VALIDATION)
+        Container<InstanceLayer> instanceLayers = extensionFactory.createLayerContainer()
+                .required(InstanceLayer.KHRONOS_VALIDATION)
                 .build();
 
         InstanceInfo instanceInfo = new InstanceInfo.Builder(new Version(1, 2, 0))
@@ -70,39 +75,33 @@ public class Test {
         Surface surface = surfaceFactory.createSurface(instance, physicalDevice, window);
 
         QueueFactory queueFactory = new QueueFactory();
-        ImmutableList<QueueFamily> queueFamilies = queueFactory.createQueueFamilies(physicalDevice);
+        QueueContainer.Builder queueBuilder = queueFactory.createQueueFamilies(physicalDevice);
 
-        QueueFamily graphicsFamily = queueFamilies.stream()
-                .filter(family -> family.getCount() > 0 && family.getCapabilities().contains(QueueCapability.GRAPHICS))
-                .findFirst()
-                .orElseThrow(() -> new RuntimeException("Failed to find graphics family"));
+        QueueFamily graphicsFamily = queueBuilder.required(stream -> stream.filter(family -> family.getCapabilities().contains(QueueCapability.GRAPHICS)));
+        QueueFamily presentFamily = queueBuilder.required(stream -> stream.filter(family -> family.hasPresentationSupport(surface)));
 
-        QueueFamily presentFamily = queueFamilies.stream()
-                .filter(family -> family.getCount() > 0 && family.hasPresentationSupport(surface))
-                .findFirst()
-                .orElseThrow(() -> new RuntimeException("Failed to find present family"));
+        QueueContainer queueContainer = queueBuilder.build();
+
+        DeviceExtensionFactory deviceExtensionFactory = new DeviceExtensionFactory();
+        Container<DeviceExtension> deviceExtensions = deviceExtensionFactory.createExtensionContainer(physicalDevice)
+                .required(DeviceExtension.KHR_SWAPCHAIN)
+                .build();
+
+        Container<DeviceFeature> deviceFeatures = deviceExtensionFactory.createFeatureContainer(physicalDevice)
+                .build();
+
+        DeviceFactory deviceFactory = new DeviceFactory();
+        Device device = deviceFactory.createDevice(physicalDevice, queueContainer, deviceExtensions, deviceFeatures);
 
         while (!window.isCloseRequested()) {
             windowContext.input();
         }
 
+        device.destroy();
         surface.destroy();
         instance.destroy();
         window.destroy();
 /*
-
-        QueueFamily graphicsFamily = physicalDevice.getQueueFamilies().stream()
-                .filter(family -> family.getQueueCount() > 0)
-                .filter(family -> family.getCapabilities().contains(QueueCapability.GRAPHICS))
-                .findFirst()
-                .orElse(null);
-
-        QueueFamily presentFamily = physicalDevice.getQueueFamilies().stream()
-                .filter(family -> family.getQueueCount() > 0)
-                .filter(family -> family.supportsPresentation(surface))
-                .findFirst()
-                .orElse(null);
-
         DeviceInfo deviceInfo = new DeviceInfo();
         deviceInfo.addRequiredExtension(DeviceExtension.KHR_SWAPCHAIN);
         deviceInfo.addQueue(graphicsFamily, List.of(1.0f));

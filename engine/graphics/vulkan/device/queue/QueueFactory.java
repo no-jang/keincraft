@@ -1,7 +1,5 @@
 package engine.graphics.vulkan.device.queue;
 
-import engine.collections.list.DefaultImmutableList;
-import engine.collections.list.ImmutableList;
 import engine.graphics.vulkan.device.PhysicalDevice;
 import engine.memory.MemoryContext;
 import org.lwjgl.system.MemoryStack;
@@ -13,7 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class QueueFactory {
-    public ImmutableList<QueueFamily> createQueueFamilies(PhysicalDevice physicalDevice) {
+    public QueueContainer.Builder createQueueFamilies(PhysicalDevice physicalDevice) {
         MemoryStack stack = MemoryContext.getStack();
 
         IntBuffer queueFamilyCountBuffer = stack.mallocInt(1);
@@ -28,6 +26,6 @@ public class QueueFactory {
             queueFamilies.add(new QueueFamily(physicalDevice, i, queueFamilyBuffer.get(i)));
         }
 
-        return new DefaultImmutableList<>(queueFamilies);
+        return new QueueContainer.Builder(queueFamilies);
     }
 }

@@ -2,23 +2,18 @@ package engine.graphics.vulkan.device;
 
 import engine.graphics.vulkan.device.memory.MemoryHeap;
 import engine.graphics.vulkan.device.memory.MemoryType;
-import engine.graphics.vulkan.device.properties.DeviceExtension;
-import engine.graphics.vulkan.device.properties.DeviceFeature;
 import engine.graphics.vulkan.device.properties.DeviceLimits;
 import engine.graphics.vulkan.device.properties.DeviceProperties;
 import engine.graphics.vulkan.device.properties.DeviceSpareProperties;
 import engine.graphics.vulkan.helper.function.VkFunction;
 import engine.graphics.vulkan.instance.Instance;
 import engine.memory.MemoryContext;
-import engine.util.Buffers;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.VK10;
-import org.lwjgl.vulkan.VkExtensionProperties;
 import org.lwjgl.vulkan.VkMemoryHeap;
 import org.lwjgl.vulkan.VkMemoryType;
 import org.lwjgl.vulkan.VkPhysicalDevice;
-import org.lwjgl.vulkan.VkPhysicalDeviceFeatures;
 import org.lwjgl.vulkan.VkPhysicalDeviceMemoryProperties;
 import org.lwjgl.vulkan.VkPhysicalDeviceProperties;
 
@@ -55,18 +50,6 @@ public class PhysicalDeviceFactory {
         DeviceLimits limits = new DeviceLimits(vkProperties.limits());
         List<DeviceSpareProperties> spareProperties = DeviceSpareProperties.ofVk(vkProperties.sparseProperties());
 
-        VkPhysicalDeviceFeatures vkFeatures = VkPhysicalDeviceFeatures.malloc(stack);
-        VK10.vkGetPhysicalDeviceFeatures(device, vkFeatures);
-        List<DeviceFeature> features = DeviceFeature.ofVk(vkFeatures);
-
-        IntBuffer extensionCountBuffer = stack.mallocInt(1);
-        VkFunction.execute(() -> VK10.vkEnumerateDeviceExtensionProperties(device, (String) null, extensionCountBuffer, null));
-        int extensionCount = extensionCountBuffer.get(0);
-
-        VkExtensionProperties.Buffer extensionBuffer = VkExtensionProperties.malloc(extensionCount, stack);
-        VkFunction.execute(() -> VK10.vkEnumerateDeviceExtensionProperties(device, (String) null, extensionCountBuffer, extensionBuffer));
-        List<DeviceExtension> extensions = Buffers.fromStructBuffer(extensionBuffer, DeviceExtension.class, VkExtensionProperties::extensionNameString);
-
         VkPhysicalDeviceMemoryProperties memoryProperties = VkPhysicalDeviceMemoryProperties.malloc(stack);
         VK10.vkGetPhysicalDeviceMemoryProperties(device, memoryProperties);
 
@@ -85,6 +68,6 @@ public class PhysicalDeviceFactory {
             types.add(new MemoryType(type, heaps.get(type.heapIndex())));
         }
 
-        return new PhysicalDevice(device, extensionCount, properties, limits, spareProperties, extensions, features, types);
+        return new PhysicalDevice(device, properties, limits, spareProperties, types);
     }
 }

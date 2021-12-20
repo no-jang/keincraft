@@ -2,9 +2,9 @@ package engine.window;
 
 import engine.collections.list.DefaultImmutableList;
 import engine.collections.list.ImmutableList;
-import engine.graphics.vulkan.instance.extension.properties.InstanceExtension;
+import engine.graphics.vulkan.instance.properties.InstanceExtension;
 import engine.helper.pointer.Destroyable;
-import engine.util.Buffers;
+import engine.memory.EnumBuffers;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWVulkan;
@@ -29,7 +29,7 @@ public class WindowContext implements Destroyable {
             throw new RuntimeException("Failed to obtain required glfw vulkan instance extension names");
         }
 
-        return Buffers.fromStringBuffer(extensionNames, InstanceExtension.class);
+        return EnumBuffers.ofString(extensionNames, InstanceExtension.class);
     }
 
     public ImmutableList<Window> getWindows() {
