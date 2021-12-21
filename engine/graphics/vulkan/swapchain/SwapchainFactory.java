@@ -19,6 +19,8 @@ import org.lwjgl.vulkan.VkSwapchainCreateInfoKHR;
 
 import java.nio.IntBuffer;
 import java.nio.LongBuffer;
+import java.util.ArrayList;
+import java.util.List;
 
 public class SwapchainFactory {
     public static Swapchain createSwapchain(Device device, Surface surface, SwapchainInfo info) {
@@ -78,5 +80,22 @@ public class SwapchainFactory {
         int imageCount = imageCountBuffer.get(0);
 
         return new Swapchain(device, handle, imageCount);
+    }
+
+    public static List<SwapchainImage> createImages(Device device, Swapchain swapchain) {
+        MemoryStack stack = MemoryContext.getStack();
+
+        int imageCount = swapchain.getImageCount();
+        List<SwapchainImage> images = new ArrayList<>(imageCount);
+
+        IntBuffer imageCountBuffer = stack.ints(imageCount);
+        LongBuffer imagesBuffer = stack.mallocLong(imageCount);
+        VkFunction.execute(() -> KHRSwapchain.vkGetSwapchainImagesKHR(device.getReference(), swapchain.getHandle(), imageCountBuffer, imagesBuffer));
+
+        for (int i = 0; i < imageCount; i++) {
+            images.add(new SwapchainImage(imagesBuffer.get(i)));
+        }
+
+        return images;
     }
 }

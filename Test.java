@@ -23,6 +23,7 @@ import engine.graphics.vulkan.surface.Surface;
 import engine.graphics.vulkan.surface.SurfaceFactory;
 import engine.graphics.vulkan.swapchain.Swapchain;
 import engine.graphics.vulkan.swapchain.SwapchainFactory;
+import engine.graphics.vulkan.swapchain.SwapchainImage;
 import engine.graphics.vulkan.swapchain.properties.SwapchainInfo;
 import engine.window.Window;
 import engine.window.WindowContext;
@@ -98,6 +99,7 @@ public class Test {
                 .build();
 
         Swapchain swapchain = SwapchainFactory.createSwapchain(device, surface, info);
+        List<SwapchainImage> images = SwapchainFactory.createImages(device, swapchain);
 
         while (!window.isCloseRequested()) {
             windowContext.input();
@@ -108,15 +110,5 @@ public class Test {
         surface.destroy();
         instance.destroy();
         window.destroy();
-/*
-        DeviceInfo deviceInfo = new DeviceInfo();
-        deviceInfo.addRequiredExtension(DeviceExtension.KHR_SWAPCHAIN);
-        deviceInfo.addQueue(graphicsFamily, List.of(1.0f));
-        deviceInfo.addQueue(presentFamily, List.of(1.0f));
-
-        LogicalDevice device = new LogicalDevice(physicalDevice, deviceInfo);
-        device.printDevice();
-
-        device.destroy();*/
     }
 }
