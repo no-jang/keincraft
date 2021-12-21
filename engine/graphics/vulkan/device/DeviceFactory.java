@@ -59,6 +59,6 @@ public class DeviceFactory {
         VkFunction.execute(() -> VK10.vkCreateDevice(physicalDevice.getReference(), createInfo, null, handleBuffer));
         VkDevice handle = new VkDevice(handleBuffer.get(0), physicalDevice.getReference(), createInfo);
 
-        return new Device(handle);
+        return new Device(handle, physicalDevice);
     }
 }
