@@ -1,6 +1,6 @@
 package engine.graphics.vulkan.image.properties;
 
-import engine.helper.enums.HasValue;
+import engine.util.enums.HasValue;
 import org.lwjgl.vulkan.VK10;
 import org.lwjgl.vulkan.VK11;
 

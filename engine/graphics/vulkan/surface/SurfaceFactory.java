@@ -1,11 +1,11 @@
 package engine.graphics.vulkan.surface;
 
 import engine.graphics.vulkan.device.PhysicalDevice;
-import engine.graphics.vulkan.helper.function.VkFunction;
 import engine.graphics.vulkan.instance.Instance;
 import engine.graphics.vulkan.surface.properties.PresentMode;
 import engine.graphics.vulkan.surface.properties.SurfaceCapabilities;
 import engine.graphics.vulkan.surface.properties.SurfaceFormat;
+import engine.graphics.vulkan.util.function.VkFunction;
 import engine.memory.EnumBuffers;
 import engine.memory.MemoryContext;
 import engine.window.Window;
@@ -52,6 +52,6 @@ public class SurfaceFactory {
         VkFunction.execute(() -> KHRSurface.vkGetPhysicalDeviceSurfacePresentModesKHR(physicalDevice.getReference(), handle, presentModeBuffer, null));
         List<PresentMode> presentModes = EnumBuffers.ofInt(presentModeBuffer, PresentMode.class);
 
-        return new Surface(instance, handle, capabilities, formats, presentModes);
+        return new Surface(instance, window, handle, capabilities, formats, presentModes);
     }
 }

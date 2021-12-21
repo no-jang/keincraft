@@ -2,7 +2,7 @@ package engine.graphics.vulkan.device.properties;
 
 import engine.collections.set.DefaultImmutableSet;
 import engine.collections.set.ImmutableSet;
-import engine.helper.enums.Maskable;
+import engine.util.enums.Maskable;
 import org.lwjgl.vulkan.VkFormatProperties;
 
 public class FormatProperties {

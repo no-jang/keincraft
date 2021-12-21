@@ -1,6 +1,6 @@
 package engine.graphics.vulkan.sync.properties;
 
-import engine.helper.enums.Maskable;
+import engine.util.enums.Maskable;
 import org.lwjgl.vulkan.VK10;
 
 public enum FenceCreationFlag implements Maskable {

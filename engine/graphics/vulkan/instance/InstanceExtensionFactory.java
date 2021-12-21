@@ -2,9 +2,9 @@ package engine.graphics.vulkan.instance;
 
 import engine.collections.container.Container;
 import engine.collections.container.DefaultContainer;
-import engine.graphics.vulkan.helper.function.VkFunction;
 import engine.graphics.vulkan.instance.properties.InstanceExtension;
 import engine.graphics.vulkan.instance.properties.InstanceLayer;
+import engine.graphics.vulkan.util.function.VkFunction;
 import engine.memory.EnumBuffers;
 import engine.memory.MemoryContext;
 import org.lwjgl.system.MemoryStack;

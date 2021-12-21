@@ -1,6 +1,6 @@
 package engine.graphics.vulkan.queue;
 
-import engine.helper.pointer.ReferencePointer;
+import engine.util.pointer.ReferencePointer;
 import org.lwjgl.vulkan.VkQueue;
 
 public class Queue extends ReferencePointer<VkQueue> {

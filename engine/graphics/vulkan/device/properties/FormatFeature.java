@@ -1,6 +1,6 @@
 package engine.graphics.vulkan.device.properties;
 
-import engine.helper.enums.Maskable;
+import engine.util.enums.Maskable;
 import org.lwjgl.vulkan.EXTSamplerFilterMinmax;
 import org.lwjgl.vulkan.IMGFilterCubic;
 import org.lwjgl.vulkan.VK10;

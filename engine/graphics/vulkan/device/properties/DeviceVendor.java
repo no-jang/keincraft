@@ -1,6 +1,6 @@
 package engine.graphics.vulkan.device.properties;
 
-import engine.helper.enums.HasValue;
+import engine.util.enums.HasValue;
 
 public enum DeviceVendor implements HasValue<Integer> {
     NVIDIA(0x10DE),

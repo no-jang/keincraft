@@ -1,6 +1,6 @@
 package engine.window;
 
-import engine.helper.pointer.DestroyablePointer;
+import engine.util.pointer.DestroyablePointer;
 import org.lwjgl.glfw.Callbacks;
 import org.lwjgl.glfw.GLFW;
 

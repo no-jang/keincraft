@@ -1,4 +1,4 @@
-package engine.helper.pointer;
+package engine.util.pointer;
 
 import org.lwjgl.system.Pointer;
 

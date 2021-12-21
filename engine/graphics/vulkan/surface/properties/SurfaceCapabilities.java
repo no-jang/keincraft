@@ -4,7 +4,7 @@ import engine.collections.set.DefaultImmutableSet;
 import engine.collections.set.ImmutableSet;
 import engine.graphics.vulkan.image.properties.ImageUsage;
 import engine.graphics.vulkan.properties.Extent2D;
-import engine.helper.enums.Maskable;
+import engine.util.enums.Maskable;
 import org.lwjgl.vulkan.VkSurfaceCapabilitiesKHR;
 
 public class SurfaceCapabilities {

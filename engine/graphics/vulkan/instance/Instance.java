@@ -1,7 +1,7 @@
 package engine.graphics.vulkan.instance;
 
 import engine.graphics.vulkan.instance.properties.InstanceProperties;
-import engine.helper.pointer.DestroyableReferencePointer;
+import engine.util.pointer.DestroyableReferencePointer;
 import org.lwjgl.vulkan.EXTDebugReport;
 import org.lwjgl.vulkan.VK10;
 import org.lwjgl.vulkan.VkInstance;

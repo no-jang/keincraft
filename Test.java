@@ -21,6 +21,9 @@ import engine.graphics.vulkan.queue.properties.QueueCapability;
 import engine.graphics.vulkan.queue.properties.QueueContainer;
 import engine.graphics.vulkan.surface.Surface;
 import engine.graphics.vulkan.surface.SurfaceFactory;
+import engine.graphics.vulkan.swapchain.Swapchain;
+import engine.graphics.vulkan.swapchain.SwapchainFactory;
+import engine.graphics.vulkan.swapchain.properties.SwapchainInfo;
 import engine.window.Window;
 import engine.window.WindowContext;
 import engine.window.WindowFactory;
@@ -89,10 +92,18 @@ public class Test {
         Queue graphicsQueue = QueueFactory.createQueue(device, graphicsFamily, 0);
         Queue presentQueue = QueueFactory.createQueue(device, presentFamily, 0);
 
+        SwapchainInfo info = new SwapchainInfo.Builder()
+                .presentQueueFamily(graphicsFamily)
+                .presentQueueFamily(presentFamily)
+                .build();
+
+        Swapchain swapchain = SwapchainFactory.createSwapchain(device, surface, info);
+
         while (!window.isCloseRequested()) {
             windowContext.input();
         }
 
+        swapchain.destroy();
         device.destroy();
         surface.destroy();
         instance.destroy();

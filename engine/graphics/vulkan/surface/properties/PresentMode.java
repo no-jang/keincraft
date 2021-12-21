@@ -1,6 +1,6 @@
 package engine.graphics.vulkan.surface.properties;
 
-import engine.helper.enums.HasValue;
+import engine.util.enums.HasValue;
 import org.lwjgl.vulkan.KHRSurface;
 
 public enum PresentMode implements HasValue<Integer> {

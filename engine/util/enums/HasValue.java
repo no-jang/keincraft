@@ -1,4 +1,4 @@
-package engine.helper.enums;
+package engine.util.enums;
 
 import org.checkerframework.checker.nullness.qual.Nullable;
 

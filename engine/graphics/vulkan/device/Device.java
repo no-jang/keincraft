@@ -1,7 +1,7 @@
 package engine.graphics.vulkan.device;
 
-import engine.graphics.vulkan.helper.function.VkFunction;
-import engine.helper.pointer.DestroyableReferencePointer;
+import engine.graphics.vulkan.util.function.VkFunction;
+import engine.util.pointer.DestroyableReferencePointer;
 import org.lwjgl.vulkan.VK10;
 import org.lwjgl.vulkan.VkDevice;
 

@@ -1,6 +1,6 @@
 package engine.graphics.vulkan.device.properties;
 
-import engine.helper.enums.HasValue;
+import engine.util.enums.HasValue;
 import org.lwjgl.vulkan.KHRSwapchain;
 
 public enum DeviceExtension implements HasValue<String> {

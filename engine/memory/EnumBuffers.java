@@ -1,6 +1,6 @@
 package engine.memory;
 
-import engine.helper.enums.HasValue;
+import engine.util.enums.HasValue;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.MemoryUtil;

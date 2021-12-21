@@ -1,15 +1,15 @@
 package engine.graphics.vulkan.instance;
 
 import engine.collections.container.Container;
-import engine.graphics.vulkan.helper.function.VkFunction;
 import engine.graphics.vulkan.instance.properties.InstanceExtension;
 import engine.graphics.vulkan.instance.properties.InstanceInfo;
 import engine.graphics.vulkan.instance.properties.InstanceLayer;
 import engine.graphics.vulkan.instance.properties.InstanceProperties;
 import engine.graphics.vulkan.instance.properties.Version;
-import engine.helper.enums.Maskable;
+import engine.graphics.vulkan.util.function.VkFunction;
 import engine.memory.EnumBuffers;
 import engine.memory.MemoryContext;
+import engine.util.enums.Maskable;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.system.MemoryStack;

@@ -1,7 +1,7 @@
 package engine.graphics.vulkan.device.properties;
 
 import engine.graphics.vulkan.instance.properties.Version;
-import engine.helper.enums.HasValue;
+import engine.util.enums.HasValue;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.lwjgl.vulkan.VkPhysicalDeviceProperties;
 

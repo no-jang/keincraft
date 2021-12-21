@@ -1,6 +1,6 @@
 package engine.graphics.vulkan.instance.properties;
 
-import engine.helper.enums.Maskable;
+import engine.util.enums.Maskable;
 import org.lwjgl.vulkan.EXTDebugReport;
 import org.tinylog.Level;
 

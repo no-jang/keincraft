@@ -1,4 +1,4 @@
-package engine.helper.pointer;
+package engine.util.pointer;
 
 public abstract class Pointer {
     protected final long handle;

@@ -1,4 +1,4 @@
-package engine.helper.enums;
+package engine.util.enums;
 
 import engine.collections.ImmutableCollection;
 

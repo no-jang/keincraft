@@ -4,7 +4,7 @@ import engine.collections.container.Container;
 import engine.collections.container.DefaultContainer;
 import engine.graphics.vulkan.device.properties.DeviceExtension;
 import engine.graphics.vulkan.device.properties.DeviceFeature;
-import engine.graphics.vulkan.helper.function.VkFunction;
+import engine.graphics.vulkan.util.function.VkFunction;
 import engine.memory.EnumBuffers;
 import engine.memory.MemoryContext;
 import org.lwjgl.system.MemoryStack;

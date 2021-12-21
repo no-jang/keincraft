@@ -2,7 +2,7 @@ package engine.graphics.vulkan.surface.properties;
 
 import engine.graphics.vulkan.image.properties.ColorSpace;
 import engine.graphics.vulkan.image.properties.Format;
-import engine.helper.enums.HasValue;
+import engine.util.enums.HasValue;
 import org.lwjgl.vulkan.VkSurfaceFormatKHR;
 
 import java.util.Objects;

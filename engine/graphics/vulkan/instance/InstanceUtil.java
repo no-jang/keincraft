@@ -1,7 +1,7 @@
 package engine.graphics.vulkan.instance;
 
-import engine.graphics.vulkan.helper.function.VkFunction;
 import engine.graphics.vulkan.instance.properties.Version;
+import engine.graphics.vulkan.util.function.VkFunction;
 import engine.memory.MemoryContext;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.VK11;

@@ -1,6 +1,6 @@
 package engine.graphics.vulkan.properties;
 
-import engine.helper.enums.HasValue;
+import engine.util.enums.HasValue;
 import org.lwjgl.vulkan.KHRDisplaySwapchain;
 import org.lwjgl.vulkan.KHRSurface;
 import org.lwjgl.vulkan.KHRSwapchain;

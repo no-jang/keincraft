@@ -1,7 +1,7 @@
 package engine.graphics.vulkan.sync;
 
 import engine.graphics.vulkan.device.Device;
-import engine.helper.pointer.DestroyablePointer;
+import engine.util.pointer.DestroyablePointer;
 import org.lwjgl.vulkan.VK10;
 
 public class Semaphore extends DestroyablePointer {

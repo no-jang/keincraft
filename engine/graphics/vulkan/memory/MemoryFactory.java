@@ -3,7 +3,7 @@ package engine.graphics.vulkan.memory;
 import engine.graphics.vulkan.device.Device;
 import engine.graphics.vulkan.device.memory.MemoryProperty;
 import engine.graphics.vulkan.device.memory.MemoryType;
-import engine.graphics.vulkan.helper.function.VkFunction;
+import engine.graphics.vulkan.util.function.VkFunction;
 import engine.memory.MemoryContext;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.system.MemoryStack;

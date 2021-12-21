@@ -1,8 +1,8 @@
-package engine.graphics.vulkan.helper.function;
+package engine.graphics.vulkan.util.function;
 
 import engine.graphics.vulkan.properties.VkException;
 import engine.graphics.vulkan.properties.VkResult;
-import engine.helper.enums.HasValue;
+import engine.util.enums.HasValue;
 
 @FunctionalInterface
 public interface VkFunction {

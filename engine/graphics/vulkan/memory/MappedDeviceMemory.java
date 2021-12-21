@@ -1,9 +1,9 @@
 package engine.graphics.vulkan.memory;
 
 import engine.graphics.vulkan.device.Device;
-import engine.graphics.vulkan.helper.function.VkFunction;
-import engine.helper.pointer.DestroyablePointer;
+import engine.graphics.vulkan.util.function.VkFunction;
 import engine.memory.MemoryContext;
+import engine.util.pointer.DestroyablePointer;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.MemoryUtil;
 import org.lwjgl.vulkan.VK10;

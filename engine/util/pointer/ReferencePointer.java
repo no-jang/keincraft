@@ -1,4 +1,4 @@
-package engine.helper.pointer;
+package engine.util.pointer;
 
 public abstract class ReferencePointer<T extends org.lwjgl.system.Pointer> extends Pointer {
     protected final T reference;

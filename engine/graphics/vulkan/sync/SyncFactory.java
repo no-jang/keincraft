@@ -1,10 +1,10 @@
 package engine.graphics.vulkan.sync;
 
 import engine.graphics.vulkan.device.Device;
-import engine.graphics.vulkan.helper.function.VkFunction;
 import engine.graphics.vulkan.sync.properties.FenceCreationFlag;
-import engine.helper.enums.Maskable;
+import engine.graphics.vulkan.util.function.VkFunction;
 import engine.memory.MemoryContext;
+import engine.util.enums.Maskable;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.VK10;

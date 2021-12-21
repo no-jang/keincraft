@@ -1,7 +1,7 @@
 package engine.graphics.vulkan.instance;
 
 import engine.graphics.vulkan.instance.properties.MessageSeverity;
-import engine.helper.enums.Maskable;
+import engine.util.enums.Maskable;
 import org.lwjgl.system.MemoryUtil;
 import org.lwjgl.vulkan.VK10;
 import org.lwjgl.vulkan.VkDebugReportCallbackEXT;
