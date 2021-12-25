@@ -1,7 +1,6 @@
 package engine.graphics.vulkan.surface.properties;
 
-import engine.graphics.vulkan.image.properties.ColorSpace;
-import engine.graphics.vulkan.image.properties.Format;
+import engine.graphics.vulkan.properties.Format;
 import engine.util.enums.HasValue;
 import org.lwjgl.vulkan.VkSurfaceFormatKHR;
 

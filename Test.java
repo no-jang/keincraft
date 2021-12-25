@@ -6,6 +6,7 @@ import engine.graphics.vulkan.device.PhysicalDevice;
 import engine.graphics.vulkan.device.PhysicalDeviceFactory;
 import engine.graphics.vulkan.device.properties.DeviceExtension;
 import engine.graphics.vulkan.device.properties.DeviceFeature;
+import engine.graphics.vulkan.image.ImageView;
 import engine.graphics.vulkan.instance.Instance;
 import engine.graphics.vulkan.instance.InstanceExtensionFactory;
 import engine.graphics.vulkan.instance.InstanceFactory;
@@ -100,9 +101,14 @@ public class Test {
 
         Swapchain swapchain = SwapchainFactory.createSwapchain(device, surface, info);
         List<SwapchainImage> images = SwapchainFactory.createImages(device, swapchain);
+        List<ImageView> imageViews = SwapchainFactory.createImageViews(device, images);
 
         while (!window.isCloseRequested()) {
             windowContext.input();
+        }
+
+        for (ImageView view : imageViews) {
+            view.destroy();
         }
 
         swapchain.destroy();

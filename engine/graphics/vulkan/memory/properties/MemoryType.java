@@ -1,4 +1,4 @@
-package engine.graphics.vulkan.device.memory;
+package engine.graphics.vulkan.memory.properties;
 
 import engine.collections.set.DefaultImmutableSet;
 import engine.collections.set.ImmutableSet;

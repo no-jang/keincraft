@@ -1,20 +1,29 @@
 package engine.graphics.vulkan.instance;
 
-import engine.graphics.vulkan.instance.properties.InstanceProperties;
+import engine.collections.container.Container;
+import engine.graphics.vulkan.instance.properties.InstanceExtension;
+import engine.graphics.vulkan.instance.properties.InstanceLayer;
 import engine.util.pointer.DestroyableReferencePointer;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.lwjgl.vulkan.EXTDebugReport;
 import org.lwjgl.vulkan.VK10;
 import org.lwjgl.vulkan.VkInstance;
 
 public class Instance extends DestroyableReferencePointer<VkInstance> {
     private final long messageCallbackHandle;
-    private final InstanceProperties properties;
+    @Nullable
+    private final Container<InstanceExtension> extensions;
+    @Nullable
+    private final Container<InstanceLayer> layers;
 
-    public Instance(VkInstance reference, InstanceProperties properties, long messageCallbackHandle) {
+    public Instance(VkInstance reference,
+                    long messageCallbackHandle,
+                    @Nullable Container<InstanceExtension> extensions,
+                    @Nullable Container<InstanceLayer> layers) {
         super(reference);
-
         this.messageCallbackHandle = messageCallbackHandle;
-        this.properties = properties;
+        this.extensions = extensions;
+        this.layers = layers;
     }
 
     @Override
@@ -30,7 +39,11 @@ public class Instance extends DestroyableReferencePointer<VkInstance> {
         return messageCallbackHandle;
     }
 
-    public InstanceProperties getProperties() {
-        return properties;
+    public Container<InstanceExtension> getExtensions() {
+        return extensions;
+    }
+
+    public Container<InstanceLayer> getLayers() {
+        return layers;
     }
 }

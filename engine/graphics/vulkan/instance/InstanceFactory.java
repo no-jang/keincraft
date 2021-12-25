@@ -4,7 +4,6 @@ import engine.collections.container.Container;
 import engine.graphics.vulkan.instance.properties.InstanceExtension;
 import engine.graphics.vulkan.instance.properties.InstanceInfo;
 import engine.graphics.vulkan.instance.properties.InstanceLayer;
-import engine.graphics.vulkan.instance.properties.InstanceProperties;
 import engine.graphics.vulkan.instance.properties.Version;
 import engine.graphics.vulkan.util.function.VkFunction;
 import engine.memory.EnumBuffers;
@@ -52,9 +51,7 @@ public class InstanceFactory {
 
         long messageCallbackHandle = finishMessageCallback(stack, instance, callbackCreateInfo);
 
-        InstanceProperties properties = new InstanceProperties(extensions, layers);
-
-        return new Instance(instance, properties, messageCallbackHandle);
+        return new Instance(instance, messageCallbackHandle, extensions, layers);
     }
 
     private static void checkVkVersion(InstanceInfo info) {

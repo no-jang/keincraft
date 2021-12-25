@@ -9,6 +9,7 @@ import engine.graphics.vulkan.util.function.VkFunction;
 import engine.memory.Buffers;
 import engine.memory.EnumBuffers;
 import engine.memory.MemoryContext;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.VK10;
@@ -23,13 +24,21 @@ import java.util.List;
 public class DeviceFactory {
     public static Device createDevice(PhysicalDevice physicalDevice,
                                       QueueContainer queues,
-                                      Container<DeviceExtension> extensions,
-                                      Container<DeviceFeature> features) {
+                                      @Nullable Container<DeviceExtension> extensions,
+                                      @Nullable Container<DeviceFeature> features) {
 
         MemoryStack stack = MemoryContext.getStack();
 
-        PointerBuffer extensionsBuffer = EnumBuffers.toString(stack, extensions.getRequested().toMutable());
-        VkPhysicalDeviceFeatures vkFeatures = DeviceFeature.toVk(features.getRequested().toMutable());
+        PointerBuffer extensionsBuffer = null;
+        if (extensions != null) {
+            extensionsBuffer = EnumBuffers.toString(stack, extensions.getRequested().toMutable());
+        }
+
+
+        VkPhysicalDeviceFeatures vkFeatures = null;
+        if (features != null) {
+            vkFeatures = DeviceFeature.toVk(features.getRequested().toMutable());
+        }
 
         List<QueueInfo> requestedQueues = queues.getRequested().toMutable();
         VkDeviceQueueCreateInfo.Buffer queueBuffer = VkDeviceQueueCreateInfo.malloc(requestedQueues.size(), stack);
@@ -59,6 +68,6 @@ public class DeviceFactory {
         VkFunction.execute(() -> VK10.vkCreateDevice(physicalDevice.getReference(), createInfo, null, handleBuffer));
         VkDevice handle = new VkDevice(handleBuffer.get(0), physicalDevice.getReference(), createInfo);
 
-        return new Device(handle, physicalDevice);
+        return new Device(handle, physicalDevice, queues, extensions, features);
     }
 }

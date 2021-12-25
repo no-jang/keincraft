@@ -1,4 +1,6 @@
-package engine.graphics.vulkan.properties;
+package engine.graphics.vulkan.util;
+
+import engine.graphics.vulkan.properties.VkResult;
 
 public class VkException extends RuntimeException {
     private final VkResult result;

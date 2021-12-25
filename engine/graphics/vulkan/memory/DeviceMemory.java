@@ -1,7 +1,7 @@
 package engine.graphics.vulkan.memory;
 
 import engine.graphics.vulkan.device.Device;
-import engine.graphics.vulkan.device.memory.MemoryType;
+import engine.graphics.vulkan.memory.properties.MemoryType;
 import engine.util.pointer.DestroyablePointer;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.lwjgl.vulkan.VK10;

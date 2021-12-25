@@ -1,5 +1,7 @@
 package engine.graphics.vulkan.surface;
 
+import engine.collections.list.DefaultImmutableList;
+import engine.collections.list.ImmutableList;
 import engine.graphics.vulkan.instance.Instance;
 import engine.graphics.vulkan.surface.properties.PresentMode;
 import engine.graphics.vulkan.surface.properties.SurfaceCapabilities;
@@ -15,16 +17,16 @@ public class Surface extends DestroyablePointer {
     private final Window window;
 
     private final SurfaceCapabilities capabilities;
-    private final List<SurfaceFormat> formats;
-    private final List<PresentMode> presentModes;
+    private final ImmutableList<SurfaceFormat> formats;
+    private final ImmutableList<PresentMode> presentModes;
 
-    public Surface(Instance instance, Window window, long handle, SurfaceCapabilities capabilities, List<SurfaceFormat> formats, List<PresentMode> presentModes) {
+    public Surface(long handle, Instance instance, Window window, SurfaceCapabilities capabilities, List<SurfaceFormat> formats, List<PresentMode> presentModes) {
         super(handle);
         this.instance = instance;
         this.window = window;
         this.capabilities = capabilities;
-        this.formats = formats;
-        this.presentModes = presentModes;
+        this.formats = new DefaultImmutableList<>(formats);
+        this.presentModes = new DefaultImmutableList<>(presentModes);
     }
 
     @Override
@@ -36,11 +38,11 @@ public class Surface extends DestroyablePointer {
         return capabilities;
     }
 
-    public List<SurfaceFormat> getFormats() {
+    public ImmutableList<SurfaceFormat> getFormats() {
         return formats;
     }
 
-    public List<PresentMode> getPresentModes() {
+    public ImmutableList<PresentMode> getPresentModes() {
         return presentModes;
     }
 

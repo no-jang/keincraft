@@ -1,9 +1,9 @@
 package engine.graphics.vulkan.swapchain;
 
-import engine.graphics.vulkan.image.properties.ColorSpace;
-import engine.graphics.vulkan.image.properties.Format;
 import engine.graphics.vulkan.properties.Extent2D;
+import engine.graphics.vulkan.properties.Format;
 import engine.graphics.vulkan.surface.Surface;
+import engine.graphics.vulkan.surface.properties.ColorSpace;
 import engine.graphics.vulkan.surface.properties.PresentMode;
 import engine.graphics.vulkan.surface.properties.SurfaceFormat;
 import engine.graphics.vulkan.surface.properties.SurfaceTransform;

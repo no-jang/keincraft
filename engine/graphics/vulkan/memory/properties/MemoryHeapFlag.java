@@ -1,4 +1,4 @@
-package engine.graphics.vulkan.device.memory;
+package engine.graphics.vulkan.memory.properties;
 
 import engine.util.enums.Maskable;
 import org.lwjgl.vulkan.VK10;

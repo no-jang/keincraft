@@ -1,6 +1,9 @@
 package engine.graphics.vulkan.swapchain;
 
 import engine.graphics.vulkan.device.Device;
+import engine.graphics.vulkan.image.ImageFactory;
+import engine.graphics.vulkan.image.ImageView;
+import engine.graphics.vulkan.image.properties.ImageViewInfo;
 import engine.graphics.vulkan.properties.Extent2D;
 import engine.graphics.vulkan.queue.QueueFamily;
 import engine.graphics.vulkan.surface.Surface;
@@ -40,17 +43,17 @@ public class SwapchainFactory {
                 .sType$Default()
                 .flags(0)
                 .pNext(0)
+                .imageArrayLayers(1)
+                .clipped(true)
                 .surface(surface.getHandle())
                 .minImageCount(minImageCount)
                 .imageFormat(format.getFormat().getValue())
                 .imageColorSpace(format.getColorSpace().getValue())
                 .imageExtent(imageExtent.toVk(stack))
-                .imageArrayLayers(1)
-                .imageUsage(VK10.VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT)
                 .preTransform(transform.getBit())
-                .compositeAlpha(KHRSurface.VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR)
                 .presentMode(presentMode.getValue())
-                .clipped(true);
+                .imageUsage(VK10.VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT)
+                .compositeAlpha(KHRSurface.VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR);
 
         QueueFamily graphicsFamily = info.getGraphicsFamily();
         QueueFamily presentFamily = info.getPresentFamily();
@@ -79,7 +82,7 @@ public class SwapchainFactory {
         VkFunction.execute(() -> KHRSwapchain.vkGetSwapchainImagesKHR(device.getReference(), handle, imageCountBuffer, null));
         int imageCount = imageCountBuffer.get(0);
 
-        return new Swapchain(device, handle, imageCount);
+        return new Swapchain(handle, device, format, imageExtent, transform, presentMode, minImageCount, imageCount, graphicsFamily, presentFamily);
     }
 
     public static List<SwapchainImage> createImages(Device device, Swapchain swapchain) {
@@ -93,9 +96,21 @@ public class SwapchainFactory {
         VkFunction.execute(() -> KHRSwapchain.vkGetSwapchainImagesKHR(device.getReference(), swapchain.getHandle(), imageCountBuffer, imagesBuffer));
 
         for (int i = 0; i < imageCount; i++) {
-            images.add(new SwapchainImage(imagesBuffer.get(i)));
+            images.add(new SwapchainImage(imagesBuffer.get(i), 1, 1, swapchain.getImageExtent(), swapchain.getFormat().getFormat()));
         }
 
         return images;
+    }
+
+    public static List<ImageView> createImageViews(Device device, List<SwapchainImage> images) {
+        ImageViewInfo info = new ImageViewInfo.Builder()
+                .build();
+
+        List<ImageView> imageViews = new ArrayList<>(images.size());
+        for (SwapchainImage image : images) {
+            imageViews.add(ImageFactory.createImageView(device, image, info));
+        }
+
+        return imageViews;
     }
 }

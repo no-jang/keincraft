@@ -1,4 +1,4 @@
-package engine.graphics.vulkan.image.properties;
+package engine.graphics.vulkan.properties;
 
 import engine.util.enums.HasValue;
 import org.lwjgl.vulkan.VK10;

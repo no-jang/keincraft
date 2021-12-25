@@ -40,6 +40,6 @@ public class QueueFactory {
         VK10.vkGetDeviceQueue(device.getReference(), family.getIndex(), index, handleBuffer);
         VkQueue handle = new VkQueue(handleBuffer.get(0), device.getReference());
 
-        return new Queue(handle);
+        return new Queue(handle, device, family, index);
     }
 }

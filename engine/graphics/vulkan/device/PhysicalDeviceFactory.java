@@ -1,11 +1,11 @@
 package engine.graphics.vulkan.device;
 
-import engine.graphics.vulkan.device.memory.MemoryHeap;
-import engine.graphics.vulkan.device.memory.MemoryType;
 import engine.graphics.vulkan.device.properties.DeviceLimits;
 import engine.graphics.vulkan.device.properties.DeviceProperties;
 import engine.graphics.vulkan.device.properties.DeviceSpareProperties;
 import engine.graphics.vulkan.instance.Instance;
+import engine.graphics.vulkan.memory.properties.MemoryHeap;
+import engine.graphics.vulkan.memory.properties.MemoryType;
 import engine.graphics.vulkan.util.function.VkFunction;
 import engine.memory.MemoryContext;
 import org.lwjgl.PointerBuffer;

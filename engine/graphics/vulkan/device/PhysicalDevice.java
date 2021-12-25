@@ -2,12 +2,12 @@ package engine.graphics.vulkan.device;
 
 import engine.collections.list.DefaultImmutableList;
 import engine.collections.list.ImmutableList;
-import engine.graphics.vulkan.device.memory.MemoryType;
 import engine.graphics.vulkan.device.properties.DeviceLimits;
 import engine.graphics.vulkan.device.properties.DeviceProperties;
 import engine.graphics.vulkan.device.properties.DeviceSpareProperties;
 import engine.graphics.vulkan.device.properties.FormatProperties;
-import engine.graphics.vulkan.image.properties.Format;
+import engine.graphics.vulkan.memory.properties.MemoryType;
+import engine.graphics.vulkan.properties.Format;
 import engine.memory.MemoryContext;
 import engine.util.pointer.ReferencePointer;
 import org.lwjgl.system.MemoryStack;
