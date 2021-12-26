@@ -1,4 +1,4 @@
-package engine.memory;
+package engine.memory.util;
 
 import engine.util.enums.HasValue;
 import org.lwjgl.PointerBuffer;

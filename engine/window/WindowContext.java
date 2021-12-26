@@ -3,7 +3,7 @@ package engine.window;
 import engine.collections.list.DefaultImmutableList;
 import engine.collections.list.ImmutableList;
 import engine.graphics.vulkan.instance.properties.InstanceExtension;
-import engine.memory.EnumBuffers;
+import engine.memory.util.EnumBuffers;
 import engine.util.pointer.Destroyable;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.glfw.GLFW;
