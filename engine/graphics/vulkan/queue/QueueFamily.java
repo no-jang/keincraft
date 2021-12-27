@@ -32,7 +32,7 @@ public class QueueFamily {
         MemoryStack stack = MemoryContext.getStack();
 
         IntBuffer supportsPresentationBuffer = stack.mallocInt(1);
-        VkFunction.execute(() -> KHRSurface.vkGetPhysicalDeviceSurfaceSupportKHR(physicalDevice.getReference(), index, surface.getHandle(), supportsPresentationBuffer));
+        VkFunction.execute(() -> KHRSurface.vkGetPhysicalDeviceSurfaceSupportKHR(physicalDevice.unwrap(), index, surface.getHandle(), supportsPresentationBuffer));
 
         return supportsPresentationBuffer.get(0) == VK10.VK_TRUE;
     }

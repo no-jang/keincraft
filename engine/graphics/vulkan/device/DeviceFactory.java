@@ -3,6 +3,7 @@ package engine.graphics.vulkan.device;
 import engine.collections.container.Container;
 import engine.graphics.vulkan.device.properties.DeviceExtension;
 import engine.graphics.vulkan.device.properties.DeviceFeature;
+import engine.graphics.vulkan.instance.Instance;
 import engine.graphics.vulkan.queue.properties.QueueContainer;
 import engine.graphics.vulkan.queue.properties.QueueInfo;
 import engine.graphics.vulkan.util.function.VkFunction;
@@ -22,7 +23,8 @@ import java.nio.FloatBuffer;
 import java.util.List;
 
 public class DeviceFactory {
-    public static Device createDevice(PhysicalDevice physicalDevice,
+    public static Device createDevice(Instance instance,
+                                      PhysicalDevice physicalDevice,
                                       QueueContainer queues,
                                       @Nullable Container<DeviceExtension> extensions,
                                       @Nullable Container<DeviceFeature> features) {
@@ -65,9 +67,9 @@ public class DeviceFactory {
                 .pQueueCreateInfos(queueBuffer);
 
         PointerBuffer handleBuffer = stack.mallocPointer(1);
-        VkFunction.execute(() -> VK10.vkCreateDevice(physicalDevice.getReference(), createInfo, null, handleBuffer));
-        VkDevice handle = new VkDevice(handleBuffer.get(0), physicalDevice.getReference(), createInfo);
+        VkFunction.execute(() -> VK10.vkCreateDevice(physicalDevice.handle(), createInfo, null, handleBuffer));
+        VkDevice handle = new VkDevice(handleBuffer.get(0), physicalDevice.handle(), createInfo);
 
-        return new Device(handle, physicalDevice, queues, extensions, features);
+        return new Device(instance, handle, physicalDevice, queues, extensions, features);
     }
 }

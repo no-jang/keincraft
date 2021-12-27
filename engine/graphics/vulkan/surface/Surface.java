@@ -6,23 +6,26 @@ import engine.graphics.vulkan.instance.Instance;
 import engine.graphics.vulkan.surface.properties.PresentMode;
 import engine.graphics.vulkan.surface.properties.SurfaceCapabilities;
 import engine.graphics.vulkan.surface.properties.SurfaceFormat;
-import engine.util.pointer.DestroyablePointer;
+import engine.memory.test.ownable.DestroyableOwnablePointer;
 import engine.window.Window;
 import org.lwjgl.vulkan.KHRSurface;
 
 import java.util.List;
 
-public class Surface extends DestroyablePointer {
-    private final Instance instance;
+public class Surface extends DestroyableOwnablePointer<Instance> {
     private final Window window;
 
     private final SurfaceCapabilities capabilities;
     private final ImmutableList<SurfaceFormat> formats;
     private final ImmutableList<PresentMode> presentModes;
 
-    public Surface(long handle, Instance instance, Window window, SurfaceCapabilities capabilities, List<SurfaceFormat> formats, List<PresentMode> presentModes) {
-        super(handle);
-        this.instance = instance;
+    public Surface(Instance owner,
+                   long address,
+                   Window window,
+                   SurfaceCapabilities capabilities,
+                   List<SurfaceFormat> formats,
+                   List<PresentMode> presentModes) {
+        super(owner, address);
         this.window = window;
         this.capabilities = capabilities;
         this.formats = new DefaultImmutableList<>(formats);
@@ -30,8 +33,8 @@ public class Surface extends DestroyablePointer {
     }
 
     @Override
-    protected void destroy(long handle) {
-        KHRSurface.vkDestroySurfaceKHR(instance.getReference(), handle, null);
+    protected void doDestroy() {
+        KHRSurface.vkDestroySurfaceKHR(owner.unwrap(), address, null);
     }
 
     public SurfaceCapabilities getCapabilities() {
@@ -44,10 +47,6 @@ public class Surface extends DestroyablePointer {
 
     public ImmutableList<PresentMode> getPresentModes() {
         return presentModes;
-    }
-
-    public Instance getInstance() {
-        return instance;
     }
 
     public Window getWindow() {

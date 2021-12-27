@@ -25,19 +25,19 @@ public class SurfaceFactory {
         MemoryStack stack = MemoryContext.getStack();
 
         LongBuffer handleBuffer = stack.mallocLong(1);
-        VkFunction.execute(() -> GLFWVulkan.glfwCreateWindowSurface(instance.getReference(), window.getHandle(), null, handleBuffer));
+        VkFunction.execute(() -> GLFWVulkan.glfwCreateWindowSurface(instance.unwrap(), window.address(), null, handleBuffer));
         long handle = handleBuffer.get(0);
 
         VkSurfaceCapabilitiesKHR vkCapabilities = VkSurfaceCapabilitiesKHR.malloc(stack);
-        VkFunction.execute(() -> KHRSurface.vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physicalDevice.getReference(), handle, vkCapabilities));
+        VkFunction.execute(() -> KHRSurface.vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physicalDevice.unwrap(), handle, vkCapabilities));
         SurfaceCapabilities capabilities = new SurfaceCapabilities(vkCapabilities);
 
         IntBuffer formatCountBuffer = stack.mallocInt(1);
-        VkFunction.execute(() -> KHRSurface.vkGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice.getReference(), handle, formatCountBuffer, null));
+        VkFunction.execute(() -> KHRSurface.vkGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice.unwrap(), handle, formatCountBuffer, null));
         int formatCount = formatCountBuffer.get(0);
 
         VkSurfaceFormatKHR.Buffer formatBuffer = VkSurfaceFormatKHR.malloc(formatCount, stack);
-        VkFunction.execute(() -> KHRSurface.vkGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice.getReference(), handle, formatCountBuffer, formatBuffer));
+        VkFunction.execute(() -> KHRSurface.vkGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice.unwrap(), handle, formatCountBuffer, formatBuffer));
 
         List<SurfaceFormat> formats = new ArrayList<>(formatCount);
         for (int i = 0; i < formatCount; i++) {
@@ -45,13 +45,13 @@ public class SurfaceFactory {
         }
 
         IntBuffer presentModeCountBuffer = stack.mallocInt(1);
-        VkFunction.execute(() -> KHRSurface.vkGetPhysicalDeviceSurfacePresentModesKHR(physicalDevice.getReference(), handle, presentModeCountBuffer, null));
+        VkFunction.execute(() -> KHRSurface.vkGetPhysicalDeviceSurfacePresentModesKHR(physicalDevice.unwrap(), handle, presentModeCountBuffer, null));
         int presentModeCount = presentModeCountBuffer.get(0);
 
         IntBuffer presentModeBuffer = stack.mallocInt(presentModeCount);
-        VkFunction.execute(() -> KHRSurface.vkGetPhysicalDeviceSurfacePresentModesKHR(physicalDevice.getReference(), handle, presentModeBuffer, null));
+        VkFunction.execute(() -> KHRSurface.vkGetPhysicalDeviceSurfacePresentModesKHR(physicalDevice.unwrap(), handle, presentModeBuffer, null));
         List<PresentMode> presentModes = EnumBuffers.ofInt(presentModeBuffer, PresentMode.class);
 
-        return new Surface(handle, instance, window, capabilities, formats, presentModes);
+        return new Surface(instance, handle, window, capabilities, formats, presentModes);
     }
 }

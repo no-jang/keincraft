@@ -19,11 +19,11 @@ public class QueueFactory {
         MemoryStack stack = MemoryContext.getStack();
 
         IntBuffer queueFamilyCountBuffer = stack.mallocInt(1);
-        VK10.vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice.getReference(), queueFamilyCountBuffer, null);
+        VK10.vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice.unwrap(), queueFamilyCountBuffer, null);
         int queueFamilyCount = queueFamilyCountBuffer.get(0);
 
         VkQueueFamilyProperties.Buffer queueFamilyBuffer = VkQueueFamilyProperties.malloc(queueFamilyCount, stack);
-        VK10.vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice.getReference(), queueFamilyCountBuffer, queueFamilyBuffer);
+        VK10.vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice.unwrap(), queueFamilyCountBuffer, queueFamilyBuffer);
 
         List<QueueFamily> queueFamilies = new ArrayList<>(queueFamilyCount);
         for (int i = 0; i < queueFamilyCount; i++) {
@@ -37,9 +37,9 @@ public class QueueFactory {
         MemoryStack stack = MemoryContext.getStack();
 
         PointerBuffer handleBuffer = stack.mallocPointer(1);
-        VK10.vkGetDeviceQueue(device.getReference(), family.getIndex(), index, handleBuffer);
-        VkQueue handle = new VkQueue(handleBuffer.get(0), device.getReference());
+        VK10.vkGetDeviceQueue(device.unwrap(), family.getIndex(), index, handleBuffer);
+        VkQueue handle = new VkQueue(handleBuffer.get(0), device.unwrap());
 
-        return new Queue(handle, device, family, index);
+        return new Queue(device, handle, family, index);
     }
 }

@@ -9,7 +9,7 @@ import engine.graphics.vulkan.device.properties.FormatProperties;
 import engine.graphics.vulkan.memory.properties.MemoryType;
 import engine.graphics.vulkan.properties.Format;
 import engine.memory.MemoryContext;
-import engine.util.pointer.ReferencePointer;
+import engine.memory.handle.HandleBase;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.VK10;
 import org.lwjgl.vulkan.VkFormatProperties;
@@ -19,24 +19,23 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class PhysicalDevice extends ReferencePointer<VkPhysicalDevice> {
+public class PhysicalDevice extends HandleBase<VkPhysicalDevice> {
     private final DeviceProperties properties;
     private final DeviceLimits limits;
     private final ImmutableList<DeviceSpareProperties> spareProperties;
     private final ImmutableList<MemoryType> memoryTypes;
     private final Map<Format, FormatProperties> formatProperties;
 
-    public PhysicalDevice(VkPhysicalDevice reference,
+    public PhysicalDevice(VkPhysicalDevice handle,
                           DeviceProperties properties,
                           DeviceLimits limits,
                           List<DeviceSpareProperties> spareProperties,
                           List<MemoryType> memoryTypes) {
-        super(reference);
+        super(handle);
         this.properties = properties;
         this.limits = limits;
         this.spareProperties = new DefaultImmutableList<>(spareProperties);
         this.memoryTypes = new DefaultImmutableList<>(memoryTypes);
-
         this.formatProperties = new HashMap<>();
     }
 
@@ -47,7 +46,7 @@ public class PhysicalDevice extends ReferencePointer<VkPhysicalDevice> {
             MemoryStack stack = MemoryContext.getStack();
 
             VkFormatProperties vkFormatProperties = VkFormatProperties.malloc(stack);
-            VK10.vkGetPhysicalDeviceFormatProperties(reference, format.getValue(), vkFormatProperties);
+            VK10.vkGetPhysicalDeviceFormatProperties(handle, format.getValue(), vkFormatProperties);
 
             properties = new FormatProperties(vkFormatProperties);
             formatProperties.put(format, properties);

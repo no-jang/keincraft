@@ -2,6 +2,6 @@ package engine.memory.ownable;
 
 import engine.memory.owner.Owner;
 
-public interface Ownable<T extends Owner> {
-    T owner();
+public interface Ownable<P extends Owner<? extends Ownable<P>>> {
+    P owner();
 }

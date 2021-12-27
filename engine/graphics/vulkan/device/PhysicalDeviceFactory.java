@@ -26,15 +26,16 @@ public class PhysicalDeviceFactory {
         MemoryStack stack = MemoryContext.getStack();
 
         IntBuffer physicalDeviceCountBuffer = stack.mallocInt(1);
-        VkFunction.execute(() -> VK10.vkEnumeratePhysicalDevices(instance.getReference(), physicalDeviceCountBuffer, null));
+        VkFunction.execute(() -> VK10.vkEnumeratePhysicalDevices(instance.handle(), physicalDeviceCountBuffer, null));
         int physicalDeviceCount = physicalDeviceCountBuffer.get(0);
 
         PointerBuffer physicalDeviceBuffer = stack.mallocPointer(physicalDeviceCount);
-        VkFunction.execute(() -> VK10.vkEnumeratePhysicalDevices(instance.getReference(), physicalDeviceCountBuffer, physicalDeviceBuffer));
+        VkFunction.execute(() -> VK10.vkEnumeratePhysicalDevices(instance.handle(), physicalDeviceCountBuffer, physicalDeviceBuffer));
 
         List<PhysicalDevice> physicalDevices = new ArrayList<>(physicalDeviceCount);
         for (int i = 0; i < physicalDeviceCount; i++) {
-            physicalDevices.add(createPhysicalDevice(new VkPhysicalDevice(physicalDeviceBuffer.get(i), instance.getReference())));
+            VkPhysicalDevice handle = new VkPhysicalDevice(physicalDeviceBuffer.get(i), instance.handle());
+            physicalDevices.add(createPhysicalDevice(handle));
         }
 
         return physicalDevices;

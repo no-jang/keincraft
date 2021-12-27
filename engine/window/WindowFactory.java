@@ -33,7 +33,7 @@ public class WindowFactory {
             throw new RuntimeException("Failed to create window " + info);
         }
 
-        Window window = new Window(handle, info.getWidth(), info.getHeight());
+        Window window = new Window(context, handle, info.getWidth(), info.getHeight());
 
         GLFW.glfwSetKeyCallback(handle, (windowHandle, key, scancode, action, mods) -> {
             if (key == GLFW.GLFW_KEY_ESCAPE && action == GLFW.GLFW_RELEASE) {
@@ -51,7 +51,6 @@ public class WindowFactory {
         }
 
         GLFW.glfwShowWindow(handle);
-        context.addWindow(window);
 
         return window;
     }

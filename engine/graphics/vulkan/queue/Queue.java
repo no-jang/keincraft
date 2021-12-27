@@ -1,26 +1,20 @@
 package engine.graphics.vulkan.queue;
 
 import engine.graphics.vulkan.device.Device;
-import engine.util.pointer.ReferencePointer;
+import engine.memory.test.ownable.OwnableStruct;
 import org.lwjgl.vulkan.VkQueue;
 
-public class Queue extends ReferencePointer<VkQueue> {
-    private final Device device;
+public class Queue extends OwnableStruct<Device, VkQueue> {
     private final QueueFamily family;
     private final int index;
 
-    public Queue(VkQueue reference,
-                 Device device,
+    public Queue(Device owner,
+                 VkQueue reference,
                  QueueFamily family,
                  int index) {
-        super(reference);
-        this.device = device;
+        super(owner, reference, reference.address());
         this.family = family;
         this.index = index;
-    }
-
-    public Device getDevice() {
-        return device;
     }
 
     public QueueFamily getFamily() {
