@@ -1,4 +1,4 @@
-package engine.memory.handle;
+package engine.memory.handle.longval;
 
 public abstract class LongHandleBase implements LongHandle {
     protected final long handle;
@@ -8,7 +8,7 @@ public abstract class LongHandleBase implements LongHandle {
     }
 
     @Override
-    public long handle() {
+    public long getHandle() {
         return handle;
     }
 }

@@ -1,14 +1,14 @@
 package engine.memory.handle;
 
 public abstract class HandleBase<T> implements Handle<T> {
-    protected final T handle;
+    private final T handle;
 
     public HandleBase(T handle) {
         this.handle = handle;
     }
 
     @Override
-    public T handle() {
+    public T getHandle() {
         return handle;
     }
 }
