@@ -2,10 +2,10 @@ package engine.memory.handle.longval;
 
 import engine.memory.destroy.DestroyBase;
 
-public abstract class DestroyLongHandleBase extends DestroyBase implements LongHandle {
+public abstract class DLHandle extends DestroyBase implements LHandle {
     protected long handle;
 
-    public DestroyLongHandleBase(long handle) {
+    public DLHandle(long handle) {
         this.handle = handle;
     }
 

@@ -5,10 +5,10 @@ import engine.memory.destroy.DestroyBase;
 import java.util.ArrayList;
 import java.util.List;
 
-public abstract class DestroyHolderBase<R> extends DestroyBase implements DestroyHolder<R> {
+public abstract class DHolderBase<R> extends DestroyBase implements DHolder<R> {
     protected final List<R> resources;
 
-    public DestroyHolderBase() {
+    public DHolderBase() {
         this.resources = new ArrayList<>();
     }
 

@@ -5,7 +5,7 @@ import engine.memory.destroy.Destroy;
 import java.io.Closeable;
 import java.io.IOException;
 
-public interface DestroyHolder<R> extends Holder<R>, Destroy {
+public interface DHolder<R> extends Holder<R>, Destroy {
     @Override
     default void destroy() {
         for (R resource : getResources()) {

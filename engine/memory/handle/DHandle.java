@@ -2,10 +2,10 @@ package engine.memory.handle;
 
 import engine.memory.destroy.DestroyBase;
 
-public abstract class DestroyHandleBase<T> extends DestroyBase implements Handle<T> {
+public abstract class DHandle<T> extends DestroyBase implements Handle<T> {
     protected T handle;
 
-    public DestroyHandleBase(T handle) {
+    public DHandle(T handle) {
         this.handle = handle;
     }
 

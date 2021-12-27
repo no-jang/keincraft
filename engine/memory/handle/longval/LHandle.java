@@ -1,5 +1,5 @@
 package engine.memory.handle.longval;
 
-public interface LongHandle {
+public interface LHandle {
     long getHandle();
 }

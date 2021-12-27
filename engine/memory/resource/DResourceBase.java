@@ -3,11 +3,12 @@ package engine.memory.resource;
 import engine.memory.destroy.DestroyBase;
 import engine.memory.holder.Holder;
 
-public abstract class DestroyResourceBase<H extends Holder<Resource<H>>> extends DestroyBase implements DestroyResource<H> {
+public abstract class DResourceBase<H extends Holder<Resource<H>>> extends DestroyBase implements DResource<H> {
     protected final H holder;
 
-    public DestroyResourceBase(H holder) {
+    public DResourceBase(H holder) {
         this.holder = holder;
+        this.holder.addResource(this);
     }
 
     @Override

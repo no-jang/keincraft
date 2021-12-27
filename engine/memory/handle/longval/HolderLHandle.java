@@ -1,9 +1,11 @@
 package engine.memory.handle.longval;
 
-public abstract class LongHandleBase implements LongHandle {
+import engine.memory.holder.HolderBase;
+
+public abstract class HolderLHandle<R> extends HolderBase<R> implements LHandle {
     protected final long handle;
 
-    public LongHandleBase(long handle) {
+    public HolderLHandle(long handle) {
         this.handle = handle;
     }
 
