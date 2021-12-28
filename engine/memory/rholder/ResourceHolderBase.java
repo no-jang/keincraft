@@ -7,10 +7,10 @@ import engine.memory.resource.ResourceBase;
 import java.util.ArrayList;
 import java.util.List;
 
-public abstract class RHolderBase<H extends Holder<Resource<H>>, R> extends ResourceBase<H> implements RHolder<H, R> {
+public abstract class ResourceHolderBase<H extends Holder<Resource<H>>, R> extends ResourceBase<H> implements ResourceHolder<H, R> {
     protected final List<R> resources;
 
-    public RHolderBase(H holder) {
+    public ResourceHolderBase(H holder) {
         super(holder);
         this.resources = new ArrayList<>();
     }
