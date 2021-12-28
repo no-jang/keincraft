@@ -13,6 +13,12 @@ public abstract class DestroyHolderBase<R> extends DestroyBase implements Destro
     }
 
     @Override
+    public void destroy() {
+        DestroyHolder.super.destroy();
+        super.destroy();
+    }
+
+    @Override
     public List<R> getResources() {
         throwIfDestroyed();
         return resources;

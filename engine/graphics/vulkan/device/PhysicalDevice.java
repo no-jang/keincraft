@@ -9,7 +9,6 @@ import engine.graphics.vulkan.device.properties.FormatProperties;
 import engine.graphics.vulkan.memory.properties.MemoryType;
 import engine.graphics.vulkan.properties.Format;
 import engine.memory.MemoryContext;
-import engine.memory.handle.HandleBase;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.VK10;
 import org.lwjgl.vulkan.VkFormatProperties;
@@ -19,7 +18,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class PhysicalDevice extends HandleBase<VkPhysicalDevice> {
+public class PhysicalDevice {
+    private final VkPhysicalDevice handle;
     private final DeviceProperties properties;
     private final DeviceLimits limits;
     private final ImmutableList<DeviceSpareProperties> spareProperties;
@@ -31,7 +31,7 @@ public class PhysicalDevice extends HandleBase<VkPhysicalDevice> {
                           DeviceLimits limits,
                           List<DeviceSpareProperties> spareProperties,
                           List<MemoryType> memoryTypes) {
-        super(handle);
+        this.handle = handle;
         this.properties = properties;
         this.limits = limits;
         this.spareProperties = new DefaultImmutableList<>(spareProperties);
@@ -53,6 +53,10 @@ public class PhysicalDevice extends HandleBase<VkPhysicalDevice> {
         }
 
         return properties;
+    }
+
+    public VkPhysicalDevice getHandle() {
+        return handle;
     }
 
     public DeviceProperties getProperties() {

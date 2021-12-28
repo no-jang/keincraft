@@ -67,8 +67,8 @@ public class DeviceFactory {
                 .pQueueCreateInfos(queueBuffer);
 
         PointerBuffer handleBuffer = stack.mallocPointer(1);
-        VkFunction.execute(() -> VK10.vkCreateDevice(physicalDevice.handle(), createInfo, null, handleBuffer));
-        VkDevice handle = new VkDevice(handleBuffer.get(0), physicalDevice.handle(), createInfo);
+        VkFunction.execute(() -> VK10.vkCreateDevice(physicalDevice.getHandle(), createInfo, null, handleBuffer));
+        VkDevice handle = new VkDevice(handleBuffer.get(0), physicalDevice.getHandle(), createInfo);
 
         return new Device(instance, handle, physicalDevice, queues, extensions, features);
     }

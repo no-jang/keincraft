@@ -12,6 +12,12 @@ public abstract class DestroyResourceBase<H extends Holder<Resource<H>>> extends
     }
 
     @Override
+    public void destroy() {
+        DestroyResource.super.destroy();
+        super.destroy();
+    }
+
+    @Override
     public H getHolder() {
         throwIfDestroyed();
         return holder;

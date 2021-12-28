@@ -6,13 +6,14 @@ import engine.graphics.vulkan.device.properties.DeviceFeature;
 import engine.graphics.vulkan.instance.Instance;
 import engine.graphics.vulkan.queue.properties.QueueContainer;
 import engine.graphics.vulkan.util.function.VkFunction;
-import engine.memory.ownable.Ownable;
-import engine.memory.reference.DestroyableReferenceHandle;
+import engine.memory.resource.Resource;
+import engine.memory.resourceholder.DestroyResourceHolderBase;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.lwjgl.vulkan.VK10;
 import org.lwjgl.vulkan.VkDevice;
 
-public class Device extends DestroyableReferenceHandle<Instance, Ownable<Device>, VkDevice> {
+public class Device extends DestroyResourceHolderBase<Device, Instance, Resource<Device>> {
+    private final VkDevice handle;
     private final PhysicalDevice physicalDevice;
     private final QueueContainer queues;
     @Nullable
@@ -26,7 +27,8 @@ public class Device extends DestroyableReferenceHandle<Instance, Ownable<Device>
                   QueueContainer queues,
                   @Nullable Container<DeviceExtension> extensions,
                   @Nullable Container<DeviceFeature> features) {
-        super(owner, handle);
+        super(owner);
+        this.handle = handle;
         this.physicalDevice = physicalDevice;
         this.queues = queues;
         this.extensions = extensions;
@@ -34,12 +36,17 @@ public class Device extends DestroyableReferenceHandle<Instance, Ownable<Device>
     }
 
     @Override
-    protected void doDestroy() {
+    public void destroy() {
+        super.destroy();
         VK10.vkDestroyDevice(handle, null);
     }
 
     public void waitIdle() {
         VkFunction.execute(() -> VK10.vkDeviceWaitIdle(handle));
+    }
+
+    public VkDevice getHandle() {
+        return handle;
     }
 
     public PhysicalDevice getPhysicalDevice() {
