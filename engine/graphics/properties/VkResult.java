@@ -1,4 +1,4 @@
-package engine.graphics.instance;
+package engine.graphics.properties;
 
 import engine.util.enums.HasValue;
 import org.lwjgl.vulkan.KHRDisplaySwapchain;

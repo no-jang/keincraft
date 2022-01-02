@@ -1,6 +1,6 @@
 package engine.graphics.util;
 
-import engine.graphics.instance.VkResult;
+import engine.graphics.properties.VkResult;
 
 public class VkException extends RuntimeException {
     private final VkResult result;

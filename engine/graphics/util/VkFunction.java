@@ -1,6 +1,6 @@
 package engine.graphics.util;
 
-import engine.graphics.instance.VkResult;
+import engine.graphics.properties.VkResult;
 import engine.util.enums.HasValue;
 
 @FunctionalInterface
