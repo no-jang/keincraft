@@ -39,6 +39,9 @@ public class InstanceBuilder extends EntityBuilder<Instance> {
     @Nullable
     private Container<InstanceLayer> layerContainer;
 
+    @Nullable
+    private VkInstanceCreateInfo createInfo;
+
     public InstanceBuilder(Version vulkanVersion) {
         this.vulkanVersion = vulkanVersion;
     }
@@ -83,11 +86,44 @@ public class InstanceBuilder extends EntityBuilder<Instance> {
     }
 
     @Override
-    public Instance build() {
-        try (MemoryStack stack = MemoryStack.stackPush()) {
-            checkVulkanVersion(stack);
+    protected void preBuild() {
+        super.preBuild();
 
-            VkApplicationInfo applicationInfo = createApplicationInfo(stack);
+        try (MemoryStack stack = MemoryStack.stackPush()) {
+            Version availableVkVersion = InstanceUtil.availableVkVersion(stack);
+            if (availableVkVersion.compareTo(vulkanVersion) < 0) {
+                throw new IllegalArgumentException("Requested vulkan version " + vulkanVersion + " is higher than" +
+                        "available version" + applicationVersion);
+            }
+
+            ByteBuffer applicationNameBuffer = null;
+            if (applicationName != null) {
+                applicationNameBuffer = stack.ASCII(applicationName);
+            }
+
+            ByteBuffer engineNameBuffer = null;
+            if (engineName != null) {
+                engineNameBuffer = stack.ASCII(engineName);
+            }
+
+            int applicationVkVersion = 0;
+            if (applicationVersion != null) {
+                applicationVkVersion = applicationVersion.toVulkanFormat();
+            }
+
+            int engineVkVersion = 0;
+            if (engineVersion != null) {
+                engineVkVersion = engineVersion.toVulkanFormat();
+            }
+
+            VkApplicationInfo applicationInfo = VkApplicationInfo.malloc(stack)
+                    .sType$Default()
+                    .pNext(0)
+                    .pApplicationName(applicationNameBuffer)
+                    .pEngineName(engineNameBuffer)
+                    .applicationVersion(applicationVkVersion)
+                    .engineVersion(engineVkVersion)
+                    .apiVersion(vulkanVersion.toVulkanFormat());
 
             PointerBuffer extensionBuffer = null;
             if (extensionContainer != null) {
@@ -99,14 +135,19 @@ public class InstanceBuilder extends EntityBuilder<Instance> {
                 layerBuffer = EnumBuffers.toString(stack, layerContainer.getRequested());
             }
 
-            VkInstanceCreateInfo createInfo = VkInstanceCreateInfo.malloc(stack)
+            createInfo = VkInstanceCreateInfo.malloc(stack)
                     .sType$Default()
                     .flags(0)
                     .pNext(0)
                     .pApplicationInfo(applicationInfo)
                     .ppEnabledExtensionNames(extensionBuffer)
                     .ppEnabledLayerNames(layerBuffer);
+        }
+    }
 
+    @Override
+    protected Instance doBuild() {
+        try (MemoryStack stack = MemoryStack.stackPush()) {
             PointerBuffer handleBuffer = stack.mallocPointer(1);
             VkFunction.execute(() -> VK10.vkCreateInstance(createInfo, null, handleBuffer));
 
@@ -116,44 +157,8 @@ public class InstanceBuilder extends EntityBuilder<Instance> {
         }
     }
 
-    private void checkVulkanVersion(MemoryStack stack) {
-        Version availableVkVersion = InstanceUtil.availableVkVersion(stack);
-        if (availableVkVersion.compareTo(vulkanVersion) < 0) {
-            throw new IllegalArgumentException("Requested vulkan version " + vulkanVersion + " is higher than" +
-                    "available version" + applicationVersion);
-        }
-    }
-
-    private VkApplicationInfo createApplicationInfo(MemoryStack stack) {
-        ByteBuffer applicationNameBuffer = null;
-        if (applicationName != null) {
-            applicationNameBuffer = stack.ASCII(applicationName);
-        }
-
-        ByteBuffer engineNameBuffer = null;
-        if (engineName != null) {
-            engineNameBuffer = stack.ASCII(engineName);
-        }
-
-        int applicationVkVersion = 0;
-        if (applicationVersion != null) {
-            applicationVkVersion = applicationVersion.toVulkanFormat();
-        }
-
-        int engineVkVersion = 0;
-        if (engineVersion != null) {
-            engineVkVersion = engineVersion.toVulkanFormat();
-        }
-
-
-        return VkApplicationInfo.malloc(stack)
-                .sType$Default()
-                .pNext(0)
-                .pApplicationName(applicationNameBuffer)
-                .pEngineName(engineNameBuffer)
-                .applicationVersion(applicationVkVersion)
-                .engineVersion(engineVkVersion)
-                .apiVersion(vulkanVersion.toVulkanFormat());
+    VkInstanceCreateInfo getCreateInfo() {
+        return createInfo;
     }
 
     private Container.Builder<InstanceExtension> createExtensionContainer() {

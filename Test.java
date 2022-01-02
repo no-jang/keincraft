@@ -2,8 +2,10 @@ import engine.ecs.engine.Engine;
 import engine.ecs.entity.EntityRegistry;
 import engine.graphics.instance.Instance;
 import engine.graphics.instance.InstanceBuilder;
+import engine.graphics.instance.InstanceReporterBuilder;
 import engine.graphics.instance.properties.InstanceExtension;
 import engine.graphics.instance.properties.InstanceLayer;
+import engine.graphics.instance.properties.MessageSeverity;
 import engine.graphics.instance.properties.Version;
 
 public class Test {
@@ -12,7 +14,7 @@ public class Test {
         EntityRegistry entityRegistry = engine.getEntityRegistry();
 
         Instance instance = entityRegistry.createEntity(new InstanceBuilder(
-                new Version(1, 2, 0)
+                new Version(1, 0, 0)
         ), builder -> builder
                 .applicationName("test application")
                 .engineName("test engine")
@@ -21,6 +23,8 @@ public class Test {
                 .extensions(extensions -> extensions
                         .required(InstanceExtension.DEBUG_REPORT))
                 .layers(layers -> layers
-                        .required(InstanceLayer.KHRONOS_VALIDATION)));
+                        .required(InstanceLayer.KHRONOS_VALIDATION))
+                .component(new InstanceReporterBuilder(), reporter -> reporter
+                        .severities(MessageSeverity.VERBOSE, MessageSeverity.INFO, MessageSeverity.WARNING, MessageSeverity.PERFORMANCE_WARNING, MessageSeverity.ERROR)));
     }
 }
