@@ -1,5 +1,20 @@
+import engine.ecs.engine.Engine;
+import engine.ecs.entity.EntityRegistry;
+import engine.graphics.instance.Instance;
+import engine.graphics.instance.InstanceBuilder;
+import engine.graphics.instance.properties.Version;
+
 public class Test {
     public static void main(String[] args) throws InterruptedException {
+        Engine engine = new Engine();
+        EntityRegistry entityRegistry = engine.getEntityRegistry();
 
+        Instance instance = entityRegistry.createEntity(new InstanceBuilder(
+                new Version(1, 2, 0)
+        ), builder -> builder
+                .applicationName("test application")
+                .engineName("test engine")
+                .applicationVersion(new Version(1, 0, 0))
+                .engineVersion(new Version(1, 0, 0)));
     }
 }
