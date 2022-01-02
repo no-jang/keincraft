@@ -1,5 +1,7 @@
 package engine.ecs.entity;
 
+import engine.ecs.component.Component;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
@@ -29,19 +31,22 @@ public abstract class EntityBuilder<E extends Entity> {
         isInBuild = true;
         preBuild();
 
-        for (EntityComponentBuilder<?> builder : components) {
+        for (EntityComponentBuilder<?> builder : this.components) {
             builder.internalPreBuild(this);
         }
 
         E built = doBuild();
 
-        for (EntityComponentBuilder<?> builder : components) {
-            builder.internalBuild();
+        List<Component> components = new ArrayList<>(this.components.size());
+        for (EntityComponentBuilder<?> builder : this.components) {
+            components.add(builder.internalBuild());
         }
+
+        built.addComponents(components);
 
         postBuild();
 
-        for (EntityComponentBuilder<?> builder : components) {
+        for (EntityComponentBuilder<?> builder : this.components) {
             builder.internalPostBuild();
         }
 
