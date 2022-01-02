@@ -2,6 +2,8 @@ import engine.ecs.engine.Engine;
 import engine.ecs.entity.EntityRegistry;
 import engine.graphics.instance.Instance;
 import engine.graphics.instance.InstanceBuilder;
+import engine.graphics.instance.properties.InstanceExtension;
+import engine.graphics.instance.properties.InstanceLayer;
 import engine.graphics.instance.properties.Version;
 
 public class Test {
@@ -15,6 +17,10 @@ public class Test {
                 .applicationName("test application")
                 .engineName("test engine")
                 .applicationVersion(new Version(1, 0, 0))
-                .engineVersion(new Version(1, 0, 0)));
+                .engineVersion(new Version(1, 0, 0))
+                .extensions(extensions -> extensions
+                        .required(InstanceExtension.DEBUG_REPORT))
+                .layers(layers -> layers
+                        .required(InstanceLayer.KHRONOS_VALIDATION)));
     }
 }

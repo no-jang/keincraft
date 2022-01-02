@@ -1,17 +1,27 @@
 package engine.graphics.instance;
 
+import engine.collections.container.Container;
+import engine.collections.container.DefaultContainer;
 import engine.ecs.entity.EntityBuilder;
+import engine.graphics.instance.properties.InstanceExtension;
+import engine.graphics.instance.properties.InstanceLayer;
 import engine.graphics.instance.properties.Version;
 import engine.graphics.util.VkFunction;
+import engine.memory.util.EnumBuffers;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.VK10;
 import org.lwjgl.vulkan.VkApplicationInfo;
+import org.lwjgl.vulkan.VkExtensionProperties;
 import org.lwjgl.vulkan.VkInstance;
 import org.lwjgl.vulkan.VkInstanceCreateInfo;
+import org.lwjgl.vulkan.VkLayerProperties;
 
 import java.nio.ByteBuffer;
+import java.nio.IntBuffer;
+import java.util.List;
+import java.util.function.Consumer;
 
 public class InstanceBuilder extends EntityBuilder<Instance> {
     @Nullable
@@ -23,6 +33,11 @@ public class InstanceBuilder extends EntityBuilder<Instance> {
     @Nullable
     private Version engineVersion;
     private Version vulkanVersion;
+
+    @Nullable
+    private Container<InstanceExtension> extensionContainer;
+    @Nullable
+    private Container<InstanceLayer> layerContainer;
 
     public InstanceBuilder(Version vulkanVersion) {
         this.vulkanVersion = vulkanVersion;
@@ -53,28 +68,52 @@ public class InstanceBuilder extends EntityBuilder<Instance> {
         return this;
     }
 
+    public InstanceBuilder extensions(Consumer<Container.Builder<InstanceExtension>> function) {
+        Container.Builder<InstanceExtension> containerBuilder = createExtensionContainer();
+        function.accept(containerBuilder);
+        extensionContainer = containerBuilder.build();
+        return this;
+    }
+
+    public InstanceBuilder layers(Consumer<Container.Builder<InstanceLayer>> function) {
+        Container.Builder<InstanceLayer> containerBuilder = createLayerContainer();
+        function.accept(containerBuilder);
+        layerContainer = containerBuilder.build();
+        return this;
+    }
+
     @Override
     public Instance build() {
-        MemoryStack stack = MemoryStack.stackPush();
+        try (MemoryStack stack = MemoryStack.stackPush()) {
+            checkVulkanVersion(stack);
 
-        checkVulkanVersion(stack);
+            VkApplicationInfo applicationInfo = createApplicationInfo(stack);
 
-        VkApplicationInfo applicationInfo = createApplicationInfo(stack);
+            PointerBuffer extensionBuffer = null;
+            if (extensionContainer != null) {
+                extensionBuffer = EnumBuffers.toString(stack, extensionContainer.getRequested());
+            }
 
-        VkInstanceCreateInfo createInfo = VkInstanceCreateInfo.malloc(stack)
-                .sType$Default()
-                .flags(0)
-                .pNext(0)
-                .pApplicationInfo(applicationInfo)
-                .ppEnabledLayerNames(null)
-                .ppEnabledExtensionNames(null);
+            PointerBuffer layerBuffer = null;
+            if (layerContainer != null) {
+                layerBuffer = EnumBuffers.toString(stack, layerContainer.getRequested());
+            }
 
-        PointerBuffer handleBuffer = stack.mallocPointer(1);
-        VkFunction.execute(() -> VK10.vkCreateInstance(createInfo, null, handleBuffer));
+            VkInstanceCreateInfo createInfo = VkInstanceCreateInfo.malloc(stack)
+                    .sType$Default()
+                    .flags(0)
+                    .pNext(0)
+                    .pApplicationInfo(applicationInfo)
+                    .ppEnabledExtensionNames(extensionBuffer)
+                    .ppEnabledLayerNames(layerBuffer);
 
-        VkInstance instance = new VkInstance(handleBuffer.get(0), createInfo);
+            PointerBuffer handleBuffer = stack.mallocPointer(1);
+            VkFunction.execute(() -> VK10.vkCreateInstance(createInfo, null, handleBuffer));
 
-        return new Instance(instance);
+            VkInstance instance = new VkInstance(handleBuffer.get(0), createInfo);
+
+            return new Instance(instance);
+        }
     }
 
     private void checkVulkanVersion(MemoryStack stack) {
@@ -115,5 +154,35 @@ public class InstanceBuilder extends EntityBuilder<Instance> {
                 .applicationVersion(applicationVkVersion)
                 .engineVersion(engineVkVersion)
                 .apiVersion(vulkanVersion.toVulkanFormat());
+    }
+
+    private Container.Builder<InstanceExtension> createExtensionContainer() {
+        try (MemoryStack stack = MemoryStack.stackPush()) {
+            IntBuffer availableExtensionCountBuffer = stack.mallocInt(1);
+            VkFunction.execute(() -> VK10.vkEnumerateInstanceExtensionProperties((String) null, availableExtensionCountBuffer, null));
+            int availableExtensionCount = availableExtensionCountBuffer.get(0);
+
+            VkExtensionProperties.Buffer availableExtensionsBuffer = VkExtensionProperties.malloc(availableExtensionCount, stack);
+            VkFunction.execute(() -> VK10.vkEnumerateInstanceExtensionProperties((String) null, availableExtensionCountBuffer, availableExtensionsBuffer));
+            List<InstanceExtension> availableExtensions =
+                    EnumBuffers.ofStruct(availableExtensionsBuffer, InstanceExtension.class, VkExtensionProperties::extensionNameString);
+
+            return new DefaultContainer.Builder<>(availableExtensions);
+        }
+    }
+
+    private Container.Builder<InstanceLayer> createLayerContainer() {
+        try (MemoryStack stack = MemoryStack.stackPush()) {
+            IntBuffer availableLayerCountBuffer = stack.mallocInt(1);
+            VkFunction.execute(() -> VK10.vkEnumerateInstanceLayerProperties(availableLayerCountBuffer, null));
+            int availableLayerCount = availableLayerCountBuffer.get(0);
+
+            VkLayerProperties.Buffer availableLayerBuffer = VkLayerProperties.malloc(availableLayerCount, stack);
+            VkFunction.execute(() -> VK10.vkEnumerateInstanceLayerProperties(availableLayerCountBuffer, availableLayerBuffer));
+            List<InstanceLayer> availableLayers =
+                    EnumBuffers.ofStruct(availableLayerBuffer, InstanceLayer.class, VkLayerProperties::layerNameString);
+
+            return new DefaultContainer.Builder<>(availableLayers);
+        }
     }
 }

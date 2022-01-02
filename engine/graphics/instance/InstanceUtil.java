@@ -7,7 +7,7 @@ import org.lwjgl.vulkan.VK11;
 
 import java.nio.IntBuffer;
 
-public class InstanceUtil {
+public final class InstanceUtil {
     public static Version availableVkVersion(MemoryStack stack) {
         IntBuffer versionBuffer = stack.mallocInt(1);
         VkFunction.execute(() -> VK11.vkEnumerateInstanceVersion(versionBuffer));
