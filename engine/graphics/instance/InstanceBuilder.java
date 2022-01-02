@@ -7,6 +7,7 @@ import engine.graphics.instance.properties.InstanceExtension;
 import engine.graphics.instance.properties.InstanceLayer;
 import engine.graphics.instance.properties.Version;
 import engine.graphics.util.VkFunction;
+import engine.memory.MemoryContext;
 import engine.memory.util.EnumBuffers;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.lwjgl.PointerBuffer;
@@ -87,10 +88,9 @@ public class InstanceBuilder extends EntityBuilder<Instance> {
 
     @Override
     protected void preBuild() {
-        super.preBuild();
+        MemoryStack stack = getEngine().getEntityRegistry().getEntity(MemoryContext.class).getStack();
 
-        try (MemoryStack stack = MemoryStack.stackPush()) {
-            Version availableVkVersion = InstanceUtil.availableVkVersion(stack);
+        Version availableVkVersion = InstanceUtil.availableVkVersion(stack);
             if (availableVkVersion.compareTo(vulkanVersion) < 0) {
                 throw new IllegalArgumentException("Requested vulkan version " + vulkanVersion + " is higher than" +
                         "available version" + applicationVersion);
@@ -143,18 +143,16 @@ public class InstanceBuilder extends EntityBuilder<Instance> {
                     .ppEnabledExtensionNames(extensionBuffer)
                     .ppEnabledLayerNames(layerBuffer);
         }
-    }
 
     @Override
     protected Instance doBuild() {
-        try (MemoryStack stack = MemoryStack.stackPush()) {
-            PointerBuffer handleBuffer = stack.mallocPointer(1);
+        MemoryStack stack = getEngine().getEntityRegistry().getEntity(MemoryContext.class).getStack();
+        PointerBuffer handleBuffer = stack.mallocPointer(1);
             VkFunction.execute(() -> VK10.vkCreateInstance(createInfo, null, handleBuffer));
 
             VkInstance instance = new VkInstance(handleBuffer.get(0), createInfo);
 
             return new Instance(instance);
-        }
     }
 
     VkInstanceCreateInfo getCreateInfo() {
@@ -162,8 +160,8 @@ public class InstanceBuilder extends EntityBuilder<Instance> {
     }
 
     private Container.Builder<InstanceExtension> createExtensionContainer() {
-        try (MemoryStack stack = MemoryStack.stackPush()) {
-            IntBuffer availableExtensionCountBuffer = stack.mallocInt(1);
+        MemoryStack stack = getEngine().getEntityRegistry().getEntity(MemoryContext.class).getStack();
+        IntBuffer availableExtensionCountBuffer = stack.mallocInt(1);
             VkFunction.execute(() -> VK10.vkEnumerateInstanceExtensionProperties((String) null, availableExtensionCountBuffer, null));
             int availableExtensionCount = availableExtensionCountBuffer.get(0);
 
@@ -174,11 +172,10 @@ public class InstanceBuilder extends EntityBuilder<Instance> {
 
             return new DefaultContainer.Builder<>(availableExtensions);
         }
-    }
 
     private Container.Builder<InstanceLayer> createLayerContainer() {
-        try (MemoryStack stack = MemoryStack.stackPush()) {
-            IntBuffer availableLayerCountBuffer = stack.mallocInt(1);
+        MemoryStack stack = getEngine().getEntityRegistry().getEntity(MemoryContext.class).getStack();
+        IntBuffer availableLayerCountBuffer = stack.mallocInt(1);
             VkFunction.execute(() -> VK10.vkEnumerateInstanceLayerProperties(availableLayerCountBuffer, null));
             int availableLayerCount = availableLayerCountBuffer.get(0);
 
@@ -188,6 +185,5 @@ public class InstanceBuilder extends EntityBuilder<Instance> {
                     EnumBuffers.ofStruct(availableLayerBuffer, InstanceLayer.class, VkLayerProperties::layerNameString);
 
             return new DefaultContainer.Builder<>(availableLayers);
-        }
     }
 }

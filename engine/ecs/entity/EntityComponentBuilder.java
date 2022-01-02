@@ -2,16 +2,17 @@ package engine.ecs.entity;
 
 import engine.ecs.component.Component;
 import engine.ecs.component.ComponentBuilder;
+import engine.ecs.engine.Engine;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 public abstract class EntityComponentBuilder<C extends Component> extends ComponentBuilder<C> {
     @Nullable
-    protected EntityBuilder<?> entityBuilder;
+    private EntityBuilder<?> entityBuilder;
     @Nullable
-    protected Entity entity;
+    private Entity entity;
 
     protected EntityBuilder<?> getEntityBuilder() {
-        if (!isInBuild || entityBuilder == null) {
+        if (entityBuilder == null) {
             throw new IllegalStateException("EntityComponentBuilder can't use entity builder");
         }
         return entityBuilder;
@@ -19,6 +20,8 @@ public abstract class EntityComponentBuilder<C extends Component> extends Compon
 
     @SuppressWarnings("unchecked")
     protected <B extends EntityBuilder<?>> B getEntityBuilder(Class<B> builderClass) {
+        EntityBuilder<?> entityBuilder = getEntityBuilder();
+
         if (!entityBuilder.getClass().isAssignableFrom(builderClass)) {
             throw new IllegalArgumentException("EntityComponentBuilder is not used by EntityBuilder " + builderClass +
                     "but " + entityBuilder.getClass());
@@ -27,7 +30,7 @@ public abstract class EntityComponentBuilder<C extends Component> extends Compon
     }
 
     protected Entity getEntity() {
-        if (!isInBuild || entity == null) {
+        if (entity == null) {
             throw new IllegalStateException("EntityComponentBuilder can't use entity");
         }
         return entity;
@@ -35,6 +38,8 @@ public abstract class EntityComponentBuilder<C extends Component> extends Compon
 
     @SuppressWarnings("unchecked")
     protected <E extends Entity> E getEntity(Class<E> entityClass) {
+        Entity entity = getEntity();
+
         if (!entity.getClass().isAssignableFrom(entityClass)) {
             throw new IllegalArgumentException("EntityComponentBuilder is for Entity " + entityClass +
                     "but " + entity.getClass());
@@ -53,10 +58,12 @@ public abstract class EntityComponentBuilder<C extends Component> extends Compon
         preBuild();
     }
 
-    C internalBuild() {
+    C internalBuild(Entity entity) {
         if (!isInBuild) {
             throw new IllegalStateException("ComponentBuilder can't be called by EntityBuilder while not in build");
         }
+
+        this.entity = entity;
         return doBuild();
     }
 
@@ -67,5 +74,9 @@ public abstract class EntityComponentBuilder<C extends Component> extends Compon
         postBuild();
         isInBuild = false;
         entityBuilder = null;
+    }
+
+    void setEngine(Engine engine) {
+
     }
 }

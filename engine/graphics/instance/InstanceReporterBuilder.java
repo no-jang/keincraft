@@ -3,6 +3,7 @@ package engine.graphics.instance;
 import engine.ecs.entity.EntityComponentBuilder;
 import engine.graphics.instance.properties.MessageSeverity;
 import engine.graphics.util.VkFunction;
+import engine.memory.MemoryContext;
 import engine.util.enums.Maskable;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.lwjgl.system.MemoryStack;
@@ -31,7 +32,7 @@ public class InstanceReporterBuilder extends EntityComponentBuilder<InstanceRepo
 
     @Override
     protected void preBuild() {
-        try (MemoryStack stack = MemoryStack.stackPush()) {
+        MemoryStack stack = getEngine().getEntityRegistry().getEntity(MemoryContext.class).getStack();
             createInfo = VkDebugReportCallbackCreateInfoEXT.malloc(stack)
                     .sType$Default()
                     .pNext(0)
@@ -41,17 +42,15 @@ public class InstanceReporterBuilder extends EntityComponentBuilder<InstanceRepo
 
             InstanceBuilder instanceBuilder = getEntityBuilder(InstanceBuilder.class);
             instanceBuilder.getCreateInfo().pNext(createInfo);
-        }
     }
 
     @Override
     protected InstanceReporter doBuild() {
-        try (MemoryStack stack = MemoryStack.stackPush()) {
-            Instance instance = getEntity(Instance.class);
+        MemoryStack stack = getEngine().getEntityRegistry().getEntity(MemoryContext.class).getStack();
+        Instance instance = getEntity(Instance.class);
 
             LongBuffer handleBuffer = stack.mallocLong(1);
             VkFunction.execute(() -> EXTDebugReport.vkCreateDebugReportCallbackEXT(instance.getHandle(), createInfo, null, handleBuffer));
             return new InstanceReporter(handleBuffer.get(0));
         }
-    }
 }

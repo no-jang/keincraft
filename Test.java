@@ -7,11 +7,14 @@ import engine.graphics.instance.properties.InstanceExtension;
 import engine.graphics.instance.properties.InstanceLayer;
 import engine.graphics.instance.properties.MessageSeverity;
 import engine.graphics.instance.properties.Version;
+import engine.memory.MemoryContext;
 
 public class Test {
     public static void main(String[] args) throws InterruptedException {
         Engine engine = new Engine();
         EntityRegistry entityRegistry = engine.getEntityRegistry();
+
+        entityRegistry.addEntity(new MemoryContext());
 
         Instance instance = entityRegistry.createEntity(new InstanceBuilder(
                 new Version(1, 0, 0)
