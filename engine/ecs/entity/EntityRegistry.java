@@ -11,8 +11,8 @@ public class EntityRegistry {
         this.entities = new HashMap<>();
     }
 
-    public <E extends Entity, B extends EntityBuilder<E>> E createEntity(B builder, Consumer<B> consumer) {
-        consumer.accept(builder);
+    public <E extends Entity, B extends EntityBuilder<E>> E createEntity(B builder, Consumer<B> function) {
+        function.accept(builder);
         E entity = builder.build();
         entities.put(entity.getClass(), entity);
         return entity;
