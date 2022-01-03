@@ -1,31 +1,7 @@
 package engine.graphics.instance;
 
-import engine.collections.container.Container;
-import engine.collections.container.DefaultContainer;
-import engine.ecs.entity.EntityBuilder;
-import engine.graphics.instance.properties.InstanceExtension;
-import engine.graphics.instance.properties.InstanceLayer;
-import engine.graphics.instance.properties.Version;
-import engine.graphics.util.VkFunction;
-import engine.memory.MemoryContext;
-import engine.memory.util.EnumBuffers;
-import org.checkerframework.checker.nullness.qual.Nullable;
-import org.lwjgl.PointerBuffer;
-import org.lwjgl.system.MemoryStack;
-import org.lwjgl.vulkan.VK10;
-import org.lwjgl.vulkan.VkApplicationInfo;
-import org.lwjgl.vulkan.VkExtensionProperties;
-import org.lwjgl.vulkan.VkInstance;
-import org.lwjgl.vulkan.VkInstanceCreateInfo;
-import org.lwjgl.vulkan.VkLayerProperties;
-
-import java.nio.ByteBuffer;
-import java.nio.IntBuffer;
-import java.util.List;
-import java.util.function.Consumer;
-
-public class InstanceBuilder extends EntityBuilder<Instance> {
-    @Nullable
+public class InstanceBuilder {
+/*    @Nullable
     private String applicationName;
     @Nullable
     private String engineName;
@@ -185,5 +161,5 @@ public class InstanceBuilder extends EntityBuilder<Instance> {
                     EnumBuffers.ofStruct(availableLayerBuffer, InstanceLayer.class, VkLayerProperties::layerNameString);
 
             return new DefaultContainer.Builder<>(availableLayers);
-    }
+    }*/
 }

@@ -1,6 +1,6 @@
 package engine.graphics.instance;
 
-import engine.ecs.component.Component;
+import engine.core.component.Component;
 
 public class InstanceReporter extends Component {
     private final long handle;

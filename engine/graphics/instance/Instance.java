@@ -1,9 +1,8 @@
 package engine.graphics.instance;
 
-import engine.ecs.entity.Entity;
 import org.lwjgl.vulkan.VkInstance;
 
-public class Instance extends Entity {
+public class Instance {
     private final VkInstance handle;
 
     public Instance(VkInstance handle) {

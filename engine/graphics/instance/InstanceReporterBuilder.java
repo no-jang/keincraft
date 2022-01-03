@@ -1,22 +1,7 @@
 package engine.graphics.instance;
 
-import engine.ecs.entity.EntityComponentBuilder;
-import engine.graphics.instance.properties.MessageSeverity;
-import engine.graphics.util.VkFunction;
-import engine.memory.MemoryContext;
-import engine.util.enums.Maskable;
-import org.checkerframework.checker.nullness.qual.Nullable;
-import org.lwjgl.system.MemoryStack;
-import org.lwjgl.vulkan.EXTDebugReport;
-import org.lwjgl.vulkan.VkDebugReportCallbackCreateInfoEXT;
-
-import java.nio.LongBuffer;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
-public class InstanceReporterBuilder extends EntityComponentBuilder<InstanceReporter> {
-    private final List<MessageSeverity> severities;
+public class InstanceReporterBuilder {
+/*    private final List<MessageSeverity> severities;
 
     @Nullable
     private VkDebugReportCallbackCreateInfoEXT createInfo;
@@ -52,5 +37,5 @@ public class InstanceReporterBuilder extends EntityComponentBuilder<InstanceRepo
             LongBuffer handleBuffer = stack.mallocLong(1);
             VkFunction.execute(() -> EXTDebugReport.vkCreateDebugReportCallbackEXT(instance.getHandle(), createInfo, null, handleBuffer));
             return new InstanceReporter(handleBuffer.get(0));
-        }
+        }*/
 }

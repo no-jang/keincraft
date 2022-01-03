@@ -1,18 +1,30 @@
-import engine.ecs.engine.Engine;
-import engine.ecs.entity.EntityRegistry;
-import engine.graphics.instance.Instance;
-import engine.graphics.instance.InstanceBuilder;
-import engine.graphics.instance.InstanceReporterBuilder;
-import engine.graphics.instance.properties.InstanceExtension;
-import engine.graphics.instance.properties.InstanceLayer;
-import engine.graphics.instance.properties.MessageSeverity;
-import engine.graphics.instance.properties.Version;
-import engine.memory.MemoryContext;
+import engine.core.Engine;
+import engine.core.event.EventHandler;
+import engine.core.event.EventRegistry;
+import test.TestEvent;
 
 public class Test {
     public static void main(String[] args) throws InterruptedException {
         Engine engine = new Engine();
-        EntityRegistry entityRegistry = engine.getEntityRegistry();
+        EventRegistry eventRegistry = engine.getEventRegistry();
+
+        EventHandler<TestEvent> handler = eventRegistry.addHandler(TestEvent.class, testEvent -> {
+            System.out.println("1 " + testEvent.getValue());
+        });
+
+        eventRegistry.addHandler(TestEvent.class, testEvent -> {
+            System.out.println("2 " + testEvent.getValue());
+        });
+
+        eventRegistry.queueEvent("test", new TestEvent("2"));
+        eventRegistry.queueEvent("test", new TestEvent("1"));
+
+        //eventRegistry.removeHandler(TestEvent.class, handler);
+
+        eventRegistry.fireQueue("test");
+        eventRegistry.fireQueue("test");
+
+        /*ComponentRegistry registry = new ComponentRegistry();
 
         entityRegistry.addEntity(new MemoryContext());
 
@@ -28,6 +40,6 @@ public class Test {
                 .layers(layers -> layers
                         .required(InstanceLayer.KHRONOS_VALIDATION))
                 .component(new InstanceReporterBuilder(), reporter -> reporter
-                        .severities(MessageSeverity.VERBOSE, MessageSeverity.INFO, MessageSeverity.WARNING, MessageSeverity.PERFORMANCE_WARNING, MessageSeverity.ERROR)));
+                        .severities(MessageSeverity.VERBOSE, MessageSeverity.INFO, MessageSeverity.WARNING, MessageSeverity.PERFORMANCE_WARNING, MessageSeverity.ERROR)));*/
     }
 }
