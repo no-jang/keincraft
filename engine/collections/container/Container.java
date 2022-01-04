@@ -3,6 +3,7 @@ package engine.collections.container;
 import java.util.Collection;
 import java.util.List;
 
+// TODO Rename in Request
 public interface Container<R> {
     List<R> getAvailable();
 
