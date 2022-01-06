@@ -76,7 +76,7 @@ public class EntityRegistry {
     public <E extends Entity> E getEntity(Class<E> entityClass) {
         List<E> entities = (List<E>) this.entities.get(entityClass);
 
-        if (entities.isEmpty()) {
+        if (entities == null || entities.isEmpty()) {
             throw new IllegalArgumentException("Entity was not added: " + entityClass);
         }
 
