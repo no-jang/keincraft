@@ -1,20 +1,20 @@
-package engine.collections.container;
+package engine.collections.requests;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-public class DefaultContainer<R> implements Container<R> {
-    private final List<R> available;
+public class DefaultDoubleRequests<A, R> implements DoubleRequests<A, R> {
+    private final List<A> available;
     private final List<R> requested;
 
-    public DefaultContainer(List<R> available, List<R> requested) {
+    public DefaultDoubleRequests(List<A> available, List<R> requested) {
         this.available = available;
         this.requested = requested;
     }
 
     @Override
-    public List<R> getAvailable() {
+    public List<A> getAvailable() {
         return available;
     }
 
@@ -23,18 +23,20 @@ public class DefaultContainer<R> implements Container<R> {
         return requested;
     }
 
-    public static class Builder<R> implements Container.Builder<R> {
-        private final List<R> available;
-        private final List<R> requested;
+    public abstract static class AbstractBuilder<A, R> implements DoubleRequests.Builder<A, R> {
+        protected final List<A> available;
+        protected final List<R> requested;
 
-        public Builder(List<R> available) {
+        public AbstractBuilder(List<A> available) {
             this.available = available;
             this.requested = new ArrayList<>();
         }
 
+        protected abstract boolean isAvailable(R request);
+
         @Override
-        public Container.Builder<R> required(R request) {
-            if (!available.contains(request)) {
+        public Builder<A, R> required(R request) {
+            if (!isAvailable(request)) {
                 throw new IllegalArgumentException("Request " + request + " is not available");
             }
 
@@ -43,7 +45,7 @@ public class DefaultContainer<R> implements Container<R> {
         }
 
         @Override
-        public Container.Builder<R> required(Collection<R> requests) {
+        public Builder<A, R> required(Collection<R> requests) {
             for (R request : requests) {
                 required(request);
             }
@@ -52,8 +54,8 @@ public class DefaultContainer<R> implements Container<R> {
         }
 
         @Override
-        public Container.Builder<R> optional(R request) {
-            if (!available.contains(request)) {
+        public Builder<A, R> optional(R request) {
+            if (!isAvailable(request)) {
                 return this;
             }
 
@@ -62,17 +64,12 @@ public class DefaultContainer<R> implements Container<R> {
         }
 
         @Override
-        public Container.Builder<R> optional(Collection<R> requests) {
+        public Builder<A, R> optional(Collection<R> requests) {
             for (R request : requests) {
                 optional(request);
             }
 
             return this;
-        }
-
-        @Override
-        public Container<R> build() {
-            return new DefaultContainer<>(available, requested);
         }
     }
 }

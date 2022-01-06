@@ -1,9 +1,9 @@
-package engine.collections.container;
+package engine.collections.requests;
 
 import java.util.Collection;
 import java.util.List;
 
-public interface DoubleContainer<A, R> {
+public interface DoubleRequests<A, R> {
     List<A> getAvailable();
 
     List<R> getRequested();
@@ -17,6 +17,6 @@ public interface DoubleContainer<A, R> {
 
         Builder<A, R> optional(Collection<R> requests);
 
-        DoubleContainer<A, R> build();
+        DoubleRequests<A, R> build();
     }
 }

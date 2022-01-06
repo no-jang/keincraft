@@ -1,10 +1,10 @@
-package engine.collections.container;
+package engine.collections.requests;
 
 import java.util.Collection;
 import java.util.List;
 
 // TODO Rename in Request
-public interface Container<R> {
+public interface Requests<R> {
     List<R> getAvailable();
 
     List<R> getRequested();
@@ -18,6 +18,6 @@ public interface Container<R> {
 
         Builder<R> optional(Collection<R> requests);
 
-        Container<R> build();
+        Requests<R> build();
     }
 }
