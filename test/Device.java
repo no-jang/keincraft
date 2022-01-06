@@ -2,6 +2,7 @@ package test;
 
 import engine.core.Engine;
 import engine.core.entity.Entity;
+import engine.core.entity.EntityRegistry;
 
 import java.util.function.Supplier;
 
@@ -17,13 +18,15 @@ public class Device extends Entity {
         return new Builder(engine);
     }
 
-    public static class Builder extends Entity.Builder<Builder, Device> {
+    public static class Builder extends Entity.Builder<Device> {
+        private final Engine engine;
         private final Supplier<Instance> instanceSupplier;
 
         public Builder(Engine engine) {
-            super(engine);
+            this.engine = engine;
 
-            instanceSupplier = getEntity(Instance.class);
+            EntityRegistry entityRegistry = engine.getEntityRegistry();
+            instanceSupplier = entityRegistry.getEntityProvider(Instance.class);
         }
 
         public Builder queues(String... queues) {
@@ -31,11 +34,10 @@ public class Device extends Entity {
         }
 
         @Override
-        protected Device build() {
+        public Device build() {
             Instance instance = instanceSupplier.get();
-            withAscending(instance);
-
-            Device device = new Device(instance);
+            Device device = new Device(engine, instance);
+            device.withAscending(instance);
             return device;
         }
     }

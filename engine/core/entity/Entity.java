@@ -3,80 +3,80 @@ package engine.core.entity;
 import engine.core.Engine;
 import engine.core.util.Destroyable;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Consumer;
-import java.util.function.Supplier;
 
 public class Entity implements Destroyable {
     protected final Engine engine;
+    protected final List<Entity> ascending;
+    protected final List<Entity> descending;
+
+    protected boolean isDestroyed;
 
     public Entity(Engine engine) {
         this.engine = engine;
+
+        ascending = new ArrayList<>();
+        descending = new ArrayList<>();
+    }
+
+    public boolean isDestroyed() {
+        return isDestroyed;
     }
 
     public void destroy() {
+        if (isDestroyed) {
+            return;
+        }
 
+        for (Entity descending : this.descending) {
+            descending.destroy();
+        }
+
+        for (Entity ascending : this.ascending) {
+            ascending.removeDescending(this);
+        }
+
+        destroying();
+
+        isDestroyed = true;
+    }
+
+    protected void destroying() {
+
+    }
+
+    public int getMaxEntityCount() {
+        return -1;
+    }
+
+    protected void withAscending(Entity ascending) {
+        this.ascending.add(ascending);
+    }
+
+    protected void withDescending(Entity descending) {
+        this.descending.add(descending);
     }
 
     protected void throwIfDestroyed() {
-
+        if (isDestroyed) {
+            throw new IllegalStateException("Object is already destroyed");
+        }
     }
 
-    void withAscending(List<Entity> ascending) {
-
+    public List<Entity> getAscending() {
+        return ascending;
     }
 
-    void withDescending(List<Entity> descending) {
-
+    public List<Entity> getDescending() {
+        return descending;
     }
 
-    public static abstract class Builder<SELF extends Builder<SELF, E>, E extends Entity> {
-        protected final Engine engine;
+    private void removeDescending(Entity descending) {
+        this.descending.remove(descending);
+    }
 
-        public Builder(Engine engine) {
-            this.engine = engine;
-        }
-
-        public <CE extends Entity, CB extends Builder<CB, CE>> SELF with(CB builder) {
-
-        }
-
-        public <CE extends Entity, CB extends Builder<CB, CE>> SELF with(CB builder, Consumer<CB> apply) {
-            apply.accept(builder);
-        }
-
-        public <CE extends Entity> SELF with(CE entity) {
-
-        }
-
-        public E make() {
-
-        }
-
-        public int getMaxEntityCount() {
-            return -1;
-        }
-
-        protected <CE extends Entity> Supplier<CE> getEntity(Class<CE> entityClass) {
-
-        }
-
-        protected void withAscending(Entity ascending) {
-
-        }
-
-        protected void withDescending(Entity descending) {
-
-        }
-
-        protected void preBuild() {
-
-        }
-
-        protected abstract E build();
-
-        protected void postBuild() {
-
-        }
+    public static abstract class Builder<E extends Entity> {
+        public abstract E build();
     }
 }

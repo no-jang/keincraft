@@ -12,9 +12,11 @@ public class Instance extends Entity {
         return new Builder(engine);
     }
 
-    public static class Builder extends Entity.Builder<Builder, Instance> {
+    public static class Builder extends Entity.Builder<Instance> {
+        private final Engine engine;
+
         public Builder(Engine engine) {
-            super(engine);
+            this.engine = engine;
         }
 
         public Builder applicationName(String name) {
@@ -25,14 +27,13 @@ public class Instance extends Entity {
 
         }
 
-        @Override
-        protected Instance build() {
-            return null;
+        public Builder severities(String... strings) {
+
         }
 
         @Override
-        public int getMaxEntityCount() {
-            return 1;
+        public Instance build() {
+            return null;
         }
     }
 }

@@ -13,19 +13,23 @@ public class Graphics extends Entity {
 
         EntityRegistry entityRegistry = engine.getEntityRegistry();
 
-        InstanceReporter.Builder instanceReporterBuilder = entityRegistry.createEntity(InstanceReporter.builder(engine))
-                .severities("test severitiy");
-
-        instance = entityRegistry.createEntity(Instance.builder(engine))
+        instance = entityRegistry.addEntity(Instance.builder(engine)
                 .applicationName("test app")
                 .engineName("test engine")
-                .with(instanceReporterBuilder, builder -> builder
-                        .severities("test severity"))
-                .make();
+                .severities("test severity")
+                .build());
 
 
-        Device device1 = entityRegistry.createEntity(Device.builder(engine))
+        device = entityRegistry.addEntity(Device.builder(engine)
                 .queues("bli bla blup")
-                .make();
+                .build());
+    }
+
+    public Instance getInstance() {
+        return instance;
+    }
+
+    public Device getDevice() {
+        return device;
     }
 }

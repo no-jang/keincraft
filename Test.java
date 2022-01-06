@@ -1,36 +1,13 @@
 import engine.core.Engine;
 import engine.core.entity.EntityRegistry;
-import test.Device;
-import test.Instance;
-import test.InstanceReporter;
+import test.Graphics;
 
 public class Test {
     public static void main(String[] args) throws InterruptedException {
         Engine engine = new Engine();
         EntityRegistry entityRegistry = engine.getEntityRegistry();
 
-        InstanceReporter.Builder instanceReporterBuilder = entityRegistry.createEntity(InstanceReporter.builder(engine))
-                .severities("test severitiy");
-
-        Instance.Builder instanceBuilder = entityRegistry.createEntity(Instance.builder(engine))
-                .applicationName("test app")
-                .engineName("test engine")
-                .with(instanceReporterBuilder, builder -> builder
-                        .severities("test severity"));
-
-        Instance instance1 = instanceBuilder.make();
-
-        Instance instance2 = instanceBuilder.make();
-
-        Device device1 = entityRegistry.createEntity(Device.builder(engine))
-                .queues("bli bla blup")
-                // .with(instance1) Pick first found
-                .make();
-
-        Device device2 = entityRegistry.createEntity(Device.builder(engine))
-                .queues("bluap")
-                .with(instance2)
-                .make();
+        Graphics graphics = entityRegistry.addEntity(new Graphics(engine));
 
 /*        Engine engine = new Engine();
         EventRegistry eventRegistry = engine.getEventRegistry();
