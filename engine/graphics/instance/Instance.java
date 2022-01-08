@@ -1,37 +1,11 @@
 package engine.graphics.instance;
 
-import engine.collections.requests.DefaultRequests;
-import engine.collections.requests.Requests;
-import engine.core.Engine;
-import engine.core.entity.Entity;
-import engine.graphics.instance.properties.InstanceExtension;
-import engine.graphics.instance.properties.InstanceLayer;
-import engine.graphics.instance.properties.Version;
-import engine.graphics.util.VkFunction;
-import engine.memory.MemoryContext;
-import engine.memory.util.EnumBuffers;
-import org.checkerframework.checker.nullness.qual.Nullable;
-import org.lwjgl.PointerBuffer;
-import org.lwjgl.system.MemoryStack;
-import org.lwjgl.vulkan.VK10;
-import org.lwjgl.vulkan.VkApplicationInfo;
-import org.lwjgl.vulkan.VkExtensionProperties;
-import org.lwjgl.vulkan.VkInstance;
-import org.lwjgl.vulkan.VkInstanceCreateInfo;
-import org.lwjgl.vulkan.VkLayerProperties;
-
-import java.nio.ByteBuffer;
-import java.nio.IntBuffer;
-import java.util.List;
-import java.util.function.Consumer;
-
-public class Instance extends Entity {
-    private final VkInstance handle;
+public class Instance {
+/*    private final VkInstance handle;
     private final Requests<InstanceExtension> extensions;
     private final Requests<InstanceLayer> layers;
 
     public Instance(Engine engine, VkInstance handle, Requests<InstanceExtension> extensions, Requests<InstanceLayer> layers) {
-        super(engine);
         this.handle = handle;
         this.extensions = extensions;
         this.layers = layers;
@@ -41,10 +15,10 @@ public class Instance extends Entity {
         return new Builder(engine);
     }
 
-    @Override
+*//*    @Override
     protected void destroying() {
         VK10.vkDestroyInstance(handle, null);
-    }
+    }*//*
 
     public Requests<InstanceExtension> getExtensions() {
         return extensions;
@@ -114,8 +88,7 @@ public class Instance extends Entity {
             return this;
         }
 
-        @Override
-        public Instance build() {
+        *//*public Instance build() {
             MemoryStack stack = engine.getEntityRegistry().getEntity(MemoryContext.class).getStack();
 
             Version requestedVersion = vulkanVersion != null ? vulkanVersion : new Version(1, 0, 0);
@@ -224,6 +197,6 @@ public class Instance extends Entity {
 
             layers = new DefaultRequests.Builder<>(availableLayers);
             return layers;
-        }
-    }
+        }*//*
+    }*/
 }

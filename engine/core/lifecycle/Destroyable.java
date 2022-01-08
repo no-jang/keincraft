@@ -1,4 +1,4 @@
-package engine.core.util;
+package engine.core.lifecycle;
 
 import java.io.Closeable;
 
