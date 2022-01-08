@@ -5,32 +5,36 @@ import engine.core.bind.DefaultInternalBind;
 import engine.core.bind.InternalBind;
 import engine.core.binding.Binding;
 import engine.core.binding.DefaultBinding;
-import engine.core.provider.Provider;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class DefaultContainer implements Container {
     private final List<InternalBind<?>> pendingBinds;
-    private final Map<Class<?>, Binding<?>> bindings;
+   // private final Multimap<Class<?>, Binding<?>> bindings;
 
     public DefaultContainer() {
         pendingBinds = new ArrayList<>();
-        bindings = new HashMap<>();
+        //bindings = ArrayListMultimap.create();
     }
 
     @Override
     @SuppressWarnings("unchecked")
-    public <T> T get(Class<T> type) {
-        Binding<T> binding = (Binding<T>) bindings.get(type);
-        if (binding == null) {
+    public <T> T resolve(Class<T> type) {
+        updateBindings();
+
+/*        Collection<Binding<?>> bindings = this.bindings.get(type);
+        if (bindings == null) {
             throw new IllegalArgumentException("Type " + type + " wasn't bound");
         }
 
-        Provider<T> provider = binding.getProvider();
-        return provider.getInstance();
+        if(bindings.size() > 1) {
+            throw new IllegalArgumentException("Type " + type + " is more than one time bound. It must be used by resolveAll");
+        }
+
+        Provider<T> provider = binding.getProvider();*/
+        //return provider.getInstance();
+        return null;
     }
 
     @Override
@@ -40,16 +44,19 @@ public class DefaultContainer implements Container {
         return bind;
     }
 
-    @Override
-    public void resolveBindings() {
-        pendingBinds.removeIf(this::resolveBinding);
+    private void updateBindings() {
+        if (pendingBinds.isEmpty()) {
+            return;
+        }
+
+        pendingBinds.removeIf(this::updateBindings);
     }
 
-    private <T> boolean resolveBinding(InternalBind<T> bind) {
+    private <T> boolean updateBindings(InternalBind<T> bind) {
         Class<T> type = bind.getType();
         Binding<T> binding = new DefaultBinding<>(type, bind.getProvider());
 
-        bindings.put(type, binding);
+        //bindings.put(type, binding);
         return true;
     }
 }
