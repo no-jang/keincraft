@@ -1,5 +1,8 @@
 package main;
 
+import org.tinylog.Logger;
+
+import java.io.File;
 import java.util.Objects;
 
 public class Main {
@@ -21,10 +24,14 @@ public class Main {
     }
 
     public static void runClient() {
+        System.out.println("Run client");
+        System.out.println(new File("").getAbsolutePath());
+        Logger.info("Test");
         // TODO Write client
     }
 
     public static void runServer() {
+        System.out.println("Run server");
         // TODO Write server
     }
 }
