@@ -20,7 +20,6 @@ public class ListModuleSource implements ModuleSource {
      * @param type class to add and validate
      */
     public void addClass(Class<?> type) {
-        ModuleClassValidator.validateModuleClass(type);
         types.add(type);
     }
 
@@ -39,7 +38,7 @@ public class ListModuleSource implements ModuleSource {
      * {@inheritDoc}
      */
     @Override
-    public List<Class<?>> discoverModuleClasses() {
+    public List<Class<?>> discoverModuleClassCandidates() {
         return types;
     }
 }

@@ -12,5 +12,5 @@ public interface ModuleSource {
      *
      * @return list of discovered classes
      */
-    List<Class<?>> discoverModuleClasses();
+    List<Class<?>> discoverModuleClassCandidates();
 }
