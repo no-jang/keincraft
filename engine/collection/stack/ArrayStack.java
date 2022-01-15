@@ -3,6 +3,7 @@ package engine.collection.stack;
 import engine.collection.builder.AbstractArrayCollectionBuilder;
 import engine.collection.iteration.ArrayIterator;
 import engine.collection.iteration.Iterator;
+import engine.collection.iteration.reverse.ReverseArrayIterator;
 import engine.collection.util.ArrayUtil;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
@@ -50,21 +51,28 @@ public class ArrayStack<T> implements Stack<T> {
     }
 
     @Override
-    public @Nullable T getHeadOrNull() {
+    @Nullable
+    public T getHeadOrNull() {
+        if (head < 0) {
+            return null;
+        }
+
         return array[head];
     }
 
     @Override
-    public @Nullable T getOrNull(int pos) {
-        if (pos < 0) {
-            throw new IllegalArgumentException("Can't peek element from stack: the position is negative");
+    @Nullable
+    public T getTailOrNull() {
+        if (head < 0) {
+            return null;
         }
 
-        if (size - 1 < pos) {
-            throw new IllegalArgumentException("Can't peek element from stack: the position to peek is greater than the stack size");
-        }
+        return array[0];
+    }
 
-        return array[pos];
+    @Override
+    public int size() {
+        return size;
     }
 
     @Override
@@ -83,16 +91,28 @@ public class ArrayStack<T> implements Stack<T> {
         return -1;
     }
 
-    // TODO Replace with MutableArrayStack internally
-
     @Override
-    public int size() {
-        return size;
+    @Nullable
+    public T getOrNull(int index) {
+        if (index < 0) {
+            throw new IllegalArgumentException("Can't peek element from stack: the position is negative");
+        }
+
+        if (size - 1 < index) {
+            throw new IllegalArgumentException("Can't peek element from stack: the position to peek is greater than the stack size");
+        }
+
+        return array[index];
     }
 
     @Override
     public Iterator<T> iterator() {
         return new ArrayIterator<>(array.clone(), size);
+    }
+
+    @Override
+    public Iterator<T> reverseIterator() {
+        return new ReverseArrayIterator<>(array.clone(), size);
     }
 
     /**

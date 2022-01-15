@@ -12,7 +12,7 @@ import java.util.NoSuchElementException;
 public interface HasHead<T> {
 
     /**
-     * Returns the first element or null if the collection is empty
+     * Returns the first element or null if the collection is empty-
      *
      * @return first element or null
      */

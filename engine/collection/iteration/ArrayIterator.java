@@ -42,11 +42,20 @@ public class ArrayIterator<T> implements Iterator<T> {
             return null;
         }
 
-        T element = array[nextIndex++];
+        T element = array[nextIndex()];
         if (element == null) {
             throw new NullPointerException("Iterator can't iterate over null values");
         }
 
         return element;
+    }
+
+    /**
+     * Sets new index and returns the old one after the element is next.
+     *
+     * @return old index
+     */
+    protected int nextIndex() {
+        return nextIndex++;
     }
 }

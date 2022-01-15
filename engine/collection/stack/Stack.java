@@ -1,5 +1,6 @@
 package engine.collection.stack;
 
+import engine.collection.OrderedCollection;
 import engine.collection.index.IndexedCollection;
 
 /**
@@ -8,6 +9,6 @@ import engine.collection.index.IndexedCollection;
  *
  * @param <T> type of the containing elements
  */
-public interface Stack<T> extends IndexedCollection<T> {
+public interface Stack<T> extends OrderedCollection<T>, IndexedCollection<T> {
 
 }
