@@ -17,7 +17,6 @@ public class ArrayStack<T> implements Stack<T> {
 
     protected T[] array;
     protected int size;
-    protected int head;
 
     /**
      * Creates new {@link ArrayStack} with an initial capacity of 10
@@ -39,7 +38,6 @@ public class ArrayStack<T> implements Stack<T> {
     private ArrayStack(T[] array, int size) {
         this.array = array;
         this.size = size;
-        this.head = size - 1;
     }
 
     public static <T> Builder<T> newBuilder() {
@@ -53,17 +51,17 @@ public class ArrayStack<T> implements Stack<T> {
     @Override
     @Nullable
     public T getHeadOrNull() {
-        if (head < 0) {
+        if (size <= 0) {
             return null;
         }
 
-        return array[head];
+        return array[size - 1];
     }
 
     @Override
     @Nullable
     public T getTailOrNull() {
-        if (head < 0) {
+        if (size <= 0) {
             return null;
         }
 
