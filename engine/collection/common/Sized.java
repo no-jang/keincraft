@@ -18,7 +18,7 @@ public interface Sized {
      * @return true if collection is empty
      */
     default boolean isEmpty() {
-        return size() == 0;
+        return size() <= 0;
     }
 
     /**

@@ -35,23 +35,15 @@ public class ArrayStack<T> implements Stack<T> {
     }
 
     // Only be used internally
-    private ArrayStack(T[] array, int size) {
+    protected ArrayStack(T[] array, int size) {
         this.array = array;
         this.size = size;
-    }
-
-    public static <T> Builder<T> newBuilder() {
-        return new Builder<>();
-    }
-
-    public static <T> Builder<T> newBuilder(int initialCapacity) {
-        return new Builder<>(initialCapacity);
     }
 
     @Override
     @Nullable
     public T getHeadOrNull() {
-        if (size <= 0) {
+        if (isEmpty()) {
             return null;
         }
 
@@ -61,7 +53,7 @@ public class ArrayStack<T> implements Stack<T> {
     @Override
     @Nullable
     public T getTailOrNull() {
-        if (size <= 0) {
+        if (isEmpty()) {
             return null;
         }
 
@@ -105,12 +97,12 @@ public class ArrayStack<T> implements Stack<T> {
 
     @Override
     public Iterator<T> iterator() {
-        return new ArrayIterator<>(array.clone(), size);
+        return new ArrayIterator<>(array, size);
     }
 
     @Override
     public Iterator<T> reverseIterator() {
-        return new ReverseArrayIterator<>(array.clone(), size);
+        return new ReverseArrayIterator<>(array, size);
     }
 
     /**
@@ -120,6 +112,7 @@ public class ArrayStack<T> implements Stack<T> {
      */
     public static class Builder<T> extends AbstractArrayCollectionBuilder<T, ArrayStack<T>> {
         public Builder() {
+            super();
         }
 
         public Builder(int initialCapacity) {
