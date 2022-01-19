@@ -10,5 +10,10 @@ import engine.collection.iteration.reverse.ReverseIterable;
  * @param <T> type of containing elements
  */
 public interface OrderedCollection<T> extends Collection<T>, HasTail<T>, ReverseIterable<T> {
-
+    /**
+     * Transforms the {@link OrderedCollection} to a {@link MutableOrderedCollection}.
+     *
+     * @return a {@link MutableOrderedCollection}
+     */
+    MutableOrderedCollection<T> toMutable();
 }

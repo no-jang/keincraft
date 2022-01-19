@@ -105,6 +105,11 @@ public class ArrayStack<T> implements Stack<T> {
         return new ReverseArrayIterator<>(array, size);
     }
 
+    @Override
+    public MutableStack<T> toMutable() {
+        return new MutableArrayStack<>(array, size);
+    }
+
     /**
      * Builder for {@link ArrayStack}
      *

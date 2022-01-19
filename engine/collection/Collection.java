@@ -12,4 +12,10 @@ import engine.collection.iteration.Iterable;
  */
 public interface Collection<T> extends Iterable<T>, HasHead<T>, Sized {
 
+    /**
+     * Transforms the {@link Collection} to a {@link MutableCollection}.
+     *
+     * @return a {@link MutableCollection}
+     */
+    MutableCollection<T> toMutable();
 }

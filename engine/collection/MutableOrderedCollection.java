@@ -5,6 +5,6 @@ package engine.collection;
  *
  * @param <T> type of elements
  */
-public interface MutableOrderedCollection<T> extends OrderedCollection<T> {
+public interface MutableOrderedCollection<T> extends OrderedCollection<T>, MutableCollection<T> {
 
 }

@@ -46,6 +46,11 @@ public class MutableArrayStack<T> extends ArrayStack<T> implements MutableStack<
         return array[(size--) - 1];
     }
 
+    @Override
+    public MutableStack<T> toMutable() {
+        return this;
+    }
+
     public static class Builder<T> extends AbstractArrayCollectionBuilder<T, MutableArrayStack<T>> {
         public Builder() {
             super();

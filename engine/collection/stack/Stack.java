@@ -10,5 +10,10 @@ import engine.collection.index.IndexedCollection;
  * @param <T> type of the containing elements
  */
 public interface Stack<T> extends OrderedCollection<T>, IndexedCollection<T> {
-
+    /**
+     * Transforms the {@link Stack} to a {@link MutableStack}.
+     *
+     * @return a {@link MutableStack}
+     */
+    MutableStack<T> toMutable();
 }
