@@ -1,7 +1,18 @@
 package main;
 
+import org.lwjgl.glfw.GLFW;
+import org.lwjgl.glfw.GLFWVulkan;
+
 public class Test {
     public static void main(String[] args) throws InterruptedException {
+        GLFW.glfwInit();
+
+        if (GLFWVulkan.glfwVulkanSupported()) {
+            System.out.println("Vulkan is supported");
+        } else {
+            System.out.println("Vulkan IS NOT SUPPORTED");
+        }
+
 /*        Engine engine = new Engine();
         EntityRegistry entityRegistry = engine.getEntityRegistry();
 
