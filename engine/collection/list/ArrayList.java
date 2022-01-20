@@ -1,6 +1,7 @@
 package engine.collection.list;
 
 import engine.collection.util.ArrayUtil;
+import engine.util.Conditions;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 import java.util.Iterator;
@@ -17,6 +18,8 @@ public class ArrayList<T> implements MutableList<T> {
     }
 
     public ArrayList(int defaultCapacity) {
+        Conditions.greaterThan(defaultCapacity, 0, "Can't create list: defaultCapacity is negative");
+
         array = ArrayUtil.unsafeCastNewArray(defaultCapacity);
     }
 
@@ -28,22 +31,15 @@ public class ArrayList<T> implements MutableList<T> {
     @Override
     @Nullable
     public T getOrNull(int index) {
-        if (index < 0) {
-            throw new IllegalArgumentException("Can't get element from list: index is negative");
-        }
-
-        if (index >= size) {
-            return null;
-        }
+        Conditions.greaterThan(index, 0, "Can't get element from list: index is negative");
+        if (index >= size) return null;
 
         return array[index];
     }
 
     @Override
     public void add(T element) {
-        if (element == null) {
-            throw new IllegalArgumentException("Can't set element in list: element is null");
-        }
+        Conditions.notNull(element, "Can't set element in list: element is null");
 
         array = ArrayUtil.ensureCapacity(array, size, 1);
         array[size] = element;
@@ -52,17 +48,9 @@ public class ArrayList<T> implements MutableList<T> {
 
     @Override
     public T set(int index, T element) {
-        if (element == null) {
-            throw new IllegalArgumentException("Can't set element in list: element is null");
-        }
-
-        if (index < 0) {
-            throw new IllegalArgumentException("Can't set element in list: index is negative");
-        }
-
-        if (index > size) {
-            throw new IllegalArgumentException("Can't set element in list: there would be gaps with null elements");
-        }
+        Conditions.notNull(element, "Can't set element in list: element is null");
+        Conditions.greaterThan(index, 0, "Can't set element in list: element is null");
+        Conditions.lessThan(index, size, "Can't set element in list: there would be gaps with null elements");
 
         if (index == size) {
             array = ArrayUtil.ensureCapacity(array, size, 1);
@@ -77,13 +65,8 @@ public class ArrayList<T> implements MutableList<T> {
     @Override
     @Nullable
     public T removeOrNull(int index) {
-        if (index < 0) {
-            throw new IllegalArgumentException("Can't remove element in list: index is negative");
-        }
-
-        if (index >= size) {
-            return null;
-        }
+        Conditions.greaterThan(index, 0, "Can't remove element in list: index is negative");
+        if (index >= size) return null;
 
         T previousElement = array[index];
 
