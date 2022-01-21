@@ -1,3 +1,5 @@
+# Collection framework
+
 ```mermaid
 graph TD
 A(Start) --> C[Ordered]
