@@ -1,6 +1,6 @@
 package main;
 
-import org.tinylog.Logger;
+import engine.core.logger.Logger;
 
 import java.io.File;
 import java.util.Objects;
@@ -26,7 +26,11 @@ public class Main {
     public static void runClient() {
         System.out.println("Run client");
         System.out.println(new File("").getAbsolutePath());
-        Logger.info("Test");
+        Logger.trace(Logger.INJECT, "Test");
+        Logger.debug("Test");
+        Logger.info(Logger.INJECT, "Test");
+        Logger.warn("Test");
+        Logger.error(Logger.INJECT, "Test");
         // TODO Write client
     }
 
