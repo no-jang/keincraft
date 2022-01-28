@@ -54,6 +54,12 @@ public class ArrayStack<T> implements MutableStack<T> {
     }
 
     @Override
+    public void clear() {
+        size = 0;
+        array = Arrays.unsafeCastNewArray(DEFAULT_CAPACITY);
+    }
+
+    @Override
     public int size() {
         return size;
     }
