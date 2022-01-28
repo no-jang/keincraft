@@ -1,46 +1,35 @@
 package engine.collection.list;
 
 import engine.collection.stack.MutableStack;
+import engine.util.Conditions;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
-import java.util.NoSuchElementException;
-
 public interface MutableList<T> extends List<T>, MutableStack<T> {
-    void add(T element);
-
     @Nullable
     T set(int index, T element);
 
     @Nullable
     T removeOrNull(int index);
 
-    default void addAll(Iterable<T> iterable) {
-        for (T element : iterable) {
-            add(element);
-        }
+    default T replace(int index, T element) {
+        T previousElement = set(index, element);
+        Conditions.elementNotNull(previousElement, "Can't replace element in list: previous element is null");
+        return previousElement;
     }
 
-    default void remove(T element) {
-        if (element == null) {
-            throw new IllegalArgumentException("Can't remove element from list: it is null");
-        }
-
-        for (int i = 0; i < size(); i++) {
-            if (element.equals(getOrNull(i))) {
-                removeOrNull(i);
-            }
-        }
+    default T remove(T element) {
+        Conditions.argumentNotNull(element, "Can't remove element from list: element is null");
+        return remove(indexOf(element));
     }
 
     default T remove(int index) {
         T element = removeOrNull(index);
-        if (element == null) {
-            throw new NoSuchElementException("Can't remove element from list: element does not exist at index " + index);
-        }
+        Conditions.elementNotNull(element, "Can't remove element from list: element index " + index + " out of range");
         return element;
     }
 
     default void removeAll(Iterable<T> iterable) {
+        Conditions.elementNotNull(iterable, "Can't remove elements from list: iterable is null");
         for (T element : iterable) {
             remove(element);
         }

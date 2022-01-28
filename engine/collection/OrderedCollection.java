@@ -1,8 +1,7 @@
 package engine.collection;
 
+import engine.util.Conditions;
 import org.checkerframework.checker.nullness.qual.Nullable;
-
-import java.util.NoSuchElementException;
 
 public interface OrderedCollection<T> extends Collection<T> {
     @Nullable
@@ -10,9 +9,7 @@ public interface OrderedCollection<T> extends Collection<T> {
 
     default T getHead() {
         T head = getHeadOrNull();
-        if (head == null) {
-            throw new NoSuchElementException("Can not get head from collection: it is empty");
-        }
+        Conditions.elementNotNull(head, "Can not get head from collection: it is empty");
         return head;
     }
 }

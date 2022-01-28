@@ -1,131 +1,60 @@
 package engine.collection.list;
 
-public class ArrayList<T> {
-    /*private static final int DEFAULT_CAPACITY = 10;
+import engine.collection.stack.ArrayStack;
+import engine.util.Conditions;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
-    private T[] array;
-    private int size;
-
-    public ArrayList() {
-        this(DEFAULT_CAPACITY);
-    }
-
-    public ArrayList(int defaultCapacity) {
-        Conditions.greaterThan(defaultCapacity, 0, "Can't create list: defaultCapacity is negative");
-
-        array = ArrayUtil.unsafeCastNewArray(defaultCapacity);
-    }
-
+public class ArrayList<T> extends ArrayStack<T> implements MutableList<T> {
     @Override
-    public int size() {
-        return size;
+    public int indexOf(T element) {
+        for (int i = 0; i < size; i++) {
+            if (array[i].equals(element)) {
+                return i;
+            }
+        }
+        return -1;
     }
 
-    @Override
     @Nullable
+    @Override
     public T getOrNull(int index) {
-        Conditions.greaterThan(index, 0, "Can't get element from list: index is negative");
-        if (index >= size) return null;
-
+        Conditions.argumentNotNegative(index, "Can't get element from list: index is negative");
+        if (isEmpty() || index > size) {
+            return null;
+        }
         return array[index];
     }
 
+    @Nullable
     @Override
-    public void add(T element) {
-        Conditions.notNull(element, "Can't set element in list: element is null");
-
-        array = ArrayUtil.ensureCapacity(array, size, 1);
-        array[size] = element;
-        size++;
-    }
-
-    @Override
-    public T set(int index, T element) {
-        Conditions.notNull(element, "Can't set element in list: element is null");
-        Conditions.greaterThan(index, 0, "Can't set element in list: element is null");
-        Conditions.lessThan(index, size, "Can't set element in list: there would be gaps with null elements");
-
-        if (index == size) {
-            array = ArrayUtil.ensureCapacity(array, size, 1);
-            size++;
+    public T getTailOrNull() {
+        if (isEmpty()) {
+            return null;
         }
 
+        return array[0];
+    }
+
+    @Nullable
+    @Override
+    public T set(int index, T element) {
+        Conditions.argumentNotNegative(index, "Can't set element in list: index is negative");
+        Conditions.argumentNotNull(element, "Can't set element in list: element is null");
+
+        ensureCapacity(index);
         T previousElement = array[index];
         array[index] = element;
         return previousElement;
     }
 
-    @Override
     @Nullable
+    @Override
     public T removeOrNull(int index) {
-        Conditions.greaterThan(index, 0, "Can't remove element in list: index is negative");
-        if (index >= size) return null;
-
-        T previousElement = array[index];
-
-        int startIndex = index + 1;
-        for (int i = startIndex; i < size; i++) {
-            array[i - 1] = array[i];
-            array[i] = null;
+        if (isEmpty() || index > size) {
+            return null;
         }
-
-        size--;
+        T previousElement = array[index];
+        array[index] = null;
         return previousElement;
     }
-
-    @Override
-    public Iterator<T> iterator() {
-        return new ListIterator<>() {
-            private int currentIndex = -1;
-
-            @Override
-            public boolean hasNext() {
-                return currentIndex < size;
-            }
-
-            @Override
-            public T next() {
-                T element = array[nextIndex()];
-                currentIndex++;
-                return element;
-            }
-
-            @Override
-            public boolean hasPrevious() {
-                return currentIndex > 0;
-            }
-
-            @Override
-            public T previous() {
-                T element = array[previousIndex()];
-                currentIndex--;
-                return element;
-            }
-
-            @Override
-            public int nextIndex() {
-                return currentIndex + 1;
-            }
-
-            @Override
-            public int previousIndex() {
-                return currentIndex - 1;
-            }
-
-            @Override
-            public void remove() {
-                removeOrNull(currentIndex);
-            }
-
-            @Override
-            public void set(T element) {
-                ArrayList.this.set(currentIndex, element);
-            }
-
-            @Override
-            public void add(T element) {
-                ArrayList.this.add(element);
-            }
-        };
-    }*/
 }

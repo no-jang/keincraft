@@ -33,9 +33,8 @@ public class ArrayStack<T> implements MutableStack<T> {
 
     @Override
     public void push(T element) {
-        Conditions.notNull(element, "Can't push element on stack: it is null");
-
-        array = Arrays.ensureCapacity(array, size, 1);
+        Conditions.argumentNotNull(element, "Can't push element on stack: it is null");
+        ensureCapacity(size);
         array[size++] = element;
     }
 
@@ -62,5 +61,9 @@ public class ArrayStack<T> implements MutableStack<T> {
     @Override
     public Iterator<T> iterator() {
         return null;
+    }
+
+    protected void ensureCapacity(int index) {
+        array = Arrays.ensureCapacityAtIndex(array, size, index);
     }
 }
