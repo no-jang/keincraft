@@ -56,7 +56,7 @@ public class ArrayStack<T> implements MutableStack<T> {
     @Override
     public void clear() {
         size = 0;
-        array = Arrays.unsafeCastNewArray(DEFAULT_CAPACITY);
+        array = Arrays.unsafeCastNewArray(0);
     }
 
     @Override
@@ -66,7 +66,19 @@ public class ArrayStack<T> implements MutableStack<T> {
 
     @Override
     public Iterator<T> iterator() {
-        return null;
+        return new Iterator<T>() {
+            private int index = 0;
+
+            @Override
+            public boolean hasNext() {
+                return size > index;
+            }
+
+            @Override
+            public T next() {
+                return array[index++];
+            }
+        };
     }
 
     protected void ensureCapacity(int index) {
