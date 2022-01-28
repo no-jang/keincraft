@@ -1,5 +1,7 @@
 package engine.collection;
 
-public interface MutableCollection<T> extends Collection<T> {
-    void clear();
+import engine.collection.trait.ClearTrait;
+
+public interface MutableCollection<T> extends Collection<T>, ClearTrait {
+
 }

@@ -23,7 +23,7 @@ public class ArrayStack<T> implements MutableStack<T> {
 
     @Override
     @Nullable
-    public T getHeadOrNull() {
+    public T headOrNull() {
         if (isEmpty()) {
             return null;
         }

@@ -1,13 +1,7 @@
 package engine.collection;
 
-public interface Collection<T> extends Iterable<T> {
-    int size();
+import engine.collection.trait.SizeTrait;
 
-    default boolean isEmpty() {
-        return size() <= 0;
-    }
+public interface Collection<T> extends Iterable<T>, SizeTrait {
 
-    default boolean isNotEmpty() {
-        return size() > 0;
-    }
 }
