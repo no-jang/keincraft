@@ -1,8 +1,6 @@
 package engine.collection.util;
 
-import java.util.Arrays;
-
-public final class ArrayUtil {
+public final class Arrays {
 
     @SuppressWarnings("unchecked")
     public static <T> T[] unsafeCast(Object[] array) {
@@ -15,7 +13,7 @@ public final class ArrayUtil {
 
     public static <T> T[] ensureCapacity(T[] array, int sizeInUse, int sizeMoreNeeded) {
         if (array.length - sizeInUse < sizeMoreNeeded) {
-            return Arrays.copyOf(array, array.length + sizeMoreNeeded);
+            return java.util.Arrays.copyOf(array, array.length + sizeMoreNeeded);
         }
 
         return array;

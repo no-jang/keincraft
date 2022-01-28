@@ -1,14 +1,7 @@
 package engine.collection.list;
 
-import engine.collection.util.ArrayUtil;
-import engine.util.Conditions;
-import org.checkerframework.checker.nullness.qual.Nullable;
-
-import java.util.Iterator;
-import java.util.ListIterator;
-
-public class ArrayList<T> implements MutableList<T> {
-    private static final int DEFAULT_CAPACITY = 10;
+public class ArrayList<T> {
+    /*private static final int DEFAULT_CAPACITY = 10;
 
     private T[] array;
     private int size;
@@ -134,5 +127,5 @@ public class ArrayList<T> implements MutableList<T> {
                 ArrayList.this.add(element);
             }
         };
-    }
+    }*/
 }

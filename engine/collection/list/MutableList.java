@@ -1,10 +1,11 @@
 package engine.collection.list;
 
+import engine.collection.stack.MutableStack;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 import java.util.NoSuchElementException;
 
-public interface MutableList<T> extends List<T> {
+public interface MutableList<T> extends List<T>, MutableStack<T> {
     void add(T element);
 
     @Nullable
