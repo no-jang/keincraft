@@ -5,13 +5,26 @@ import engine.util.Conditions;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 public class ArrayList<T> extends ArrayStack<T> implements MutableList<T> {
+    public ArrayList() {
+        super();
+    }
+
+    public ArrayList(int defaultCapacity) {
+        super(defaultCapacity);
+    }
+
     @Override
     public int indexOf(T element) {
+        if (element == null) {
+            return -1;
+        }
+
         for (int i = 0; i < size; i++) {
             if (array[i].equals(element)) {
                 return i;
             }
         }
+
         return -1;
     }
 
@@ -27,7 +40,7 @@ public class ArrayList<T> extends ArrayStack<T> implements MutableList<T> {
 
     @Nullable
     @Override
-    public T getTailOrNull() {
+    public T tailOrNull() {
         if (isEmpty()) {
             return null;
         }

@@ -5,10 +5,10 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 
 public interface TailTrait<T> {
     @Nullable
-    T getTailOrNull();
+    T tailOrNull();
 
     default T getTail() {
-        T tail = getTailOrNull();
+        T tail = tailOrNull();
         Conditions.elementNotNull(tail, "Can't get tail from collection: it is empty");
         return tail;
     }
