@@ -11,9 +11,9 @@ public final class Arrays {
         return unsafeCast(new Object[length]);
     }
 
-    public static <T> T[] ensureCapacityAtIndex(T[] array, int size, int index) {
-        if (index >= size) {
-            return java.util.Arrays.copyOf(array, array.length + index - size + 1);
+    public static <T> T[] ensureCapacity(T[] array, int size, int moreSize) {
+        if (array.length - size < moreSize) {
+            return java.util.Arrays.copyOf(array, array.length + moreSize);
         }
         return array;
     }

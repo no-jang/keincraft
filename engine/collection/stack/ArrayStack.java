@@ -81,7 +81,7 @@ public class ArrayStack<T> implements MutableStack<T> {
         };
     }
 
-    protected void ensureCapacity(int index) {
-        array = Arrays.ensureCapacityAtIndex(array, size, index);
+    protected void ensureCapacity(int moreSize) {
+        array = Arrays.ensureCapacity(array, size, moreSize);
     }
 }
