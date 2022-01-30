@@ -1,24 +1,26 @@
 package engine.collection.stack;
 
-import engine.collection.util.Arrays;
+import engine.collection.strategy.ArrayStrategy;
+import engine.collection.strategy.DefaultArrayStrategy;
 import engine.util.Conditions;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 import java.util.Iterator;
 
 public class ArrayStack<T> implements MutableStack<T> {
-    protected static final int DEFAULT_CAPACITY = 10;
-
     protected T[] array;
     protected int size;
 
+    protected ArrayStrategy<T> strategy;
+
     public ArrayStack() {
-        this(DEFAULT_CAPACITY);
+        this(new DefaultArrayStrategy<>());
     }
 
-    public ArrayStack(int defaultCapacity) {
-        this.size = 0;
-        this.array = Arrays.unsafeCastNewArray(defaultCapacity);
+    public ArrayStack(ArrayStrategy<T> strategy) {
+        this.strategy = strategy;
+
+        this.array = strategy.newArray();
     }
 
     @Override
@@ -34,7 +36,7 @@ public class ArrayStack<T> implements MutableStack<T> {
     @Override
     public void push(T element) {
         Conditions.argumentNotNull(element, "Can't push element on stack: it is null");
-        ensureCapacity(size);
+        ensureCapacity(1);
         array[size++] = element;
     }
 
@@ -48,7 +50,9 @@ public class ArrayStack<T> implements MutableStack<T> {
         int index = size - 1;
         T element = array[index];
         array[index] = null;
+
         size--;
+        ensureCapacity(-1);
 
         return element;
     }
@@ -56,7 +60,7 @@ public class ArrayStack<T> implements MutableStack<T> {
     @Override
     public void clear() {
         size = 0;
-        array = Arrays.unsafeCastNewArray(0);
+        array = strategy.newArray();
     }
 
     @Override
@@ -81,7 +85,7 @@ public class ArrayStack<T> implements MutableStack<T> {
         };
     }
 
-    protected void ensureCapacity(int moreSize) {
-        array = Arrays.ensureCapacity(array, size, moreSize);
+    protected void ensureCapacity(int capacityDifference) {
+        array = strategy.ensureCapacity(array, size, capacityDifference);
     }
 }

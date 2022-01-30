@@ -1,6 +1,7 @@
 package engine.collection.list;
 
 import engine.collection.stack.ArrayStack;
+import engine.collection.strategy.ArrayStrategy;
 import engine.util.Conditions;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
@@ -12,8 +13,8 @@ public class ArrayList<T> extends ArrayStack<T> implements MutableList<T> {
         super();
     }
 
-    public ArrayList(int defaultCapacity) {
-        super(defaultCapacity);
+    public ArrayList(ArrayStrategy<T> strategy) {
+        super(strategy);
     }
 
     @Override
@@ -81,6 +82,9 @@ public class ArrayList<T> extends ArrayStack<T> implements MutableList<T> {
         T previousElement = array[index];
         System.arraycopy(array, index + 1, array, index, size - index - 1);
         array[--size] = null;
+
+        ensureCapacity(-1);
+
         return previousElement;
     }
 }
