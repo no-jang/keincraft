@@ -18,9 +18,7 @@ public class ArrayList<T> extends ArrayStack<T> implements MutableList<T> {
 
     @Override
     public int indexOf(T element) {
-        if (element == null) {
-            return -1;
-        }
+        if (element == null) return -1;
 
         for (int i = 0; i < size; i++) {
             if (array[i].equals(element)) {
@@ -35,9 +33,11 @@ public class ArrayList<T> extends ArrayStack<T> implements MutableList<T> {
     @Override
     public T getOrNull(int index) {
         Conditions.argumentNotNegative(index, "Can't get element from list: index is negative");
+
         if (isEmpty() || index >= size) {
             return null;
         }
+
         return array[index];
     }
 
