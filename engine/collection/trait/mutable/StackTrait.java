@@ -1,4 +1,4 @@
-package engine.collection.trait;
+package engine.collection.trait.mutable;
 
 import engine.util.Conditions;
 import org.checkerframework.checker.nullness.qual.Nullable;

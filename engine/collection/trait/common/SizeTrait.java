@@ -1,4 +1,4 @@
-package engine.collection.trait;
+package engine.collection.trait.common;
 
 public interface SizeTrait {
     int size();

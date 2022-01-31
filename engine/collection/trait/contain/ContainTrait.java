@@ -1,4 +1,4 @@
-package engine.collection.trait;
+package engine.collection.trait.contain;
 
 import engine.util.Conditions;
 

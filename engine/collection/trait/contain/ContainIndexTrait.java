@@ -1,5 +1,6 @@
-package engine.collection.trait;
+package engine.collection.trait.contain;
 
+import engine.collection.trait.index.IndexTrait;
 import engine.util.Conditions;
 
 public interface ContainIndexTrait<T> extends ContainTrait<T>, IndexTrait<T> {
