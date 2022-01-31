@@ -4,6 +4,8 @@ import engine.collection.stack.MutableStack;
 import engine.util.Conditions;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
+import java.util.NoSuchElementException;
+
 public interface MutableList<T> extends List<T>, MutableStack<T> {
     @Nullable
     T set(int index, T element);
@@ -13,7 +15,10 @@ public interface MutableList<T> extends List<T>, MutableStack<T> {
 
     default T replace(int index, T element) {
         T previousElement = set(index, element);
-        Conditions.elementNotNull(previousElement, "Can't replace element in list: previous element is null");
+        if (previousElement == null) {
+            remove(index);
+            throw new NoSuchElementException("Can't replace element in list: previous element is null");
+        }
         return previousElement;
     }
 

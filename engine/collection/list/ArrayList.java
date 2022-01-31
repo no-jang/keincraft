@@ -30,6 +30,19 @@ public class ArrayList<T> extends ArrayStack<T> implements MutableList<T> {
         return -1;
     }
 
+    @Override
+    public int lastIndexOf(T element) {
+        if (element == null) return -1;
+
+        for (int i = size - 1; i >= 0; i--) {
+            if (array[i].equals(element)) {
+                return i;
+            }
+        }
+
+        return -1;
+    }
+
     @Nullable
     @Override
     public T getOrNull(int index) {
