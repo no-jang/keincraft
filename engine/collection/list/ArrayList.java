@@ -6,7 +6,6 @@ import engine.util.Conditions;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 // TODO Add at index
-// TODO lastIndexOf
 // TODO Remove object
 public class ArrayList<T> extends ArrayStack<T> implements MutableList<T> {
     public ArrayList() {
