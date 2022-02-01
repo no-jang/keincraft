@@ -36,7 +36,7 @@ public class ArrayStack<T> implements MutableStack<T> {
     @Override
     public void push(T element) {
         Conditions.argumentNotNull(element, "Can't push element on stack: it is null");
-        ensureCapacity(1);
+        array = strategy.growArray(array, size, 1);
         array[size++] = element;
     }
 
@@ -52,7 +52,7 @@ public class ArrayStack<T> implements MutableStack<T> {
         array[index] = null;
 
         size--;
-        ensureCapacity(-1);
+        array = strategy.shrinkArray(array, size, 1);
 
         return element;
     }
@@ -83,9 +83,5 @@ public class ArrayStack<T> implements MutableStack<T> {
                 return array[index++];
             }
         };
-    }
-
-    protected void ensureCapacity(int capacityDifference) {
-        array = strategy.ensureCapacity(array, size, capacityDifference);
     }
 }

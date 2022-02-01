@@ -72,7 +72,7 @@ public class ArrayList<T> extends ArrayStack<T> implements MutableList<T> {
         Conditions.argumentLessThan(index, size, "Can't set element in list: with index " + index + " there would be gaps");
 
         if (index == size) {
-            ensureCapacity(1);
+            array = strategy.growArray(array, size, 1);
             size++;
         }
 
@@ -95,7 +95,7 @@ public class ArrayList<T> extends ArrayStack<T> implements MutableList<T> {
         System.arraycopy(array, index + 1, array, index, size - index - 1);
         array[--size] = null;
 
-        ensureCapacity(-1);
+        array = strategy.shrinkArray(array, size, 1);
 
         return previousElement;
     }

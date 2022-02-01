@@ -3,5 +3,7 @@ package engine.collection.strategy;
 public interface ArrayStrategy<T> {
     T[] newArray();
 
-    T[] ensureCapacity(T[] array, int size, int capacityDifference);
+    T[] growArray(T[] array, int size, int increaseCapacity);
+
+    T[] shrinkArray(T[] array, int size, int reduceCapacity);
 }
