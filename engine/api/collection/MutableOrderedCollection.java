@@ -1,0 +1,4 @@
+package engine.api.collection;
+
+public interface MutableOrderedCollection<T> extends OrderedCollection<T>, MutableCollection<T> {
+}
