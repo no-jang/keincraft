@@ -1,6 +1,5 @@
 package engine.collection.trait.index;
 
-import engine.util.Conditions;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 public interface IndexTrait<T> {
@@ -11,7 +10,11 @@ public interface IndexTrait<T> {
 
     default T get(int index) {
         T element = getOrNull(index);
-        Conditions.elementNotNull(element, "Can't get from list: index " + index + " is out of range");
+
+        if (element == null) {
+            throw new NullPointerException("Can't get from list: index " + index + " is out of range");
+        }
+
         return element;
     }
 }

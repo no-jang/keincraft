@@ -18,7 +18,11 @@ public interface StackTrait<T> {
 
     default T pop() {
         T element = popOrNull();
-        Conditions.elementNotNull(element, "Can't pop from collection: it is empty");
+
+        if (element == null) {
+            throw new NullPointerException("Can't pop from collection: it is empty");
+        }
+
         return element;
     }
 }

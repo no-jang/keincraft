@@ -2,8 +2,6 @@ package engine.util;
 
 import org.checkerframework.checker.nullness.qual.Nullable;
 
-import java.util.NoSuchElementException;
-
 public final class Conditions {
     public static void argumentGreaterThan(int value, int greaterThan, String message) {
         if (value < greaterThan) {
@@ -38,12 +36,6 @@ public final class Conditions {
     public static void argumentNotNull(@Nullable Object value, String message) {
         if (value == null) {
             throw new IllegalArgumentException(message);
-        }
-    }
-
-    public static void elementNotNull(@Nullable Object value, String message) {
-        if (value == null) {
-            throw new NoSuchElementException(message);
         }
     }
 }

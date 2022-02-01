@@ -1,6 +1,5 @@
 package engine.collection.trait.order;
 
-import engine.util.Conditions;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 public interface TailTrait<T> {
@@ -9,7 +8,11 @@ public interface TailTrait<T> {
 
     default T getTail() {
         T tail = tailOrNull();
-        Conditions.elementNotNull(tail, "Can't get tail from collection: it is empty");
+
+        if (tail == null) {
+            throw new NullPointerException("Can't get tail from collection: it is empty");
+        }
+
         return tail;
     }
 }

@@ -29,12 +29,17 @@ public interface MutableList<T> extends List<T>, MutableStack<T> {
 
     default T remove(int index) {
         T element = removeOrNull(index);
-        Conditions.elementNotNull(element, "Can't remove element from list: element index " + index + " out of range");
+
+        if (element == null) {
+            throw new NoSuchElementException("Can't remove element from list: element index " + index + " out of range");
+        }
+
         return element;
     }
 
     default void removeAll(Iterable<T> iterable) {
-        Conditions.elementNotNull(iterable, "Can't remove elements from list: iterable is null");
+        Conditions.argumentNotNull(iterable, "Can't remove elements from list: iterable is null");
+
         for (T element : iterable) {
             remove(element);
         }

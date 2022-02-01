@@ -1,6 +1,5 @@
 package engine.collection.trait.order;
 
-import engine.util.Conditions;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 public interface HeadTrait<T> {
@@ -9,7 +8,11 @@ public interface HeadTrait<T> {
 
     default T head() {
         T head = headOrNull();
-        Conditions.elementNotNull(head, "Can not peek first from collection: it is empty");
+
+        if (head == null) {
+            throw new NullPointerException("Can not peek first from collection: it is empty");
+        }
+
         return head;
     }
 }
