@@ -1,5 +1,6 @@
 package engine.common.collection.list;
 
+import engine.api.collection.identificator.Identificator;
 import engine.api.collection.list.MutableList;
 import engine.api.collection.strategy.ArrayStrategy;
 import engine.common.collection.stack.ArrayStack;
@@ -13,8 +14,8 @@ public class ArrayList<T> extends ArrayStack<T> implements MutableList<T> {
         super();
     }
 
-    public ArrayList(ArrayStrategy<T> strategy) {
-        super(strategy);
+    public ArrayList(ArrayStrategy<T> strategy, Identificator<T> identificator) {
+        super(strategy, identificator);
     }
 
     @Override
@@ -22,7 +23,7 @@ public class ArrayList<T> extends ArrayStack<T> implements MutableList<T> {
         if (element == null) return -1;
 
         for (int i = 0; i < size; i++) {
-            if (array[i].equals(element)) {
+            if (identificator.equals(array[i], element)) {
                 return i;
             }
         }
@@ -35,7 +36,7 @@ public class ArrayList<T> extends ArrayStack<T> implements MutableList<T> {
         if (element == null) return -1;
 
         for (int i = size - 1; i >= 0; i--) {
-            if (array[i].equals(element)) {
+            if (identificator.equals(array[i], element)) {
                 return i;
             }
         }
@@ -99,5 +100,10 @@ public class ArrayList<T> extends ArrayStack<T> implements MutableList<T> {
         array = strategy.shrinkArray(array, size, 1);
 
         return previousElement;
+    }
+
+    public static class Builder<T> extends ArrayStack.Builder<T> {
+        public Builder() {
+        }
     }
 }
