@@ -1,4 +1,4 @@
-package engine.core.logger;
+package engine.common.logger;
 
 import org.slf4j.LoggerFactory;
 import org.slf4j.Marker;
