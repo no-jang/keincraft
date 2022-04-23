@@ -7,7 +7,7 @@ pluginManagement {
 }
 
 include("kengine")
-include("kengine:log")
+include("kengine:example")
 
 // Activates all incubating features
 FeaturePreviews.Feature.values().forEach { feature ->
