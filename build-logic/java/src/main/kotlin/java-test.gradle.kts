@@ -7,10 +7,9 @@ dependencies {
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.8.2")
 }
 
-tasks.withType<Test> {
-    workingDir(layout.buildDirectory.dir("test"))
-
+tasks.named<Test>("test") {
     useJUnitPlatform()
+    workingDir(layout.buildDirectory.dir("test"))
 
     doFirst {
         workingDir.mkdirs()

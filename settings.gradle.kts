@@ -3,7 +3,7 @@ import org.gradle.api.internal.FeaturePreviews
 rootProject.name = "keincraft"
 
 pluginManagement {
-    //includeBuild("build-logic")
+    includeBuild("build-logic")
 }
 
 include("kengine")

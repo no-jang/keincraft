@@ -1,9 +1,5 @@
 plugins {
-    `java-library`
-}
-
-repositories {
-    mavenCentral()
+    id("bundle-library")
 }
 
 sourceSets {
@@ -23,12 +19,6 @@ sourceSets {
 }
 
 java {
-    sourceCompatibility = JavaVersion.VERSION_17
-    targetCompatibility = JavaVersion.VERSION_17
-
-    withJavadocJar()
-    withSourcesJar()
-
     registerFeature("api") {
         usingSourceSet(sourceSets["api"])
 
@@ -39,9 +29,6 @@ java {
 
 dependencies {
     implementation("org.tinylog:tinylog-impl:2.5.0-M1.1")
-
-    testImplementation("org.junit.jupiter:junit-jupiter-api:5.8.2")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.8.2")
 }
 
 tasks{
@@ -60,15 +47,6 @@ tasks{
             if (name.startsWith(feature)) {
                 getByName(name).group = "build-$feature"
             }
-        }
-    }
-
-    withType<Test> {
-        useJUnitPlatform()
-        workingDir(layout.buildDirectory.dir("test"))
-
-        doFirst {
-            workingDir.mkdirs()
         }
     }
 }
